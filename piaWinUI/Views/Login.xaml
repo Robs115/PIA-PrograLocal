@@ -8,26 +8,41 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="DarkOrange">
+    <Grid Background="White">
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="1" Width="360" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="8">
-            <TextBlock Text="Iniciar Sesion:" FontSize="23" HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="Bold"/>
+        <Border Grid.Row="1" Background="DarkGray" Padding="24 24 24 12" Width="350" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="15">
 
-            <TextBox x:Name="UsernameTextBox" Header="Usuario" Background="White" Foreground="Black"/>
-            <PasswordBox x:Name="PasswordBox" Header="Contrasena" Background="White" Foreground="Black"/>
+        <StackPanel Spacing="12">
+            
+            <TextBlock Text="Iniciar Sesion:" Padding="0 10 0 0" FontSize="23" HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="Bold"/>
 
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
-                <!-- <Button x:Name="CreateUserButton" Content="Crear Usuario" Click="CreateUser_Click" Background="White" Foreground="Black" FontWeight="Bold" /> -->
-                <Button x:Name="LoginButton" Content="Ingresar" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold"/>
+            <TextBox x:Name="UsernameTextBox" Header="Usuario" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldTextBoxHeaderStyle}" CornerRadius="10" BorderThickness="0"/>
+
+            <PasswordBox x:Name="PasswordBox" Header="Contrasena" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldPasswordBoxHeaderStyle}" CornerRadius="10" BorderThickness="0"/>
+
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
+                    <Button x:Name="LoginButton" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold" Margin="0 15 0 0">
+                        <Button.Resources>
+                            <Color x:Key="ButtonBackgroundPointerOver">Green</Color>
+                            <Color x:Key="ButtonBackgroundPressed">DarkGreen</Color>
+                            <SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
+                            
+                        </Button.Resources>
+                        Ingresar
+                    </Button>
+                    
             </StackPanel>
 
             <TextBlock x:Name="StatusTextBlock" Foreground="DarkRed" TextWrapping="Wrap" />
         </StackPanel>
+
+        </Border>
 
     </Grid>
 </Page>
