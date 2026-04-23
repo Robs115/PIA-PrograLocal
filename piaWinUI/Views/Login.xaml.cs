@@ -31,10 +31,13 @@ namespace piaWinUI.Views
         public Login()
         {
             InitializeComponent();
-            _dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EvidenciaWinUI");
+            //_dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EvidenciaWinUI");
+            //_usersFilePath = Path.Combine(_dataFolder, "users.json");
+            _dataFolder = Path.Combine(AppContext.BaseDirectory, "Data");
             _usersFilePath = Path.Combine(_dataFolder, "users.json");
+            Directory.CreateDirectory(_dataFolder);
         }
-
+        
         private record User(string Username, string Password);
 
         private async Task<List<User>> LoadUsersAsync()
@@ -53,7 +56,9 @@ namespace piaWinUI.Views
                 return new List<User>();
             }
         }
+        
 
+        /*
         private async Task SaveUsersAsync(List<User> users)
         {
             var options = new JsonSerializerOptions { WriteIndented = true };
@@ -61,12 +66,15 @@ namespace piaWinUI.Views
             await JsonSerializer.SerializeAsync(stream, users, options);
         }
 
+        */
+
         private void SetStatus(string text, bool isError = true)
         {
             StatusTextBlock.Text = text;
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
 
+        /*
         private async void CreateUser_Click(object sender, RoutedEventArgs e)
         {
             var username = UsernameTextBox.Text?.Trim();
@@ -101,6 +109,7 @@ namespace piaWinUI.Views
             await SaveUsersAsync(users);
             SetStatus("Usuario creado.", isError: false);
         }
+        */
 
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
@@ -130,13 +139,13 @@ namespace piaWinUI.Views
             var user = users.FirstOrDefault(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
             if (user is null)
             {
-                SetStatus("Usuario y contrasena invalidos.");
+                SetStatus("Usuario o contrasena invalidos.");
                 return;
             }
 
             if (user.Password != password)
             {
-                SetStatus("Contrasena invalida.");
+                SetStatus("Usuario o contrasena invalidos.");
                 return;
             }
 
