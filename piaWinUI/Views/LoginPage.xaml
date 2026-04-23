@@ -17,23 +17,23 @@
 
         <Border Grid.Row="1" Background="DarkGray" Padding="24 24 24 12" Width="350" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="15">
 
-        <StackPanel Spacing="12">
-            
-            <TextBlock Text="Iniciar Sesion:" Padding="0 10 0 0" FontSize="23" HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="Bold"/>
+            <StackPanel Spacing="12">
 
-            <TextBox x:Name="UsernameTextBox" Header="Usuario" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldTextBoxHeaderStyle}" CornerRadius="10" BorderThickness="0"/>
+                <TextBlock Text="Iniciar Sesion:" Padding="0 10 0 0" FontSize="23" HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="Bold"/>
 
-            <PasswordBox x:Name="PasswordBox" Header="Contrasena" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldPasswordBoxHeaderStyle}" CornerRadius="10" BorderThickness="0"/>
+                <TextBox x:Name="UsernameTextBox" Header="Usuario" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldTextBoxHeaderStyle}" CornerRadius="10" BorderThickness="0" KeyDown="Root_KeyDown"/>
+
+                <PasswordBox PasswordRevealMode="Hidden" x:Name="PasswordBox" Header="Contrasena" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldPasswordBoxHeaderStyle}" CornerRadius="10" BorderThickness="0" KeyDown="Root_KeyDown"/>
 
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
                     
-                    <Button x:Name="LoginButton" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold" Margin="0 15 0 0">
+                    <Button x:Name="LoginButton" Content="Ingresar" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold" Margin="0 15 0 0">
                         <Button.Resources>
                             <Color x:Key="ButtonBackgroundPointerOver">Green</Color>
                             <Color x:Key="ButtonBackgroundPressed">DarkGreen</Color>
                             <SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
-                        </Button.Resources> Ingresar
+                        </Button.Resources> 
                     </Button>
 
 

@@ -37,7 +37,7 @@ namespace piaWinUI.Views
             _usersFilePath = Path.Combine(_dataFolder, "users.json");
             Directory.CreateDirectory(_dataFolder);
         }
-        
+
         private record User(string Username, string Password);
 
         private async Task<List<User>> LoadUsersAsync()
@@ -111,12 +111,12 @@ namespace piaWinUI.Views
         }
         */
 
-        private async void Login_Click(object sender, RoutedEventArgs e)
+        private async Task DoLoginAsync()
         {
             var username = UsernameTextBox.Text?.Trim();
             var password = PasswordBox.Password ?? string.Empty;
 
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
+            if (string.IsNullOrEmpty(username) & string.IsNullOrEmpty(password))
             {
                 SetStatus("Ingrese un usuario y una contrasena.");
                 return;
@@ -152,6 +152,20 @@ namespace piaWinUI.Views
             SetStatus("Ingreso exitoso.", isError: false);
 
             Frame.Navigate(typeof(MainPage));
+        }
+
+
+        private async void Login_Click(object sender, RoutedEventArgs e)
+        {
+            await DoLoginAsync();
+        }
+
+        private async void Root_KeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                await DoLoginAsync();
+            }
         }
     }
 }

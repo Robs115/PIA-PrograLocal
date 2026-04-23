@@ -16,6 +16,8 @@
   <ItemGroup>
     <None Remove="Data\users.json" />
     <None Remove="Views\MainPage.xaml" />
+    <None Remove="Views\Productos.xaml" />
+    <None Remove="Views\Reportes.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,12 +50,22 @@
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260416003" />
   </ItemGroup>
   <ItemGroup>
+    <Page Update="Views\Reportes.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\Productos.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
     <Page Update="Views\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\Login.xaml">
+    <Page Update="Views\LoginPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

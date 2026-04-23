@@ -12,6 +12,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.ApplicationSettings;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -26,6 +27,34 @@ namespace piaWinUI.Views
         public MainPage()
         {
             InitializeComponent();
+            ContentFrame.Navigate(typeof(Reportes));
+
         }
+        private void NavView_SelectionChanged(NavigationView sender,
+            NavigationViewSelectionChangedEventArgs args)
+        {
+            var item = args.SelectedItem as NavigationViewItem;
+
+            if (item == null) return;
+
+            switch (item.Tag?.ToString())
+            {
+                case "Reportes":
+                    ContentFrame.Navigate(typeof(Reportes));
+                    break;
+
+                case "Productos":
+                    ContentFrame.Navigate(typeof(Productos));
+                    break;
+
+                case "idk":
+                    ContentFrame.Navigate(typeof(Productos));
+                    break;
+            }
+        }
+
+
     }
 }
+
+

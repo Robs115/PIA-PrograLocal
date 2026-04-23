@@ -10,5 +10,21 @@
 
     <Grid>
 
+        <NavigationView x:Name="NavView"
+                PaneDisplayMode="Left"
+                SelectionChanged="NavView_SelectionChanged">
+
+            <NavigationView.MenuItems>
+
+                <NavigationViewItem Content="Reportes" Tag="Reportes"/>
+                <NavigationViewItem Content="Productos" Tag="Productos"/>
+                <NavigationViewItem Content="Idk" Tag="Idk"/>
+
+            </NavigationView.MenuItems>
+
+            <Frame x:Name="ContentFrame"/>
+
+        </NavigationView>
+
     </Grid>
 </Page>
