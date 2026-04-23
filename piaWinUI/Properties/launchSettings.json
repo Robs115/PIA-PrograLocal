@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "piaWinUI (Package)": {
+      "commandName": "MsixPackage"
+    },
+    "piaWinUI (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}
