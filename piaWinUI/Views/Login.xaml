@@ -27,19 +27,19 @@
 
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
+                    
                     <Button x:Name="LoginButton" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold" Margin="0 15 0 0">
                         <Button.Resources>
                             <Color x:Key="ButtonBackgroundPointerOver">Green</Color>
                             <Color x:Key="ButtonBackgroundPressed">DarkGreen</Color>
                             <SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
-                            
-                        </Button.Resources>
-                        Ingresar
+                        </Button.Resources> Ingresar
                     </Button>
-                    
-            </StackPanel>
 
-            <TextBlock x:Name="StatusTextBlock" Foreground="DarkRed" TextWrapping="Wrap" />
+
+                </StackPanel>
+
+            <TextBlock HorizontalAlignment="Center" Padding="10" x:Name="StatusTextBlock" Foreground="DarkRed" TextWrapping="Wrap"/>
         </StackPanel>
 
         </Border>
