@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using piaWinUI.Models;
+using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -30,34 +31,7 @@ namespace piaWinUI.Views
 
         public Producto ProductoSeleccionado { get; set; }
 
-        public readonly string _dataFolder = App.DataFolder;
-        public readonly string _productsFilePath = App.ProductsFilePath;
-
-        private async Task<List<Producto>> LoadProductsAsync()
-        {
-            try
-            {
-                if (!Directory.Exists(_dataFolder)) Directory.CreateDirectory(_dataFolder);
-                if (!File.Exists(_productsFilePath)) return new List<Producto>();
-
-                using var stream = File.OpenRead(_productsFilePath);
-                var products = await JsonSerializer.DeserializeAsync<List<Producto>>(stream);
-                return products ?? new List<Producto>();
-            }
-            catch
-            {
-                return new List<Producto>();
-            }
-        }
-        public async Task LoadProductsData()
-        {
-            var productos = await LoadProductsAsync();
-
-            Productos.Clear();
-
-            foreach (var p in productos)
-                Productos.Add(p);
-        }
+        private readonly ProductService _service = new ProductService();
 
         public ProductosPag()
         {
@@ -69,6 +43,21 @@ namespace piaWinUI.Views
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             await LoadProductsData();
+        }
+
+        private async Task LoadProductsData()
+        {
+            var productos = await _service.GetProductsAsync();
+
+            Productos.Clear();
+
+            foreach (var p in productos)
+                Productos.Add(p);
+        }
+
+        private void CrearProducto_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(CreateProductPage));
         }
     }
 }

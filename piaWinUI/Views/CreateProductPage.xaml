@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Page
+    x:Class="piaWinUI.Views.CreateProductPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <StackPanel Padding="20" Spacing="10">
+
+        <TextBlock Text="Crear Producto" FontSize="20"/>
+
+        <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
+        <TextBox x:Name="txtPrecio" PlaceholderText="Precio"/>
+        <TextBox x:Name="txtStock" PlaceholderText="Stock"/>
+
+        <StackPanel Orientation="Horizontal" Spacing="10">
+            <Button Content="Guardar" Click="Guardar_Click"/>
+            <Button Content="Cancelar" Click="Cancelar_Click"/>
+        </StackPanel>
+
+    </StackPanel>
+</Page>

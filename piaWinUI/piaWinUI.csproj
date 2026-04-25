@@ -15,6 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Data\users.json" />
+    <None Remove="Views\CreateProductPage.xaml" />
     <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\Reportes.xaml" />
   </ItemGroup>
@@ -47,6 +48,11 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.1721" />
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.8.260416003" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CreateProductPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\Reportes.xaml">
