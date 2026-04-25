@@ -34,7 +34,8 @@ namespace piaWinUI
         /// </summary>
         public App()
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            System.IO.Directory.CreateDirectory(DataFolder);
         }
 
         /// <summary>
@@ -46,5 +47,17 @@ namespace piaWinUI
             _window = new MainWindow();
             _window.Activate();
         }
+    }
+
+    public partial class App : Application
+    {
+        public static string DataFolder { get; } =
+            System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "piaWinUI");
+
+        public static string UsersFilePath { get; } =
+            System.IO.Path.Combine(DataFolder, "users.json");
+
+        public static string ProductsFilePath { get; } =
+            System.IO.Path.Combine(DataFolder, "products.json");
     }
 }

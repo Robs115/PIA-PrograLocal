@@ -16,7 +16,6 @@
   <ItemGroup>
     <None Remove="Data\users.json" />
     <None Remove="Views\MainPage.xaml" />
-    <None Remove="Views\Productos.xaml" />
     <None Remove="Views\Reportes.xaml" />
   </ItemGroup>
 
@@ -55,7 +54,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\Productos.xaml">
+    <Page Update="Views\ProductosPag.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

@@ -24,10 +24,15 @@ namespace piaWinUI.Views
     /// </summary>
     public sealed partial class MainPage : Page
     {
+        public readonly string _dataFolder;
+        public readonly string _usersFilePath;
+
         public MainPage()
         {
             InitializeComponent();
             ContentFrame.Navigate(typeof(Reportes));
+            _dataFolder = App.DataFolder;
+            _usersFilePath = App.UsersFilePath;
 
         }
         private void NavView_SelectionChanged(NavigationView sender,
@@ -44,11 +49,11 @@ namespace piaWinUI.Views
                     break;
 
                 case "Productos":
-                    ContentFrame.Navigate(typeof(Productos));
+                    ContentFrame.Navigate(typeof(ProductosPag));
                     break;
 
                 case "idk":
-                    ContentFrame.Navigate(typeof(Productos));
+                    ContentFrame.Navigate(typeof(ProductosPag));
                     break;
             }
         }
