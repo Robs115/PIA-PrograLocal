@@ -13,7 +13,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.ApplicationSettings;
-
+using piaWinUI.Views;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -52,9 +52,19 @@ namespace piaWinUI.Views
                     ContentFrame.Navigate(typeof(ProductosPag));
                     break;
 
-                case "idk":
-                    ContentFrame.Navigate(typeof(ProductosPag));
+                case "Ventas":
+                    ContentFrame.Navigate(typeof(VentasPag));
                     break;
+                case "Caja":
+                    ContentFrame.Navigate(typeof(CajaPag));
+                    break;
+                case "Clientes":
+                    ContentFrame.Navigate(typeof(ClientesPag));
+                    break;
+                case "Inventario":
+                    ContentFrame.Navigate(typeof(InventarioPag));
+                    break;
+              
             }
         }
 

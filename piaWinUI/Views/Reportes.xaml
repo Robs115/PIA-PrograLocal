@@ -10,6 +10,6 @@
 
     <Grid>
         <TextBlock TextWrapping="Wrap">The value of Life is negative. The balance of being is rotated by 38 degrees. The surface is full of cracks, a turgid light shines through. Fleshy primordial bodies sluggishly roll down the slope. Only you slide upwards, with a celestial step. You become beautified, a saintly figure. Your pristine idiocy reveals a safe path through the impenetrable fog of Life. Your dull sword cuts through the weak tendons and membranes of the garden of corruption. Sit on the throne of contentment and ferment. Inspect the eternal blue skies of your kingdom.</TextBlock>
-        <WebView2 Source="https://youtu.be/1A1Nm2kAW6c?list=LL"/>
+        
     </Grid>
 </Page>

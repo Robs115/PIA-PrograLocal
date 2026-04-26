@@ -17,8 +17,10 @@
             <NavigationView.MenuItems>
 
                 <NavigationViewItem Content="Reportes" Tag="Reportes"/>
+                <NavigationViewItem Content="Ventas" Tag="Ventas"/>
                 <NavigationViewItem Content="Productos" Tag="Productos"/>
-                <NavigationViewItem Content="Idk" Tag="Idk"/>
+                <NavigationViewItem Content="Clientes" Tag="Clientes"/>
+                <NavigationViewItem Content="Caja" Tag="Caja"/>
 
             </NavigationView.MenuItems>
 
