@@ -65,6 +65,10 @@ namespace piaWinUI.Views
             }
         }
 
+        private void ReporteClientes_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ReporteClientesPag));
+        }
 
 
 

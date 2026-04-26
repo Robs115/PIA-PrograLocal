@@ -55,6 +55,7 @@ namespace piaWinUI.Views
                 case "Ventas":
                     ContentFrame.Navigate(typeof(VentasPag));
                     break;
+
                 case "Caja":
                     ContentFrame.Navigate(typeof(CajaPag));
                     break;
