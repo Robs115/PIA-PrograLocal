@@ -50,10 +50,10 @@ HorizontalAlignment ="Stretch" />
                      Header ="Nombre del cliente *" 
                      PlaceholderText ="Ej. Nelson Orlando Rodriguez"/>
 
-                    <NumberBox x:Name="Telefono" 
+                    <TextBox x:Name="Telefono" 
                        Header ="Teléfono *" 
                        PlaceholderText ="Ej. 81 1234 5678" 
-                       SpinButtonPlacementMode ="Inline"/>
+                       />
 
                 <DatePicker x:Name="FechaNacimiento" 
                         Header ="Fecha de nacimiento *" 
@@ -77,7 +77,7 @@ HorizontalAlignment ="Stretch" />
 
                     <Button x:Name="Submit"  
                             Content ="Registrar datos"  
-                           
+                           Click="Guardar_Click"
                             Style ="{ StaticResource AccentButtonStyle }"  
                             HorizontalAlignment ="Stretch" />
 
