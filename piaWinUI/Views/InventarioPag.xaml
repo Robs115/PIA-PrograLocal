@@ -8,7 +8,77 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid>
+    <Grid >
+        <ScrollViewer VerticalScrollBarVisibility ="Auto">
+            <StackPanel HorizontalAlignment ="Center" VerticalAlignment ="Center" 
+Spacing ="14">
 
-    </Grid>
+
+                <StackPanel HorizontalAlignment ="Center" Margin ="0,0,0,12" Spacing ="8">
+                    <SymbolIcon Symbol ="Contact" />
+                    <TextBlock Text ="Realizae pedido"  
+               Style ="{StaticResource TitleTextBlockStyle }" 
+               HorizontalAlignment ="Center" />
+                    <TextBlock Text ="Introduce los datos"  
+               Style ="{StaticResource CaptionTextBlockStyle }"  
+               Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
+               HorizontalAlignment ="Center" />
+                    <Grid ColumnSpacing ="10">
+                        <Grid.ColumnDefinitions >
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions >
+                        <Button Grid.Column="0" x:Name="reportesPedidos"  
+                                Click="ReportePedidos_Click"
+            Content ="Reportes de pedidos"  
+            
+            Style ="{ StaticResource AccentButtonStyle }"  
+            HorizontalAlignment ="Stretch" />
+
+                        <Button Grid.Column="1"  x:Name="buscarPedidos"  
+Content ="Buscar pedidos"  
+
+Style ="{ StaticResource AccentButtonStyle }"  
+HorizontalAlignment ="Stretch" />
+
+                    </Grid >
+
+
+                </StackPanel >
+
+                <ComboBox Header="Selecciona un producto" Width="200">
+                    <ComboBoxItem Content="Cargar productos"/>
+                    
+                </ComboBox>
+
+                <ComboBox Header="Selecciona un proveedor" Width="200">
+                    <ComboBoxItem Content="Cargar proovedor"/>
+                    
+                </ComboBox>
+
+                <NumberBox Header="Introduce la cantidad" Width="200"/>
+
+
+
+
+
+
+
+
+
+                <TextBlock x:Name="toast"></TextBlock >
+
+                <Button x:Name="Submit"  
+                            Content ="Realizar (Le llamamos pedido)"  
+                           Click="Guardar_Click"
+                            Style ="{ StaticResource AccentButtonStyle }"  
+                            HorizontalAlignment ="Stretch" />
+
+
+
+            </StackPanel >
+        </ScrollViewer >
+    </Grid >
+
+
 </Page>
