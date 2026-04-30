@@ -8,41 +8,54 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="White">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
-
-        <Border Grid.Row="1" Background="DarkGray" Padding="24 24 24 12" Width="350" HorizontalAlignment="Center" VerticalAlignment="Center" CornerRadius="15">
-
-            <StackPanel Spacing="12">
-
-                <TextBlock Text="Iniciar Sesion:" Padding="0 10 0 0" FontSize="23" HorizontalAlignment="Center" Margin="0,0,0,8" FontWeight="Bold"/>
-
-                <TextBox x:Name="UsernameTextBox" Header="Usuario" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldTextBoxHeaderStyle}" CornerRadius="10" BorderThickness="0" KeyDown="Root_KeyDown"/>
-
-                <PasswordBox PasswordRevealMode="Hidden" x:Name="PasswordBox" Header="Contrasena" FontWeight="Bold" Background="White" Foreground="Black" Style="{StaticResource BoldPasswordBoxHeaderStyle}" CornerRadius="10" BorderThickness="0" KeyDown="Root_KeyDown"/>
-
-
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="8" Margin="0,8,0,0">
-                    
-                    <Button x:Name="LoginButton" Content="Ingresar" Click="Login_Click" Background="White" Foreground="Black" FontWeight="Bold" Margin="0 15 0 0">
-                        <Button.Resources>
-                            <Color x:Key="ButtonBackgroundPointerOver">Green</Color>
-                            <Color x:Key="ButtonBackgroundPressed">DarkGreen</Color>
-                            <SolidColorBrush x:Key="ButtonForeground">White</SolidColorBrush>
-                        </Button.Resources> 
-                    </Button>
-
-
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+BorderThickness="1" 
+CornerRadius="8" 
+Width="400" 
+HorizontalAlignment="Center"  
+VerticalAlignment="Center" 
+Padding="32">
+            <StackPanel Spacing="16">
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8">
+                    <SymbolIcon Symbol="Contact" />
+                    <TextBlock Text="Bienvenido"  
+Style="{StaticResource TitleTextBlockStyle}"  
+HorizontalAlignment="Center" />
+                    <TextBlock Text="Introduce tus credenciales"  
+Style="{StaticResource CaptionTextBlockStyle}"  
+Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+HorizontalAlignment="Center" />
                 </StackPanel>
-
-            <TextBlock HorizontalAlignment="Center" Padding="10" x:Name="StatusTextBlock" Foreground="DarkRed" TextWrapping="Wrap"/>
-        </StackPanel>
-
+                <TextBox x:Name="UsernameTextBox"  
+PlaceholderText="Usuario"  
+Header="Nombre de usuario" 
+KeyDown="Root_KeyDown"/>
+                <PasswordBox x:Name="PasswordBox"  
+PlaceholderText="Contraseña"  
+Header="Contraseña"
+KeyDown="Root_KeyDown"/>
+                <TextBlock x:Name="StatusTextBlock"  
+Foreground="{ThemeResource SystemFillColorCriticalBrush}"  
+FontSize="12" 
+TextWrapping="Wrap"  
+HorizontalAlignment="Center"/>
+                <StackPanel Spacing="12" Margin="0,8,0,0">
+                    <Button x:Name="LoginButton"  
+Content="Iniciar Sesión"  
+Click="Login_Click"  
+Style="{StaticResource AccentButtonStyle}"  
+HorizontalAlignment="Stretch" />
+                    <Button x:Name="CreateUserButton"  
+Content="¿No tienes cuenta? Regístrate"  
+Click="CreateUser_Click"  
+Style="{StaticResource DefaultButtonStyle}" 
+HorizontalAlignment="Stretch"  
+BorderThickness="0"  
+Background="Transparent"/>
+                </StackPanel>
+            </StackPanel>
         </Border>
-
     </Grid>
 </Page>

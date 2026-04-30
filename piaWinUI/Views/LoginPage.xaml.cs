@@ -74,9 +74,10 @@ namespace piaWinUI.Views
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
 
-        /*
+
         private async void CreateUser_Click(object sender, RoutedEventArgs e)
         {
+            /*
             var username = UsernameTextBox.Text?.Trim();
             var password = PasswordBox.Password ?? string.Empty;
 
@@ -108,8 +109,9 @@ namespace piaWinUI.Views
             users.Add(new User(username, password));
             await SaveUsersAsync(users);
             SetStatus("Usuario creado.", isError: false);
-        }
+        
         */
+        }
 
         private async Task DoLoginAsync()
         {
