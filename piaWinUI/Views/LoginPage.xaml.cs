@@ -118,6 +118,8 @@ namespace piaWinUI.Views
             var username = UsernameTextBox.Text?.Trim();
             var password = PasswordBox.Password ?? string.Empty;
 
+            
+
             if (string.IsNullOrEmpty(username) & string.IsNullOrEmpty(password))
             {
                 SetStatus("Ingrese un usuario y una contrasena.");
@@ -134,6 +136,17 @@ namespace piaWinUI.Views
             {
                 SetStatus("Ingrese una contrasena.");
                 return;
+            }
+
+            if (username.Length > 20)
+            {
+                SetStatus("El usuario no debe de contener mas de 20 caracteres.");
+                return;
+            }
+
+            if (password.Length > 20)
+            {
+                SetStatus("La contraseña no debe contener mas de 20 caracteres.");
             }
 
             var users = await LoadUsersAsync();

@@ -20,7 +20,7 @@
                 <NavigationViewItem Content="Ventas" Tag="Ventas"/>
                 <NavigationViewItem Content="Productos" Tag="Productos"/>
                 <NavigationViewItem Content="Clientes" Tag="Clientes"/>
-                
+                <NavigationViewItem Content="Inventario" Tag="Inventario"/>
                 <NavigationViewItem Content="Caja" Tag="Caja"/>
 
             </NavigationView.MenuItems>

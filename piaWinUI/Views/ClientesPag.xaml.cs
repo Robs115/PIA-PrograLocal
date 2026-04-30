@@ -31,8 +31,69 @@ namespace piaWinUI.Views
             InitializeComponent();
         }
 
-        private async void Guardar_Click(object sender, RoutedEventArgs e)
+
+        private void SetStatus(string text, bool isError = true)
         {
+            StatusTextBlock.Text = text;
+            StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
+        }
+
+
+
+
+        private async void Guardar_Click(object sender, RoutedEventArgs e)
+
+        {
+
+            string nombre = Nombre.Text;
+            var telefono = Telefono.Text;
+            var fechanacimiento = FechaNacimiento.Date.DateTime;
+            var email = Email.Text;
+
+            // validaciones basicas
+
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                SetStatus("El campo nombre no debe estar vacio.");
+            }
+
+            if (string.IsNullOrWhiteSpace(telefono))
+            {
+                SetStatus("El campo telfono no debe estar vacio.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                SetStatus("El campo email no debe estar vacio.");
+                return;
+            }
+
+            if (!email.Contains("@") || !email.Contains("."))
+            {
+                SetStatus($"El campo email debe contener un {"@"} y un {"."}.");
+                return;
+            }
+
+            if (!telefono.All(char.IsDigit))
+            {
+                SetStatus("El campo telefono ddebe tener el formato adecuado.");
+                return;
+            }
+
+            if (telefono.Length != 10)
+            {
+                SetStatus("El campo telefono debe tener 10 digitos.");
+                return;
+            }
+
+
+            if (fechanacimiento < DateTime.Now)
+            {
+                SetStatus("El campo Fecha de Nacimiento ser menor a la fecha actual.");
+                return;
+            }
+
             try
             {
                 var clientes = await _service.GetClientesAsync();
@@ -40,10 +101,10 @@ namespace piaWinUI.Views
                 {
                     //algun dia el id tiene que sacar el ultimo de la lista del json
                     Id = new Random().Next(1, 100000),
-                    Nombre = Nombre.Text,
-                    Telefono = Telefono.Text,
-                    FechaNacimiento = FechaNacimiento.Date.DateTime,
-                    Email = Email.Text
+                    Nombre = nombre,
+                    Telefono = telefono,
+                    FechaNacimiento = fechanacimiento,
+                    Email = email
                 };
 
                 clientes.Add(nuevo);
@@ -57,7 +118,7 @@ namespace piaWinUI.Views
                 Email.Text = string.Empty;
 
                 //mostrar mensaje de exito
-                toast.Text = "Cliente guardado exitosamente";
+                SetStatus("Cliente guardado exitosamente");
             }
             catch (Exception ex)
             {
