@@ -88,7 +88,7 @@ namespace piaWinUI.Views
             }
 
 
-            if (fechanacimiento < DateTime.Now)
+            if (fechanacimiento > DateTime.Now)
             {
                 SetStatus("El campo Fecha de Nacimiento ser menor a la fecha actual.");
                 return;
@@ -100,7 +100,7 @@ namespace piaWinUI.Views
                 var nuevo = new Cliente
                 {
                     //algun dia el id tiene que sacar el ultimo de la lista del json
-                    Id = new Random().Next(1, 100000),
+                    Id = clientes.Count > 0 ? clientes.Max(c => c.Id) + 1 : 1,
                     Nombre = nombre,
                     Telefono = telefono,
                     FechaNacimiento = fechanacimiento,
@@ -131,8 +131,11 @@ namespace piaWinUI.Views
             Frame.Navigate(typeof(ReporteClientesPag));
         }
 
+        private void BuscarClientes_Click(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(BuscarClientesPag));
 
 
 
-    }
+        }
 }
