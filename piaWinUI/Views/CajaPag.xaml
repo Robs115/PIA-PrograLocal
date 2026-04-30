@@ -1,14 +1,70 @@
-<?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="piaWinUI.Views.CajaPag"
+    x:Class="piaWinUI.CajaPag"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:piaWinUI.Views"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid>
-        <TextBlock Text="Aqui va a haber un reporte"/>
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*,Auto">
+
+        <!-- Estado -->
+        <StackPanel Orientation="Horizontal" Spacing="20">
+            <TextBlock x:Name="txtEstado" Text="Caja cerrada"/>
+            <TextBlock x:Name="txtSaldo" Text="Saldo: $0"/>
+            <Button Content="Abrir Caja" Click="AbrirCaja_Click"/>
+            <Button Content="Cerrar Caja" Click="CerrarCaja_Click"/>
+        </StackPanel>
+
+        <!-- Registro de movimiento -->
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Spacing="10" Margin="0,10">
+
+            <ComboBox x:Name="cmbTipo" Width="120">
+                <ComboBoxItem Content="Ingreso"/>
+                <ComboBoxItem Content="Egreso"/>
+            </ComboBox>
+
+            <TextBox x:Name="txtConcepto" Width="200" PlaceholderText="Concepto"/>
+            <TextBox x:Name="txtMonto" Width="120" PlaceholderText="Monto"/>
+
+            <Button Content="Registrar" Click="RegistrarMovimiento_Click"/>
+        </StackPanel>
+
+        <!-- Lista -->
+        <ListView x:Name="gridMovimientos" Grid.Row="2">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="20">
+                        <TextBlock Text="{Binding Fecha}"/>
+                        <TextBlock Text="{Binding Tipo}"/>
+                        <TextBlock Text="{Binding Concepto}"/>
+                        <TextBlock Text="{Binding Monto}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
+        <!-- Corte -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="20">
+            <TextBlock x:Name="txtIngresos" Text="Ingresos: $0"/>
+            <TextBlock x:Name="txtEgresos" Text="Egresos: $0"/>
+            <TextBox x:Name="txtConteo" Width="120" PlaceholderText="Conteo real"/>
+            <Button Content="Corte" Click="CalcularCorte_Click"/>
+            <Button Content="Guardar Corte" Click="GuardarCorte_Click"/>
+        </StackPanel>
+
+        
+
+        <!-- Historial de cortes -->
+        <ListView x:Name="gridCortes" Grid.Row="4">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <StackPanel Orientation="Horizontal" Spacing="15">
+                        <TextBlock Text="{Binding Fecha}"/>
+                        <TextBlock Text="{Binding Esperado}"/>
+                        <TextBlock Text="{Binding Contado}"/>
+                        <TextBlock Text="{Binding Diferencia}"/>
+                    </StackPanel>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+
     </Grid>
 </Page>
