@@ -35,7 +35,7 @@ Spacing ="14">
             HorizontalAlignment ="Stretch" />
 
                         <Button Grid.Column="1"  x:Name="buscarClientes"  
-                                Click="BuscarClientes_Click"
+                               
 Content ="Buscar clientes (Editar o eliminar)"  
 
 Style ="{ StaticResource AccentButtonStyle }"  
@@ -79,7 +79,7 @@ HorizontalAlignment ="Stretch" />
 
                 <Button x:Name="Submit"  
                             Content ="Registrar datos"  
-                           Click="Guardar_Click"
+                          
                             Style ="{ StaticResource AccentButtonStyle }"  
                             HorizontalAlignment ="Stretch" />
 

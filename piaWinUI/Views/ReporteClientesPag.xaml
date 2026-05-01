@@ -8,5 +8,5 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <TextBlock Text="Pagina de reporte de ventas" />
+    <TextBlock Text="Pagina de reporte de clientes que han comprado or some shit"/>
 </Page>

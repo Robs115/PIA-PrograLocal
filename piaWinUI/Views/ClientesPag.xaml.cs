@@ -136,6 +136,7 @@ namespace piaWinUI.Views
             Frame.Navigate(typeof(BuscarClientesPag));
 
 
-
         }
+    }
+
 }

@@ -15,7 +15,6 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Data\users.json" />
-    <None Remove="Views\CreateProductPage.xaml" />
     <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\Reportes.xaml" />
   </ItemGroup>
@@ -82,7 +81,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\CreateProductPage.xaml">
+    <Page Update="Views\ListarProductosPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
