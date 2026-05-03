@@ -70,6 +70,12 @@ namespace piaWinUI.Views
                 productos.Add(nuevo);
 
                 await _service.SaveProductsAsync(productos);
+
+                LimpiarFormulario();
+
+                SetStatus("Registro exitoso.", false);
+
+
             }
 
             catch (Exception ex)
@@ -77,7 +83,28 @@ namespace piaWinUI.Views
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
-        
+
+        private void LimpiarFormulario()
+        {
+            txtNombre.Text = "";
+            txtDescripcion.Text = "";
+            txtCategoria.Text = "";
+
+            txtPrecioCompra.Text = "";
+            txtPrecioVenta.Text = "";
+            txtStock.Text = "";
+
+            cmbProveedor.SelectedIndex = 0;
+
+            StatusTextBlock.Text = "";
+        }
+
+        private void SetStatus(string text, bool isError = true)
+        {
+            StatusTextBlock.Text = text;
+            StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
+        }
+
         private void MoveTo(object sender, RoutedEventArgs e)
         {
             Button boton = (Button)sender;
