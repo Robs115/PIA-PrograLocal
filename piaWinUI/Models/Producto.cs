@@ -11,7 +11,11 @@ namespace piaWinUI.Models
     {
         private Guid id;
         private string nombre;
-        private decimal precio;
+        private string descripcion;
+        private decimal precioCompra;
+        private decimal precioVenta;
+        private Guid idProveedor;
+        private string categoria;
         private int stock;
 
         public Guid Id
@@ -34,14 +38,53 @@ namespace piaWinUI.Models
             }
         }
 
-        public decimal Precio
+        public string Descripcion
         {
-            get => precio;
+            get => descripcion;
             set
             {
-                precio = value;
-                OnPropertyChanged(nameof(Precio));
-                OnPropertyChanged(nameof(ValorInventario));
+                descripcion = value;
+                OnPropertyChanged(nameof(Descripcion));
+            }
+        }
+
+        public decimal PrecioCompra
+        {
+            get => precioCompra;
+            set
+            {
+                precioCompra = value;
+                OnPropertyChanged(nameof(PrecioCompra));
+            }
+        }
+
+        public decimal PrecioVenta
+        {
+            get => precioVenta;
+            set
+            {
+                precioVenta = value;
+                OnPropertyChanged(nameof(PrecioVenta));
+            }
+        }
+
+        public Guid IdProveedor
+        {
+            get => idProveedor;
+            set
+            {
+                idProveedor = value;
+                OnPropertyChanged(nameof(IdProveedor));
+            }
+        }
+
+        public string Categoria
+        {
+            get => categoria;
+            set
+            {
+                categoria = value;
+                OnPropertyChanged(nameof(Categoria));
             }
         }
 
@@ -57,7 +100,7 @@ namespace piaWinUI.Models
         }
 
         // Computed property (updates automatically in UI)
-        public decimal ValorInventario => Precio * Stock;
+        public decimal ValorInventario => PrecioCompra * Stock;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -20,9 +20,41 @@
                        Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
                        HorizontalAlignment ="Center" />
 
-                    <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
-                    <TextBox x:Name="txtPrecio" PlaceholderText="Precio"/>
-                    <TextBox x:Name="txtStock" PlaceholderText="Stock"/>
+                    <TextBox x:Name="txtNombre"
+                     Header="Nombre"
+                     PlaceholderText="Ej. Coca Cola 600ml"/>
+
+                    <TextBox x:Name="txtDescripcion"
+                     Header="Descripción"
+                     PlaceholderText="Descripción del producto"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"/>
+
+                    <TextBox x:Name="txtCategoria"
+                     Header="Categoría"
+                     PlaceholderText="Ej. Bebidas"/>
+
+                    <TextBox x:Name="txtPrecioCompra"
+                     Header="Precio de compra"
+                     PlaceholderText="0.00"
+                     InputScope="Number"/>
+
+                    <TextBox x:Name="txtPrecioVenta"
+                     Header="Precio de venta"
+                     PlaceholderText="0.00"
+                     InputScope="Number"/>
+
+                    <TextBox x:Name="txtStock"
+                     Header="Stock"
+                     PlaceholderText="0"
+                     InputScope="Number"/>
+
+                    <ComboBox x:Name="cmbProveedor"
+                     Header="Proveedor"
+                     PlaceholderText="Selecciona un proveedor"/>
+
+                    <TextBlock x:Name="StatusTextBlock"
+                     TextWrapping="Wrap"/>
 
                     <TextBlock x:Name="StatusTextBlock"></TextBlock >
 
