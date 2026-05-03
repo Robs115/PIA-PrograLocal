@@ -24,7 +24,7 @@ namespace piaWinUI.Views
 {
     public sealed partial class ProductosPag : Page
     {
-        
+
         public ProductosPag()
         {
             this.InitializeComponent();
@@ -50,10 +50,9 @@ namespace piaWinUI.Views
                     PrecioVenta = decimal.Parse(txtPrecioVenta.Text),
 
                     Stock = int.Parse(txtStock.Text),
-
-                    //IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).Id
                 };
 
+                //IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).Id
                 productos.Add(nuevo);
 
                 await _service.SaveProductsAsync(productos);
@@ -64,7 +63,7 @@ namespace piaWinUI.Views
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
-
+        
         private void MoveTo(object sender, RoutedEventArgs e)
         {
             Button boton = (Button)sender;
