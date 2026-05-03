@@ -1,6 +1,7 @@
 
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
 using piaWinUI.Models;
 using piaWinUI.Services;
 using System;
@@ -8,155 +9,170 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Threading.Tasks;
 
-namespace piaWinUI
+namespace piaWinUI.Views
 {
     public sealed partial class PedidosPag : Page
     {
-        private PedidoService _pedidoService = AppServices.Pedido;
+        private readonly ProveedorService _proveedorService = new ProveedorService();
+        private readonly ProductService _productService = new ProductService();
+        private readonly PedidoService _pedidoService = new PedidoService();
 
-        private List<Producto> _productos = new();
         private List<Proveedor> _proveedores = new();
+        private List<Producto> _productos = new();
+        private List<PedidoView> _pedidos = new();
+
+
 
         public PedidosPag()
         {
             this.InitializeComponent();
-            this.Loaded += PedidosPag_Loaded;
-        }
 
-        private void PedidosPag_Loaded(object sender, RoutedEventArgs e)
-        {
-            CargarDatos();
-        }
-
-        // 🔥 CARGA SEGURA (NO CRASHEA)
-        private void CargarDatos()
-        {
-            _productos = CargarListaSegura<Producto>("productos.json");
-            _proveedores = CargarListaSegura<Proveedor>("proveedores.json");
-
-            cmbProducto.ItemsSource = _productos;
-            cmbProveedor.ItemsSource = _proveedores;
-
-            // Desactiva botón si no hay datos
-            btnRegistrar.IsEnabled = _productos.Any() && _proveedores.Any();
-        }
-
-        // 🔥 MÉTODO SEGURO
-        private List<T> CargarListaSegura<T>(string ruta)
-        {
-            try
+            Loaded += async (_, __) =>
             {
-                if (!File.Exists(ruta))
-                    return new List<T>();
-
-                var json = File.ReadAllText(ruta);
-
-                var datos = JsonSerializer.Deserialize<List<T>>(json);
-
-                return datos ?? new List<T>();
-            }
-            catch
-            {
-                return new List<T>();
-            }
+                await Inicializar();
+            };
         }
 
-        // 🔥 AUTOSELECCIÓN
-        private void cmbProducto_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
-            try
-            {
-                var producto = cmbProducto.SelectedItem as Producto;
-                if (producto == null) return;
+            base.OnNavigatedTo(e);
 
-                var proveedor = _proveedores
-                    .FirstOrDefault(p => p.IdProveedor == producto.IdProveedor);
-
-                cmbProveedor.SelectedItem = proveedor;
-            }
-            catch
-            {
-                // no rompe
-            }
+            await CargarPedidos();
         }
 
-        // 🔥 REGISTRAR PEDIDO
         private async void RegistrarPedido_Click(object sender, RoutedEventArgs e)
         {
             try
             {
-                if (!_productos.Any())
-                {
-                    await MostrarDialogo("Sin datos", "No hay productos disponibles");
+                if (cmbProductoPedido.SelectedItem == null)
                     return;
-                }
 
-                if (!_proveedores.Any())
+                var producto = cmbProductoPedido.SelectedItem as Producto;
+                var proveedor = cmbProveedorPedido.SelectedItem as Proveedor;
+
+                var pedidos = await _pedidoService.GetPedidosAsync();
+
+                var nuevo = new Pedidos
                 {
-                    await MostrarDialogo("Sin datos", "No hay proveedores disponibles");
-                    return;
-                }
+                    Id = Guid.NewGuid(),
 
-                var producto = cmbProducto.SelectedItem as Producto;
-                var proveedor = cmbProveedor.SelectedItem as Proveedor;
+                    IdProducto = producto.Id,
+                    IdProveedor = proveedor.IdProveedor,
 
-                if (producto == null)
-                {
-                    await MostrarDialogo("Validación", "Selecciona un producto");
-                    return;
-                }
+                    NombreProducto = producto.Nombre,
+                    NombreProveedor = proveedor.Nombre,
 
-                if (proveedor == null)
-                {
-                    await MostrarDialogo("Validación", "Selecciona un proveedor");
-                    return;
-                }
+                    Cantidad = int.Parse(txtCantidadPedido.Text),
+                    Fecha = DateTime.Now
+                };
 
-                if (!int.TryParse(txtCantidad.Text, out int cantidad) || cantidad <= 0)
-                {
-                    await MostrarDialogo("Validación", "Cantidad inválida");
-                    return;
-                }
+                pedidos.Add(nuevo);
 
-                _pedidoService.RegistrarPedido(producto.Nombre, proveedor.Nombre, cantidad);
+                await _pedidoService.SavePedidosAsync(pedidos);
 
-                gridPedidos.ItemsSource = null;
-                gridPedidos.ItemsSource = _pedidoService.ObtenerPedidos();
-
-                txtCantidad.Text = "";
-
-                await MostrarDialogo("Éxito", "Pedido registrado");
+                await CargarPedidos();
             }
             catch (Exception ex)
             {
-                await MostrarDialogo("Error", ex.Message);
+                System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
 
-        // 🔍 BUSCAR
-        private void Buscar_TextChanged(object sender, TextChangedEventArgs e)
+        private async Task CargarPedidos()
+        {
+            var pedidos = await _pedidoService.GetPedidosAsync();
+            gridPedidos.ItemsSource = pedidos;
+        }
+
+        private async Task Inicializar()
+        {
+            await CargarProveedores();
+            await CargarProductos();
+
+            gridPedidos.ItemsSource = _pedidos;
+        }
+
+        // 🔥 CARGA PROVEEDORES (TU SERVICE)
+        private async Task CargarProveedores()
         {
             try
             {
-                var filtro = txtBuscar.Text?.ToLower() ?? "";
+                _proveedores = await _proveedorService.GetProveedorAsync();
 
-                var filtrados = _pedidoService.ObtenerPedidos()
-                    .Where(p =>
-                        p.Producto.ToLower().Contains(filtro) ||
-                        p.Proveedor.ToLower().Contains(filtro))
-                    .ToList();
+                System.Diagnostics.Debug.WriteLine($"Proveedores: {_proveedores.Count}");
 
-                gridPedidos.ItemsSource = filtrados;
+                if (_proveedores == null || !_proveedores.Any())
+                {
+                    cmbProveedorPedido.ItemsSource = null;
+                    return;
+                }
+
+                cmbProveedorPedido.ItemsSource = _proveedores;
+                cmbProveedorPedido.DisplayMemberPath = "Nombre";
             }
             catch
             {
-                // no rompe
+                cmbProveedorPedido.ItemsSource = null;
             }
         }
 
+        // 🔥 CARGA PRODUCTOS
+        private async Task CargarProductos()
+        {
+            try
+            {
+                _productos = await _productService.GetProductsAsync();
+
+                if (_productos == null || !_productos.Any())
+                {
+                    cmbProductoPedido.ItemsSource = null;
+                    return;
+                }
+
+                cmbProductoPedido.ItemsSource = _productos;
+                cmbProductoPedido.DisplayMemberPath = "Nombre";
+            }
+            catch
+            {
+                cmbProductoPedido.ItemsSource = null;
+            }
+        }
+
+        // 🔥 AUTOSELECCIÓN DE PROVEEDOR
+        private void cmbProductoPedido_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            var producto = cmbProductoPedido.SelectedItem as Producto;
+
+            if (producto == null) return;
+
+            // 🔥 buscar proveedor automáticamente
+            var proveedor = _proveedores
+                .FirstOrDefault(p => p.IdProveedor == producto.IdProveedor);
+
+            if (proveedor != null)
+            {
+                cmbProveedorPedido.SelectedItem = proveedor;
+            }
+        }
+
+
+        // 🔍 BUSCAR
+        private void BuscarPedido_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            var filtro = txtBuscarPedido.Text?.ToLower() ?? "";
+
+            var filtrados = _pedidos.Where(p =>
+                p.NombreProducto.ToLower().Contains(filtro) ||
+                p.NombreProveedor.ToLower().Contains(filtro)
+            ).ToList();
+
+            gridPedidos.ItemsSource = filtrados;
+        }
+
         // 🔔 DIALOGO
-        private async System.Threading.Tasks.Task MostrarDialogo(string titulo, string mensaje)
+        private async Task MostrarDialogo(string titulo, string mensaje)
         {
             var dialog = new ContentDialog
             {
@@ -168,5 +184,14 @@ namespace piaWinUI
 
             await dialog.ShowAsync();
         }
+    }
+
+    // 🔥 MODELO PARA EL GRID
+    public class PedidoView
+    {
+        public DateTime Fecha { get; set; }
+        public string NombreProducto { get; set; }
+        public string NombreProveedor { get; set; }
+        public int Cantidad { get; set; }
     }
 }

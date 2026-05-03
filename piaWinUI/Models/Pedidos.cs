@@ -6,38 +6,84 @@ using System.Threading.Tasks;
 using System;
 using System.ComponentModel;
 
+
 namespace piaWinUI.Models
 {
     public class Pedidos : INotifyPropertyChanged
     {
-        private string producto = "";
-        private string proveedor = "";
+        private Guid id;
+        private Guid idProducto;
+        private Guid idProveedor;
+
+        private string nombreProducto = "";
+        private string nombreProveedor = "";
+
         private int cantidad;
         private DateTime fecha;
 
-        public string Producto
+        // 🔑 ID único del pedido
+        public Guid Id
         {
-            get => producto;
+            get => id;
             set
             {
-                if (string.IsNullOrWhiteSpace(value))
-                    throw new Exception("Debes seleccionar un producto");
-
-                producto = value;
-                OnPropertyChanged(nameof(Producto));
+                id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 
-        public string Proveedor
+        // 🔗 Relación real con producto
+        public Guid IdProducto
         {
-            get => proveedor;
+            get => idProducto;
+            set
+            {
+                if (value == Guid.Empty)
+                    throw new Exception("Producto inválido");
+
+                idProducto = value;
+                OnPropertyChanged(nameof(IdProducto));
+            }
+        }
+
+        // 🔗 Relación real con proveedor
+        public Guid IdProveedor
+        {
+            get => idProveedor;
+            set
+            {
+                if (value == Guid.Empty)
+                    throw new Exception("Proveedor inválido");
+
+                idProveedor = value;
+                OnPropertyChanged(nameof(IdProveedor));
+            }
+        }
+
+        // 🧾 Solo para mostrar en UI
+        public string NombreProducto
+        {
+            get => nombreProducto;
             set
             {
                 if (string.IsNullOrWhiteSpace(value))
-                    throw new Exception("Debes seleccionar un proveedor");
+                    throw new Exception("Nombre de producto requerido");
 
-                proveedor = value;
-                OnPropertyChanged(nameof(Proveedor));
+                nombreProducto = value;
+                OnPropertyChanged(nameof(NombreProducto));
+            }
+        }
+
+        public string NombreProveedor
+        {
+            get => nombreProveedor;
+            set
+            {
+                if (string.IsNullOrWhiteSpace(value))
+                    throw new Exception("Nombre de proveedor requerido");
+
+                nombreProveedor = value;
+                OnPropertyChanged(nameof(NombreProveedor));
             }
         }
 
@@ -47,10 +93,10 @@ namespace piaWinUI.Models
             set
             {
                 if (value <= 0)
-                    throw new Exception("La cantidad debe ser mayor a 0");
+                    throw new Exception("Cantidad debe ser mayor a 0");
 
                 if (value > 1000)
-                    throw new Exception("Cantidad demasiado alta (posible error)");
+                    throw new Exception("Cantidad sospechosamente alta");
 
                 cantidad = value;
                 OnPropertyChanged(nameof(Cantidad));
@@ -72,9 +118,9 @@ namespace piaWinUI.Models
 
         public event PropertyChangedEventHandler? PropertyChanged;
 
-        protected void OnPropertyChanged(string nombrePropiedad)
+        protected void OnPropertyChanged(string nombre)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombrePropiedad));
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombre));
         }
     }
 }
