@@ -7,71 +7,56 @@
 
     <Grid >
         <ScrollViewer VerticalScrollBarVisibility ="Auto">
-            <StackPanel HorizontalAlignment ="Center" VerticalAlignment ="Center" 
-Spacing ="14">
-
+            
+            <StackPanel HorizontalAlignment ="Center" VerticalAlignment ="Center" Spacing ="14">
 
                 <StackPanel HorizontalAlignment ="Center" Margin ="0,0,0,12" Spacing ="8">
                     <SymbolIcon Symbol ="Tag" />
                     <TextBlock Text ="Crear producto"  
-               Style ="{StaticResource TitleTextBlockStyle }" 
-               HorizontalAlignment ="Center" />
+                       Style ="{StaticResource TitleTextBlockStyle }" 
+                       HorizontalAlignment ="Center" />
                     <TextBlock Text ="Introduce los datos"  
-               Style ="{StaticResource CaptionTextBlockStyle }"  
-               Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
-               HorizontalAlignment ="Center" />
-                    <Grid ColumnSpacing ="10">
-                        <Grid.ColumnDefinitions >
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions >
-                        <Button Grid.Column="0" x:Name="reportesProductos"  
-            Content ="Reportes de productos"  
-            
-            Style ="{ StaticResource AccentButtonStyle }"  
-            HorizontalAlignment ="Stretch" />
+                       Style ="{StaticResource CaptionTextBlockStyle }"  
+                       Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
+                       HorizontalAlignment ="Center" />
 
-                        <Button Grid.Column="1"  x:Name="buscarProductos"  
-                               
-Content ="Buscar productos (Editar o eliminar)"  
+                    <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
+                    <TextBox x:Name="txtPrecio" PlaceholderText="Precio"/>
+                    <TextBox x:Name="txtStock" PlaceholderText="Stock"/>
 
-Style ="{ StaticResource AccentButtonStyle }"  
-HorizontalAlignment ="Stretch" />
+                    <TextBlock x:Name="StatusTextBlock"></TextBlock >
 
-                        <Button Grid.Column="2"  x:Name="InventarioProductos"  
-                               
-Content ="Inventario de productos"  
-
-Style ="{ StaticResource AccentButtonStyle }"  
-HorizontalAlignment ="Stretch" />
-
-                    </Grid >
-
+                    <Button x:Name="Submit"  
+                    Content ="Registrar datos"  
+                    Click="Guardar_Click"
+                    Style ="{ StaticResource AccentButtonStyle }"  
+                    HorizontalAlignment ="Stretch"/>
 
                 </StackPanel >
 
-               
+                <Grid ColumnSpacing ="10">
+                    <Grid.ColumnDefinitions >
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                        <ColumnDefinition />
+                    </Grid.ColumnDefinitions >
 
+                    <Button Grid.Column="0" x:Name="reportesProductos"  
+                    Content ="Reportes de productos"  
+                    Style ="{StaticResource AccentButtonStyle }"  
+                    HorizontalAlignment ="Stretch" />
 
+                    <Button Grid.Column="1"  x:Name="buscarProductos"  
+                    Content ="Buscar productos (Editar o eliminar)"  
+                    Style ="{StaticResource AccentButtonStyle }"  
+                    HorizontalAlignment ="Stretch" />
 
-
-
-
-
-
-
-
-
-                <TextBlock x:Name="StatusTextBlock"></TextBlock >
-
-
-
-                <Button x:Name="Submit"  
-                            Content ="Registrar datos"  
-                           Click="Guardar_Click"
-                            Style ="{ StaticResource AccentButtonStyle }"  
-                            HorizontalAlignment ="Stretch" />
+                    <Button Grid.Column="2"  x:Name="InventarioProductos"  
+                    Content ="Inventario de productos"
+                    Click="MoveTo"
+                    Style ="{StaticResource AccentButtonStyle }"  
+                    HorizontalAlignment ="Stretch" />
+                </Grid >
 
             </StackPanel >
         </ScrollViewer >

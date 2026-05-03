@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Page
-    x:Class="piaWinUI.Views.CreateProductPage"
+    x:Class="piaWinUI.Views.ListarProductosPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
@@ -21,9 +21,9 @@
                 <DataTemplate>
                     <Grid ColumnDefinitions="50,*,100,100" Padding="5">
                         <TextBlock Text="{Binding Id}" Grid.Column="0"/>
-                        <TextBox Text="{Binding Nombre, Mode=TwoWay}" Grid.Column="1"/>
-                        <TextBox Text="{Binding Precio, Mode=TwoWay}" Grid.Column="2"/>
-                        <TextBox Text="{Binding Stock, Mode=TwoWay}" Grid.Column="3"/>
+                        <TextBlock Text="{Binding Nombre, Mode=TwoWay}" Grid.Column="1"/>
+                        <TextBlock Text="{Binding Precio, Mode=TwoWay}" Grid.Column="2"/>
+                        <TextBlock Text="{Binding Stock, Mode=TwoWay}" Grid.Column="3"/>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

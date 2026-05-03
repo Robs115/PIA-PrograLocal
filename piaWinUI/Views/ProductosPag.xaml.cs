@@ -29,9 +29,8 @@ namespace piaWinUI.Views
         {
             this.InitializeComponent();
 
-            
-
         }
+
         private readonly ProductService _service = new ProductService();
 
         private async void Guardar_Click(object sender, RoutedEventArgs e)
@@ -42,30 +41,33 @@ namespace piaWinUI.Views
 
                 var nuevo = new Producto
                 {
-                    /*
-                    Id = new Random().Next(1, 100000),
+                    Id = Guid.NewGuid(),
                     Nombre = txtNombre.Text,
                     Precio = decimal.Parse(txtPrecio.Text),
                     Stock = int.Parse(txtStock.Text)
-                    */
                 };
 
                 productos.Add(nuevo);
 
                 await _service.SaveProductsAsync(productos);
-
-                //Frame.GoBack();
-
-
-
             }
+
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex.Message);
             }
         }
-        
-        
+
+        private void MoveTo(object sender, RoutedEventArgs e)
+        {
+            Button boton = (Button)sender;
+
+            if (boton.Name == "InventarioProductos")
+            {
+                Frame.Navigate(typeof(ListarProductosPage));
+            }
+        }
+
 
     }
 }

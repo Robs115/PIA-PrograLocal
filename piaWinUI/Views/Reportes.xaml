@@ -84,7 +84,8 @@
 
                     <lvc:PieChart 
             Series="{Binding ProductosSeries}" 
-            Height="250"/>
+            Height="250"
+                        LegendPosition="Bottom"/>
 
                 </StackPanel>
             </Border>

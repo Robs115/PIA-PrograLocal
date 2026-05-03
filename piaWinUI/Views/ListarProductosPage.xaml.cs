@@ -21,7 +21,7 @@ using Windows.System;
 
 namespace piaWinUI.Views
 {
-    public sealed partial class CreateProductPage : Page
+    public sealed partial class ListarProductosPage : Page
     {
 
         public ObservableCollection<Producto> Productos { get; set; }
@@ -31,7 +31,7 @@ namespace piaWinUI.Views
 
         private readonly ProductService _service = new ProductService();
 
-        public CreateProductPage()
+        public ListarProductosPage()
         {
             InitializeComponent();
             this.DataContext = this;
