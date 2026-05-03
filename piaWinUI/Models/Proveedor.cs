@@ -12,6 +12,7 @@ namespace piaWinUI.Models
         private Guid idProveedor;
         private string nombre = "";
         private string telefono = "";
+        private string email = "";
 
         public Guid IdProveedor
         {
@@ -30,6 +31,15 @@ namespace piaWinUI.Models
             {
                 nombre = value;
                 OnPropertyChanged(nameof(Nombre));
+            }
+        }
+
+        public string Email         {
+            get => email;
+            set
+            {
+                email = value;
+                OnPropertyChanged(nameof(Email));
             }
         }
 

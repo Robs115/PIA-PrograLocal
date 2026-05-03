@@ -63,5 +63,7 @@ namespace piaWinUI
             System.IO.Path.Combine(DataFolder, "clientes.json");
         public static string VentasFilePath { get; } =
             System.IO.Path.Combine(DataFolder, "ventas.json");
+        public static string ProveedorFilePath { get; } =
+            System.IO.Path.Combine(DataFolder, "proveedores.json");
     }
 }

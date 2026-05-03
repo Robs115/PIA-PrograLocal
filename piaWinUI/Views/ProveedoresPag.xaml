@@ -17,7 +17,7 @@ Spacing ="14">
 
                 <StackPanel HorizontalAlignment ="Center" Margin ="0,0,0,12" Spacing ="8">
                     <SymbolIcon Symbol ="AddFriend" />
-                    <TextBlock Text ="Crear cliente"  
+                    <TextBlock Text ="Crear proveedor"  
                Style ="{StaticResource TitleTextBlockStyle }" 
                HorizontalAlignment ="Center" />
                     <TextBlock Text ="Introduce los datos"  
@@ -29,15 +29,15 @@ Spacing ="14">
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions >
-                        <Button Grid.Column="0" x:Name="reportesClientes"  
-            Content ="Reportes de clientes"  
+                        <Button Grid.Column="0" x:Name="reportesProveedores"  
+            Content ="Reportes de proveedores"  
             
             Style ="{ StaticResource AccentButtonStyle }"  
             HorizontalAlignment ="Stretch" />
 
-                        <Button Grid.Column="1"  x:Name="buscarClientes"  
-                                Click="BuscarClientes_Click"
-Content ="Buscar clientes (Editar o eliminar)"  
+                        <Button Grid.Column="1"  x:Name="buscarProveedores"  
+                                Click="BuscarProveedores_Click"
+Content ="Buscar proveedores (Editar o eliminar)"  
 
 Style ="{ StaticResource AccentButtonStyle }"  
 HorizontalAlignment ="Stretch" />
@@ -48,7 +48,7 @@ HorizontalAlignment ="Stretch" />
                 </StackPanel >
 
                 <TextBox x:Name="Nombre" 
-                     Header ="Nombre del cliente *" 
+                     Header ="Nombre del proveedor *" 
                      PlaceholderText ="Ej. Nelson Orlando Rodriguez"/>
 
                 <TextBox x:Name="Telefono" 
@@ -56,10 +56,7 @@ HorizontalAlignment ="Stretch" />
                        PlaceholderText ="Ej. 81 1234 5678" 
                        />
 
-                <DatePicker x:Name="FechaNacimiento" 
-                        Header ="Fecha de nacimiento *" 
-                                />
-
+                
                 <TextBox x:Name="Email"
                      Header ="Introduzca el correo electrónico"
                      PlaceholderText ="emilio@gmail.com"/>

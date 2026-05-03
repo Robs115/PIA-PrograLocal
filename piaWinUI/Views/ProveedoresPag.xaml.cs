@@ -25,7 +25,7 @@ namespace piaWinUI.Views
     /// </summary>
     public sealed partial class ProveedoresPag : Page
     {
-        //private readonly ClienteService _service = new ClienteService();
+        private readonly ProveedorService _service = new ProveedorService();
         public ProveedoresPag()
         {
             InitializeComponent();
@@ -50,7 +50,7 @@ namespace piaWinUI.Views
 
             string nombre = Nombre.Text;
             var telefono = Telefono.Text;
-            var fechanacimiento = FechaNacimiento.Date.DateTime;
+            
             var email = Email.Text;
 
             // validaciones basicas
@@ -91,33 +91,26 @@ namespace piaWinUI.Views
             }
 
 
-            if (fechanacimiento > DateTime.Now)
-            {
-                SetStatus("El campo Fecha de Nacimiento ser menor a la fecha actual.");
-                return;
-            }
-
             try
             {
-              //  var clientes = await _service.GetClientesAsync();
-                var nuevo = new Cliente
+                var proveedores = await _service.GetProveedorAsync();
+                var nuevo = new Proveedor
                 {
-                    //algun dia el id tiene que sacar el ultimo de la lista del json
+                    
                    // Id = clientes.Count > 0 ? clientes.Max(c => c.Id) + 1 : 1,
                     Nombre = nombre,
                     Telefono = telefono,
-                    FechaNacimiento = fechanacimiento,
                     Email = email
                 };
 
-               // clientes.Add(nuevo);
+               proveedores.Add(nuevo);
 
-//                await _service.SaveClienteAsync(clientes);
+                await _service.SaveProveedorAsync(proveedores);
 
                 //limpiar campos
                 Nombre.Text = string.Empty;
                 Telefono.Text = string.Empty;
-                FechaNacimiento.Date = DateTime.Now;
+           
                 Email.Text = string.Empty;
 
                 //mostrar mensaje de exito
@@ -129,18 +122,18 @@ namespace piaWinUI.Views
             }
         }
 
-        private void ReporteClientes_Click(object sender, RoutedEventArgs e)
+        private void ReporteProveedores_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(ReporteClientesPag));
+           // Frame.Navigate(typeof(ReporteProveedoresPag));
         }
 
-        private void BuscarClientes_Click(object sender, RoutedEventArgs e)
+        private void BuscarProveedores_Click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(BuscarClientesPag));
+           // Frame.Navigate(typeof(BuscarClientesPag));
 
 
         }
     }
 
 }
-}
+
