@@ -96,8 +96,8 @@ namespace piaWinUI.Views
                 var proveedores = await _service.GetProveedorAsync();
                 var nuevo = new Proveedor
                 {
-                    
-                   // Id = clientes.Count > 0 ? clientes.Max(c => c.Id) + 1 : 1,
+
+                    IdProveedor = Guid.NewGuid(),
                     Nombre = nombre,
                     Telefono = telefono,
                     Email = email

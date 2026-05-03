@@ -29,9 +29,21 @@ namespace piaWinUI.Views
         {
             this.InitializeComponent();
 
+            Submit.IsEnabled = false;
+            Loaded += async (_, __) => await CargarProveedores();
+
         }
 
         private readonly ProductService _service = new ProductService();
+        private readonly ProveedorService _proveedorService = new ProveedorService();
+
+        private async Task CargarProveedores()
+        {
+            var proveedores = await _proveedorService.GetProveedorAsync();
+
+            cmbProveedor.ItemsSource = proveedores;
+            Submit.IsEnabled = true;
+        }
 
         private async void Guardar_Click(object sender, RoutedEventArgs e)
         {
@@ -50,9 +62,11 @@ namespace piaWinUI.Views
                     PrecioVenta = decimal.Parse(txtPrecioVenta.Text),
 
                     Stock = int.Parse(txtStock.Text),
+
+                    IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).IdProveedor
                 };
 
-                //IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).Id
+                
                 productos.Add(nuevo);
 
                 await _service.SaveProductsAsync(productos);

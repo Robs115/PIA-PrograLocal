@@ -50,12 +50,14 @@
 
                     <ComboBox x:Name="cmbProveedor"
                               Header="Proveedor"
-                              PlaceholderText="Selecciona un proveedor"/>
+                              PlaceholderText="Selecciona un proveedor"
+                              DisplayMemberPath="Nombre"/>
 
                     <TextBlock x:Name="StatusTextBlock"
                                TextWrapping="Wrap"/>
 
-                    <Button x:Name="Submit"  
+                    <Button x:Name="Submit"
+                            IsEnabled="False"
                             Content="Registrar datos"  
                             Click="Guardar_Click"
                             Style="{StaticResource AccentButtonStyle}"  
