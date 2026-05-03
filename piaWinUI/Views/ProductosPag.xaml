@@ -56,7 +56,6 @@
                     <TextBlock x:Name="StatusTextBlock"
                      TextWrapping="Wrap"/>
 
-                    <TextBlock x:Name="StatusTextBlock"></TextBlock >
 
                     <Button x:Name="Submit"  
                     Content ="Registrar datos"  

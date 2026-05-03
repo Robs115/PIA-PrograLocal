@@ -61,7 +61,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\InventarioPag.xaml">
+    <Page Update="Views\PedidosPag.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
