@@ -65,7 +65,9 @@ namespace piaWinUI.Views
                 case "Pedidos":
                     ContentFrame.Navigate(typeof(PedidosPag));
                     break;
-              
+                case "Proveedores":
+                    ContentFrame.Navigate(typeof(ProveedoresPag));
+                    break;
             }
         }
 
