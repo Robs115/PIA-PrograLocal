@@ -56,7 +56,7 @@ namespace piaWinUI.Views
                     Id = Guid.NewGuid(),
                     Nombre = txtNombre.Text,
                     Descripcion = txtDescripcion.Text,
-                    Categoria = txtCategoria.Text,
+                    Categoria = cmbCategoria.Text,
 
                     PrecioCompra = decimal.Parse(txtPrecioCompra.Text),
                     PrecioVenta = decimal.Parse(txtPrecioVenta.Text),
@@ -88,7 +88,7 @@ namespace piaWinUI.Views
         {
             txtNombre.Text = "";
             txtDescripcion.Text = "";
-            txtCategoria.Text = "";
+            cmbCategoria.SelectedIndex = 0;
 
             txtPrecioCompra.Text = "";
             txtPrecioVenta.Text = "";

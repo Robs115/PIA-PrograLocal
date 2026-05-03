@@ -29,9 +29,22 @@
                              TextWrapping="Wrap"
                              AcceptsReturn="True"/>
 
-                    <TextBox x:Name="txtCategoria"
-                             Header="Categoría"
-                             PlaceholderText="Ej. Bebidas"/>
+                    <ComboBox x:Name="cmbCategoria"
+                        Header="Categoría"
+                        PlaceholderText="Selecciona una categoría">   
+
+                        <ComboBoxItem Content="Bebidas"/>
+                        <ComboBoxItem Content="Comida"/>
+                        <ComboBoxItem Content="Lácteos"/>
+                        <ComboBoxItem Content="Panadería"/>
+                        <ComboBoxItem Content="Congelados"/>
+                        <ComboBoxItem Content="Snacks"/>
+                        <ComboBoxItem Content="Limpieza"/>
+                        <ComboBoxItem Content="Higiene personal"/>
+                        <ComboBoxItem Content="Electrónica"/>
+                        <ComboBoxItem Content="Otros"/>
+
+                    </ComboBox>
 
                     <TextBox x:Name="txtPrecioCompra"
                              Header="Precio de compra"
