@@ -55,6 +55,7 @@ namespace piaWinUI.Models
             {
                 precioCompra = value;
                 OnPropertyChanged(nameof(PrecioCompra));
+                OnPropertyChanged(nameof(ValorInventario));
             }
         }
 
