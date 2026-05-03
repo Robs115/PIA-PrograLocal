@@ -43,8 +43,15 @@ namespace piaWinUI.Views
                 {
                     Id = Guid.NewGuid(),
                     Nombre = txtNombre.Text,
-                    Precio = decimal.Parse(txtPrecio.Text),
-                    Stock = int.Parse(txtStock.Text)
+                    Descripcion = txtDescripcion.Text,
+                    Categoria = txtCategoria.Text,
+
+                    PrecioCompra = decimal.Parse(txtPrecioCompra.Text),
+                    PrecioVenta = decimal.Parse(txtPrecioVenta.Text),
+
+                    Stock = int.Parse(txtStock.Text),
+
+                    //IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).Id
                 };
 
                 productos.Add(nuevo);
