@@ -20,6 +20,30 @@
                        Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
                        HorizontalAlignment ="Center" />
 
+                    <Grid ColumnSpacing ="10">
+                        <Grid.ColumnDefinitions >
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions >
+
+                        <Button Grid.Column="0" x:Name="reportesProductos"  
+    Content ="Reportes de productos"  
+    Style ="{StaticResource AccentButtonStyle }"  
+    HorizontalAlignment ="Stretch" />
+
+                        <Button Grid.Column="1"  x:Name="buscarProductos"  
+    Content ="Buscar productos (Editar o eliminar)"  
+    Style ="{StaticResource AccentButtonStyle }"  
+    HorizontalAlignment ="Stretch" />
+
+                        <Button Grid.Column="2"  x:Name="InventarioProductos"  
+    Content ="Inventario de productos"
+    Click="MoveTo"
+    Style ="{StaticResource AccentButtonStyle }"  
+    HorizontalAlignment ="Stretch" />
+                    </Grid >
+
                     <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
                     <TextBox x:Name="txtPrecio" PlaceholderText="Precio"/>
                     <TextBox x:Name="txtStock" PlaceholderText="Stock"/>
@@ -34,29 +58,7 @@
 
                 </StackPanel >
 
-                <Grid ColumnSpacing ="10">
-                    <Grid.ColumnDefinitions >
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions >
-
-                    <Button Grid.Column="0" x:Name="reportesProductos"  
-                    Content ="Reportes de productos"  
-                    Style ="{StaticResource AccentButtonStyle }"  
-                    HorizontalAlignment ="Stretch" />
-
-                    <Button Grid.Column="1"  x:Name="buscarProductos"  
-                    Content ="Buscar productos (Editar o eliminar)"  
-                    Style ="{StaticResource AccentButtonStyle }"  
-                    HorizontalAlignment ="Stretch" />
-
-                    <Button Grid.Column="2"  x:Name="InventarioProductos"  
-                    Content ="Inventario de productos"
-                    Click="MoveTo"
-                    Style ="{StaticResource AccentButtonStyle }"  
-                    HorizontalAlignment ="Stretch" />
-                </Grid >
+                
 
             </StackPanel >
         </ScrollViewer >
