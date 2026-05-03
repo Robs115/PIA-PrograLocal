@@ -1,112 +1,102 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <Page
     x:Class="piaWinUI.Views.ProductosPag"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid >
-        <ScrollViewer VerticalScrollBarVisibility ="Auto">
-            
-            <StackPanel HorizontalAlignment ="Center" VerticalAlignment ="Center" Spacing ="14">
+    <Grid>
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-                <StackPanel HorizontalAlignment ="Center" Margin ="0,0,0,12" Spacing ="8">
-                    <SymbolIcon Symbol ="Tag" />
-                    <TextBlock Text ="Crear producto"  
-                       Style ="{StaticResource TitleTextBlockStyle }" 
-                       HorizontalAlignment ="Center" />
-                    <TextBlock Text ="Introduce los datos"  
-                       Style ="{StaticResource CaptionTextBlockStyle }"  
-                       Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
-                       HorizontalAlignment ="Center" />
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Spacing="16"
+                        Width="420">
 
-                    <TextBox x:Name="txtNombre"
-                     Header="Nombre"
-                     PlaceholderText="Ej. Coca Cola 600ml"/>
+                <!-- HEADER -->
+                <StackPanel HorizontalAlignment="Center" Spacing="6">
+                    <SymbolIcon Symbol="Tag" />
+                    <TextBlock Text="Crear producto"
+                               Style="{StaticResource TitleTextBlockStyle}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Introduce los datos del producto"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               HorizontalAlignment="Center"/>
+                </StackPanel>
 
-                    <TextBox x:Name="txtDescripcion"
-                     Header="Descripción"
-                     PlaceholderText="Descripción del producto"
-                     TextWrapping="Wrap"
-                     AcceptsReturn="True"/>
+                <!-- FORMULARIO -->
+                <TextBox x:Name="txtNombre"
+                         Header="Nombre"
+                         PlaceholderText="Ej. Coca Cola 600ml"/>
 
-                    <TextBox x:Name="txtCategoria"
-                     Header="Categoría"
-                     PlaceholderText="Ej. Bebidas"/>
+                <TextBox x:Name="txtDescripcion"
+                         Header="Descripción"
+                         PlaceholderText="Descripción del producto"
+                         TextWrapping="Wrap"
+                         AcceptsReturn="True"/>
 
-                    <TextBox x:Name="txtPrecioCompra"
-                     Header="Precio de compra"
-                     PlaceholderText="0.00"
-                     InputScope="Number"/>
+                <TextBox x:Name="txtCategoria"
+                         Header="Categoría"
+                         PlaceholderText="Ej. Bebidas"/>
 
-                    <TextBox x:Name="txtPrecioVenta"
-                     Header="Precio de venta"
-                     PlaceholderText="0.00"
-                     InputScope="Number"/>
+                <TextBox x:Name="txtPrecioCompra"
+                         Header="Precio de compra"
+                         PlaceholderText="0.00"
+                         InputScope="Number"/>
 
-                    <TextBox x:Name="txtStock"
-                     Header="Stock"
-                     PlaceholderText="0"
-                     InputScope="Number"/>
+                <TextBox x:Name="txtPrecioVenta"
+                         Header="Precio de venta"
+                         PlaceholderText="0.00"
+                         InputScope="Number"/>
 
-                    <ComboBox x:Name="cmbProveedor"
-                     Header="Proveedor"
-                     PlaceholderText="Selecciona un proveedor"/>
+                <TextBox x:Name="txtStock"
+                         Header="Stock"
+                         PlaceholderText="0"
+                         InputScope="Number"/>
 
-                    <TextBlock x:Name="StatusTextBlock"
-                     TextWrapping="Wrap"/>
+                <ComboBox x:Name="cmbProveedor"
+                          Header="Proveedor"
+                          PlaceholderText="Selecciona un proveedor"/>
 
+                <TextBlock x:Name="StatusTextBlock"
+                           TextWrapping="Wrap"
+                           Foreground="LightGreen"/>
 
-                    <Button x:Name="Submit"  
-                    Content ="Registrar datos"  
-                    Click="Guardar_Click"
-                    Style ="{ StaticResource AccentButtonStyle }"  
-                    HorizontalAlignment ="Stretch"/>
+                <Button x:Name="btnGuardar"
+                        Content="Registrar producto"
+                        Click="Guardar_Click"
+                        Style="{StaticResource AccentButtonStyle}"
+                        HorizontalAlignment="Stretch"
+                        Height="40"/>
 
-                </StackPanel >
+                <!-- ACCIONES -->
+                <Grid ColumnSpacing="10" Margin="0,20,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
 
-                <Grid ColumnSpacing ="10">
-                    <Grid.ColumnDefinitions >
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions >
+                    <Button Grid.Column="0"
+                            x:Name="btnReportes"
+                            Content="Reportes"
+                            Style="{StaticResource AccentButtonStyle}"/>
 
-                        <Button Grid.Column="0" x:Name="reportesProductos"  
-    Content ="Reportes de productos"  
-    Style ="{StaticResource AccentButtonStyle }"  
-    HorizontalAlignment ="Stretch" />
+                    <Button Grid.Column="1"
+                            x:Name="btnBuscar"
+                            Content="Buscar / Editar"
+                            Style="{StaticResource AccentButtonStyle}"/>
 
-                        <Button Grid.Column="1"  x:Name="buscarProductos"  
-    Content ="Buscar productos (Editar o eliminar)"  
-    Style ="{StaticResource AccentButtonStyle }"  
-    HorizontalAlignment ="Stretch" />
+                    <Button Grid.Column="2"
+                            x:Name="btnInventario"
+                            Content="Inventario"
+                            Click="MoveTo"
+                            Style="{StaticResource AccentButtonStyle}"/>
+                </Grid>
 
-                        <Button Grid.Column="2"  x:Name="InventarioProductos"  
-    Content ="Inventario de productos"
-    Click="MoveTo"
-    Style ="{StaticResource AccentButtonStyle }"  
-    HorizontalAlignment ="Stretch" />
-                    </Grid >
+            </StackPanel>
 
-                    <TextBox x:Name="txtNombre" PlaceholderText="Nombre"/>
-                    <TextBox x:Name="txtPrecio" PlaceholderText="Precio"/>
-                    <TextBox x:Name="txtStock" PlaceholderText="Stock"/>
-
-                    <TextBlock x:Name="StatusTextBlock"></TextBlock >
-
-                    <Button x:Name="Submit"  
-                    Content ="Registrar datos"  
-                    Click="Guardar_Click"
-                    Style ="{ StaticResource AccentButtonStyle }"  
-                    HorizontalAlignment ="Stretch"/>
-
-                </StackPanel >
-
-                
-
-            </StackPanel >
-        </ScrollViewer >
-    </Grid >
+        </ScrollViewer>
+    </Grid>
 
 </Page>
