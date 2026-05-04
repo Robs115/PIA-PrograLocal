@@ -89,9 +89,15 @@ namespace piaWinUI.Views
             
         }
 
-        private void Delete_Click(object sender, RoutedEventArgs e)
+        private async void Delete_Click(object sender, RoutedEventArgs e)
         {
-            
+            if (sender is Button button &&
+                button.Tag is ProductoView productoView)
+            {
+                await _service.DeleteProductAsync(productoView.Model.Id);
+
+                Productos.Remove(productoView);
+            }
         }
 
     }

@@ -28,5 +28,19 @@ namespace piaWinUI.Services
             using var stream = File.Create(App.ProductsFilePath);
             await JsonSerializer.SerializeAsync(stream, productos);
         }
+
+        public async Task DeleteProductAsync(Guid id)
+        {
+            var productos = await GetProductsAsync();
+
+            var producto = productos.FirstOrDefault(p => p.Id == id);
+
+            if (producto != null)
+            {
+                productos.Remove(producto);
+
+                await SaveProductsAsync(productos);
+            }
+        }
     }
 }
