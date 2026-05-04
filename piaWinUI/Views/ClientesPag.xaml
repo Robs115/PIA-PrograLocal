@@ -31,14 +31,14 @@ Spacing ="14">
                         </Grid.ColumnDefinitions >
                         <Button Grid.Column="0" x:Name="reportesClientes"  
             Content ="Reportes de clientes"  
-            
+            Click="ReporteClientes_Click"
             Style ="{ StaticResource AccentButtonStyle }"  
             HorizontalAlignment ="Stretch" />
 
                         <Button Grid.Column="1"  x:Name="buscarClientes"  
-                                Click="BuscarClientes_Click"
+                                
 Content ="Buscar clientes (Editar o eliminar)"  
-
+Click="BuscarClientes_Click"
 Style ="{ StaticResource AccentButtonStyle }"  
 HorizontalAlignment ="Stretch" />
 

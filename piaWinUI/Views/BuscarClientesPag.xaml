@@ -11,57 +11,64 @@
     <Grid >
         <ScrollViewer VerticalScrollBarVisibility ="Auto">
             <StackPanel HorizontalAlignment ="Center" VerticalAlignment ="Center" 
-Spacing ="14">
+Spacing ="30">
 
 
                 <StackPanel HorizontalAlignment ="Center" Margin ="0,0,0,12" Spacing ="8">
                     <SymbolIcon Symbol ="AddFriend" />
-                    <TextBlock Text ="Crear cliente"  
+                    <TextBlock Text ="Buscar cliente"  
                Style ="{StaticResource TitleTextBlockStyle }" 
                HorizontalAlignment ="Center" />
-                    <TextBlock Text ="Introduce los datos"  
-               Style ="{StaticResource CaptionTextBlockStyle }"  
-               Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
-               HorizontalAlignment ="Center" />
-                    <Grid ColumnSpacing ="10">
-                        <Grid.ColumnDefinitions >
-                            <ColumnDefinition />
-                            <ColumnDefinition />
-                        </Grid.ColumnDefinitions >
-                        <Button Grid.Column="0" x:Name="reportesClientes"  
-            Content ="Reportes de clientes"  
-            
-            Style ="{ StaticResource AccentButtonStyle }"  
-            HorizontalAlignment ="Stretch" />
-
-                        <Button Grid.Column="1"  x:Name="buscarClientes"  
-                               
-Content ="Buscar clientes (Editar o eliminar)"  
-
-Style ="{ StaticResource AccentButtonStyle }"  
-HorizontalAlignment ="Stretch" />
-
-                    </Grid >
+                    
+                   
 
 
                 </StackPanel >
 
-                <TextBox x:Name="Nombre" 
+                <TextBox x:Name="buscador" 
                      Header ="Nombre del cliente *" 
-                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"/>
+                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"
+                         TextChanged="Buscador_TextChanged"/>
 
-                <TextBox x:Name="Telefono" 
-                       Header ="Teléfono *" 
-                       PlaceholderText ="Ej. 81 1234 5678" 
-                       />
+                <Grid ColumnSpacing="10" Margin="0,0,0,5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="2*"/>
+                    </Grid.ColumnDefinitions>
 
-                <DatePicker x:Name="FechaNacimiento" 
-                        Header ="Fecha de nacimiento *" 
-                                />
+                    <TextBlock Text="Nombre" FontWeight="Bold" Grid.Column="0"/>
+                    <TextBlock Text="Teléfono" FontWeight="Bold" Grid.Column="1"/>
+                    <TextBlock Text="Email" FontWeight="Bold" Grid.Column="2"/>
+                    <TextBlock Text="Acciones" FontWeight="Bold" Grid.Column="3"/>
+                </Grid>
 
-                <TextBox x:Name="Email"
-                     Header ="Introduzca el correo electrónico"
-                     PlaceholderText ="emilio@gmail.com"/>
+
+                <ListView x:Name="ClientesList"
+          Height="300">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid ColumnSpacing="30">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="2*"/>
+                                </Grid.ColumnDefinitions>
+                                
+                                <TextBlock Text="{Binding Nombre}" Grid.Column="0"/>
+                                <TextBlock Text="{Binding Telefono}" Grid.Column="1"/>
+                                <TextBlock Text="{Binding Email}" Grid.Column="2"/>
+                                <StackPanel Grid.Column="3" Orientation="Horizontal" Spacing="5">
+                                    <Button Content="Editar" Click="EditarCliente_Click" Style="{StaticResource AccentButtonStyle}"/>
+                                    <Button Content="Eliminar" Click="Eliminar_Click" Style="{StaticResource AccentButtonStyle}" Tag="{Binding Id}"/>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
 
 
 
@@ -78,8 +85,8 @@ HorizontalAlignment ="Stretch" />
 
 
                 <Button x:Name="Submit"  
-                            Content ="Registrar datos"  
-                          
+                            Content ="Regresar"  
+                          Click="regresar_click"
                             Style ="{ StaticResource AccentButtonStyle }"  
                             HorizontalAlignment ="Stretch" />
 
