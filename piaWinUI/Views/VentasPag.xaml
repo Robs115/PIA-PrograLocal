@@ -25,14 +25,22 @@
                Grid.Row="0"/>
 
         
-        <NumberBox x:Name="CodigoBox"
+        <TextBox x:Name="CodigoBox"
                PlaceholderText="Código de barras Ej: 1234567890"
-               Grid.Row="1"/>
+               Grid.Row="1"
+                 KeyDown="obtenerproducto_keydown"/>
 
-        <!--Mas o menos la tabla esta ya preparada, solo falta hacer el binding con la lista de productos y que se actualice cada vez que se agregue un producto nuevo, o se cambie la cantidad de uno existente-->
-        <!--La catnidad tendria que aumentar si escaneas un producto nuevo, tambien tendria que ser una entrada para cambiarlo manualmente-->
-        <!--Despues de que se de click a finalizar venta que pida el numero del cliente (si es que tiene) y por ultimo, si es en tarjete o no-->
-        <!--No he agregado el campo de metodo de pago a la interfaz, ni al modelo-->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="2*"/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="Producto" FontWeight="Bold" Grid.Column="0"/>
+            <TextBlock Text="Cantidad" FontWeight="Bold" Grid.Column="1"/>
+            <TextBlock Text="Precio" FontWeight="Bold" Grid.Column="2"/>
+            <TextBlock Text="Subtotal" FontWeight="Bold" Grid.Column="3"/>
+        </Grid>
         <ListView x:Name="ProductosList"
               Grid.Row="2">
 

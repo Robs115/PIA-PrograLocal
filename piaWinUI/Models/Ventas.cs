@@ -5,13 +5,13 @@ namespace piaWinUI.Models
 {
     public class Venta : INotifyPropertyChanged
     {
-        private int idVenta;
-        private int idUsuario;
-        private int idCliente;
+        private Guid idVenta = Guid.NewGuid();
+        private Guid idUsuario;
+        private Guid idCliente;
         private double total;
         private DateTime fecha;
 
-        public int IdVenta
+        public Guid IdVenta
         {
             get => idVenta;
             set
@@ -21,7 +21,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public int IdUsuario
+        public Guid IdUsuario
         {
             get => idUsuario;
             set
@@ -31,7 +31,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public int IdCliente
+        public Guid IdCliente
         {
             get => idCliente;
             set
