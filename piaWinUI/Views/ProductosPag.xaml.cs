@@ -45,7 +45,75 @@ namespace piaWinUI.Views
             Submit.IsEnabled = true;
         }
 
-        private async void Guardar_Click(object sender, RoutedEventArgs e)
+        private async void Validator(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtNombre.Text))
+            {
+                SetStatus("El nombre es obligatorio.");
+                return;
+            }
+
+            if (txtNombre.Text.Length > 50)
+            {
+                SetStatus("Máximo 50 caracteres en nombre.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(txtDescripcion.Text))
+            {
+                SetStatus("La descripción es obligatoria.");
+                return;
+            }
+
+            if (cmbCategoria.SelectedItem is null)
+            {
+                SetStatus("Selecciona una categoría.");
+                return;
+            }
+
+            if (!decimal.TryParse(txtPrecioCompra.Text, out decimal precioCompra))
+            {
+                SetStatus("Precio de compra inválido.");
+                return;
+            }
+
+            if (!decimal.TryParse(txtPrecioVenta.Text, out decimal precioVenta))
+            {
+                SetStatus("Precio de venta inválido.");
+                return;
+            }
+
+            if (precioCompra < 0 || precioVenta < 0)
+            {
+                SetStatus("Los precios no pueden ser negativos.");
+                return;
+            }
+
+            if (!int.TryParse(txtStock.Text, out int stock))
+            {
+                SetStatus("Stock inválido.");
+                return;
+            }
+
+            if (stock < 0)
+            {
+                SetStatus("El stock no puede ser negativo.");
+                return;
+            }
+
+            if (cmbProveedor.SelectedItem is null)
+            {
+                SetStatus("Selecciona un proveedor.");
+                return;
+            }
+
+            SetStatus("Producto válido.", false);
+
+            await Guardar_Click(sender, e);
+
+        }
+
+        private async Task Guardar_Click(object sender, RoutedEventArgs e)
         {
             try
             {

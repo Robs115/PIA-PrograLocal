@@ -12,7 +12,7 @@
 
         <NavigationView x:Name="NavView"
                 PaneDisplayMode="Left"
-                SelectionChanged="NavView_SelectionChanged">
+                ItemInvoked="NavView_ItemInvoked">
 
             <NavigationView.MenuItems>
 

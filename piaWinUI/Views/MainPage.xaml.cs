@@ -35,14 +35,10 @@ namespace piaWinUI.Views
             _usersFilePath = App.UsersFilePath;
 
         }
-        private void NavView_SelectionChanged(NavigationView sender,
-            NavigationViewSelectionChangedEventArgs args)
+        private void NavView_ItemInvoked(NavigationView sender,
+            NavigationViewItemInvokedEventArgs args)
         {
-            var item = args.SelectedItem as NavigationViewItem;
-
-            if (item == null) return;
-
-            switch (item.Tag?.ToString())
+            switch (args.InvokedItem?.ToString())
             {
                 case "Reportes":
                     ContentFrame.Navigate(typeof(Reportes));
