@@ -26,7 +26,8 @@
                 <!-- PRODUCTO -->
                 <TextBlock Text="Producto"/>
                 <ComboBox x:Name="cmbProductoPedido"
-                          PlaceholderText="Seleccionar producto"/>
+                          PlaceholderText="Seleccionar producto"
+                          SelectionChanged="cmbProductoPedido_SelectionChanged"/>
 
                 <!-- PROVEEDOR -->
                 <TextBlock Text="Proveedor"/>
