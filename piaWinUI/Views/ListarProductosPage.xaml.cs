@@ -21,15 +21,37 @@ using Windows.System;
 
 namespace piaWinUI.Views
 {
+    public class ProductoView
+    {
+        public Producto Model { get; }
+
+        public ProductoView(Producto model)
+        {
+            Model = model;
+        }
+
+        public string Nombre => Model.Nombre;
+        public string Descripcion => Model.Descripcion;
+        public decimal PrecioCompra => Model.PrecioCompra;
+        public decimal PrecioVenta => Model.PrecioVenta;
+        public Guid IdProveedor => Model.IdProveedor;
+        public string Categoria => Model.Categoria;
+        public int Stock => Model.Stock;
+
+        public string ProveedorNombre { get; set; }
+    }
+
     public sealed partial class ListarProductosPage : Page
     {
 
-        public ObservableCollection<Producto> Productos { get; set; }
-           = new ObservableCollection<Producto>();
+        public ObservableCollection<ProductoView> Productos { get; set; }
+            = new ObservableCollection<ProductoView>();
 
-        public Producto ProductoSeleccionado { get; set; }
+        public ProductoView ProductoSeleccionado { get; set; }
 
         private readonly ProductService _service = new ProductService();
+
+        private Dictionary<Guid, string> _proveedorLookup = new();
 
         public ListarProductosPage()
         {
@@ -46,15 +68,31 @@ namespace piaWinUI.Views
         private async Task LoadProductsData()
         {
             var productos = await _service.GetProductsAsync();
+            var proveedores = await new ProveedorService().GetProveedorAsync();
+            _proveedorLookup = proveedores.ToDictionary(p => p.IdProveedor, p => p.Nombre);
 
             Productos.Clear();
 
             foreach (var p in productos)
-                Productos.Add(p);
+            {
+                Productos.Add(new ProductoView(p)
+                {
+                    ProveedorNombre = _proveedorLookup.TryGetValue(p.IdProveedor, out var nombre)
+                        ? nombre
+                        : "Desconocido"
+                });
+            }
         }
 
-        
+        private void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
 
-       
+        private void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            
+        }
+
     }
 }
