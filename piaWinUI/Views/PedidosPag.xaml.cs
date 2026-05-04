@@ -34,6 +34,33 @@ namespace piaWinUI.Views
             await CargarTodo();
         }
 
+        private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            FiltrarPedidos(txtBuscar.Text);
+        }
+
+        private void FiltrarPedidos(string texto)
+        {
+            if (_pedidos == null) return;
+
+            var filtrados = _pedidos
+                .Where(p =>
+                    p.NombreProducto.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    p.NombreProveedor.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
+                    p.Cantidad.ToString().Contains(texto)
+                )
+                .Select(p => new PedidoView
+                {
+                    NombreProducto = p.NombreProducto,
+                    NombreProveedor = p.NombreProveedor,
+                    Cantidad = p.Cantidad,
+                    Fecha = p.Fecha // 👈 AQUÍ YA NO FORMATEAS
+                })
+                .ToList();
+
+            gridPedidos.ItemsSource = filtrados;
+        }
+
         private async Task CargarTodo()
         {
             _productos = await _productService.GetProductsAsync();
@@ -209,7 +236,7 @@ namespace piaWinUI.Views
         // 🔍 BUSCAR
         private void BuscarPedido_TextChanged(object sender, TextChangedEventArgs e)
         {
-            var filtro = txtBuscarPedido.Text?.ToLower() ?? "";
+            var filtro = txtBuscar.Text?.ToLower() ?? "";
 
             var filtrados = _pedidos.Where(p =>
                 p.NombreProducto.ToLower().Contains(filtro) ||
@@ -237,9 +264,13 @@ namespace piaWinUI.Views
     // 🔥 MODELO PARA EL GRID
     public class PedidoView
     {
-        public DateTime Fecha { get; set; }
-        public string NombreProducto { get; set; }
-        public string NombreProveedor { get; set; }
+        public string NombreProducto { get; set; } = "";
+        public string NombreProveedor { get; set; } = "";
         public int Cantidad { get; set; }
+
+        public DateTime Fecha { get; set; }
+
+        // 👇 SOLO PARA MOSTRAR BONITO
+        public string FechaFormateada => Fecha.ToString("dd/MM/yyyy HH:mm");
     }
 }

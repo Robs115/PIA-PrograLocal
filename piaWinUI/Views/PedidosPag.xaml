@@ -56,9 +56,9 @@
                        FontWeight="Bold"/>
 
             <!-- BUSCADOR -->
-            <TextBox x:Name="txtBuscarPedido"
+            <TextBox x:Name="txtBuscar"
                      PlaceholderText="Buscar..."
-                     TextChanged="BuscarPedido_TextChanged"/>
+                     TextChanged="txtBuscar_TextChanged"/>
 
             <!-- HEADER -->
             <Grid Background="#111" Padding="10">
