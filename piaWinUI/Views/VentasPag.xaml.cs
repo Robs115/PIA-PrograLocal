@@ -115,9 +115,6 @@ namespace piaWinUI.Views
             //not yet
         }
 
-        private void LimpiarFormulario()
-        {
-            
-        }
+        
     }
 }

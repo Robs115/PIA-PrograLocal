@@ -35,4 +35,6 @@ namespace piaWinUI.Services
             Debug.WriteLine("Ventas guardadas en: " + App.VentasFilePath);
         }
     }
+
+    
 }
