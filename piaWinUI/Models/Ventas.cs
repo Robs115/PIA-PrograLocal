@@ -8,7 +8,7 @@ namespace piaWinUI.Models
         private Guid idVenta = Guid.NewGuid();
         private Guid idUsuario;
         private Guid idCliente;
-        private double total;
+        private decimal total;
         private DateTime fecha;
 
         public Guid IdVenta
@@ -41,7 +41,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public double Total
+        public decimal Total
         {
             get => total;
             set

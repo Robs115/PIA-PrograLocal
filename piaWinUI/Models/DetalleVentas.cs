@@ -12,7 +12,7 @@ namespace piaWinUI.Models
         private Guid idVenta;
         private Guid idProducto;
         private string nombreProducto;
-        private double precioUnitario;
+        private decimal precioUnitario;
         private int cantidad;
 
         public Guid IdVenta
@@ -45,7 +45,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public double PrecioUnitario
+        public decimal PrecioUnitario
         {
             get => precioUnitario;
             set
@@ -68,7 +68,7 @@ namespace piaWinUI.Models
         }
 
         // 🔥 Calculado automáticamente
-        public double Subtotal => PrecioUnitario * Cantidad;
+        public decimal Subtotal => PrecioUnitario * Cantidad;
 
         public event PropertyChangedEventHandler PropertyChanged;
 

@@ -15,8 +15,9 @@ namespace piaWinUI.Views
     {
         private ProductService _productoService = new ProductService();
         private VentaService _ventaService = new VentaService();
+        private List<DetalleVentas> carrito = new List<DetalleVentas>();
         private List<Venta> listaVentas = new List<Venta>();
-        private List<ProductoVenta> carrito = new List<ProductoVenta>();
+       
         public VentasPag()
         {
             
@@ -24,14 +25,7 @@ namespace piaWinUI.Views
             
         }
 
-        public class ProductoVenta
-        {
-            public string Nombre { get; set; }
-            public int Cantidad { get; set; }
-            public decimal Precio { get; set; }
-            public decimal Subtotal => Cantidad * Precio;
-        }
-
+        
 
         private async void CargarProductos()
         {
@@ -68,8 +62,8 @@ namespace piaWinUI.Views
                 return;
             }
 
-            
-            var existente = carrito.FirstOrDefault(p => p.Nombre == producto.Nombre);
+
+            var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
 
             if (existente != null)
             {
@@ -77,16 +71,17 @@ namespace piaWinUI.Views
             }
             else
             {
-                carrito.Add(new ProductoVenta
+                carrito.Add(new DetalleVentas
                 {
-                    Nombre = producto.Nombre,
+                    IdProducto = producto.Id,
+                    NombreProducto = producto.Nombre,
                     Cantidad = 1,
-                    Precio = producto.PrecioVenta
+                    PrecioUnitario = producto?.PrecioVenta ?? 0
                 });
             }
 
            
-            ProductosList.ItemsSource = null;
+            
             ProductosList.ItemsSource = carrito;
 
             CodigoBox.Text = "";
@@ -102,7 +97,56 @@ namespace piaWinUI.Views
 
         private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
         {
-           //not yet
+            if (carrito.Count == 0)
+            {
+                await new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "No hay productos en la venta",
+                    CloseButtonText = "Cerrar",
+                    XamlRoot = this.Content.XamlRoot
+                }.ShowAsync();
+                return;
+            }
+
+            // 🔹 Crear venta
+            var venta = new Venta
+            {
+                IdVenta = Guid.NewGuid(),
+                IdUsuario = Guid.NewGuid(), // luego pones el usuario real
+                IdCliente = Guid.NewGuid(), // luego cliente real
+                Fecha = DateTime.Now,
+                Total = carrito.Sum(p => p.Subtotal)
+            };
+
+            // 🔹 Asignar IdVenta a cada detalle
+            foreach (var item in carrito)
+            {
+                item.IdVenta = venta.IdVenta;
+            }
+
+            // 🔹 Guardar venta
+            var ventas = await _ventaService.GetVentasAsync();
+            ventas.Add(venta);
+            await _ventaService.SaveVentasAsync(ventas);
+
+            // 🔹 Guardar detalles (necesitas este service 👇)
+            var detalleService = new DetalleVentasService();
+            var detalles = await detalleService.GetDetalleVentasAsync();
+            detalles.AddRange(carrito);
+            await detalleService.SaveDetalleVentasAsync(detalles);
+
+            // 🔹 Limpiar UI
+            carrito.Clear();
+            ProductosList.ItemsSource = null;
+
+            await new ContentDialog
+            {
+                Title = "Éxito",
+                Content = "Venta registrada correctamente",
+                CloseButtonText = "OK",
+                XamlRoot = this.Content.XamlRoot
+            }.ShowAsync();
         }
 
         private async void BuscarProducto_Click(object sender, RoutedEventArgs e)

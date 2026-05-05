@@ -61,7 +61,7 @@
                         </Grid.ColumnDefinitions>
 
                         <!-- Producto -->
-                        <TextBlock Text="{Binding Nombre}"
+                        <TextBlock Text="{Binding NombreProducto}"
                                Grid.Column="0"
                                VerticalAlignment="Center"/>
 
@@ -71,7 +71,7 @@
                                Grid.Column="1"/>
 
                         <!-- Precio -->
-                        <TextBlock Text="{Binding Precio}"
+                        <TextBlock Text="{Binding PrecioUnitario}"
                                Grid.Column="2"
                                VerticalAlignment="Center"/>
 
