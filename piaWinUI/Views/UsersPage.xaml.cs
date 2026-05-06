@@ -36,11 +36,24 @@ namespace piaWinUI.Views
 
             foreach (var u in users)
             {
+                u.isLoading = true;
                 Users.Add(u);
+                u.isLoading = false;
+                u.IsDirty = false;
             }
         }
 
-        private void SaveUsers()
+        private void SaveRow_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+            var user = (User)button.DataContext;
+
+            user.IsDirty = false;
+
+            SaveAllUsers();
+        }
+
+        private void SaveAllUsers()
         {
             var json = JsonSerializer.Serialize(Users, new JsonSerializerOptions
             {
@@ -57,11 +70,6 @@ namespace piaWinUI.Views
             _authService = new AuthService(App.UsersFilePath);
 
             LoadUsers();
-        }
-
-        private void Save_Click(object sender, RoutedEventArgs e)
-        {
-            SaveUsers();
         }
 
         private void Reload_Click(object sender, RoutedEventArgs e)

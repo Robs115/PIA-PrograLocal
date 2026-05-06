@@ -7,6 +7,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
+    xmlns:models="using:piaWinUI.Models"
     mc:Ignorable="d">
 
     <Grid>
@@ -26,6 +27,17 @@
                 Header="Contraseña"
                 Binding="{Binding Password}" />
 
+                <controls:DataGridTemplateColumn Header="Acción">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <Button
+                            Content="Guardar"
+                            Click="SaveRow_Click"
+                            IsEnabled="{Binding IsDirty}" />
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
+
             </controls:DataGrid.Columns>
         </controls:DataGrid>
 
@@ -34,7 +46,6 @@
                 VerticalAlignment="Bottom"
                 Margin="10">
 
-            <Button Content="Guardar" Click="Save_Click"/>
             <Button Content="Recargar" Click="Reload_Click"/>
         </StackPanel>
     </Grid>
