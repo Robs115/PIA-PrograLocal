@@ -36,11 +36,6 @@ namespace piaWinUI.Views
         {
             var ventas = await _ventaService.GetVentasAsync();
 
-            // 🔥 SI NO HAY DATOS → GENERA DEMO
-            if (ventas.Count == 0)
-            {
-                ventas = GenerarDatosDemo();
-            }
 
             var ventasPorDia = ventas
                 .GroupBy(v => v.Fecha.Date)
@@ -135,17 +130,6 @@ namespace piaWinUI.Views
             DataContext = this;
         }
 
-        // 🔥 DATOS DEMO PARA EVITAR GRÁFICAS VACÍAS
-        private List<Models.Venta> GenerarDatosDemo()
-        {
-            var rnd = new Random();
-
-            return Enumerable.Range(0, 7).Select(i => new Models.Venta
-            {
-                Fecha = DateTime.Now.AddDays(-i),
-                Total = rnd.Next(200, 1000)
-            }).ToList();
-        }
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
