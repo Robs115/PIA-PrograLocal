@@ -26,6 +26,12 @@
 
             </NavigationView.MenuItems>
 
+            <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="Salir"
+                            Icon="ClosePane"
+                            Tapped="ExitApp_Tapped"/>
+            </NavigationView.FooterMenuItems>
+
             <Frame x:Name="ContentFrame"/>
 
         </NavigationView>

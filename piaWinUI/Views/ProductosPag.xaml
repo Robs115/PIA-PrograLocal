@@ -72,7 +72,8 @@
                               DisplayMemberPath="Nombre"/>
 
                     <TextBlock x:Name="StatusTextBlock"
-                               TextWrapping="Wrap"/>
+                               TextWrapping="Wrap"
+                               MaxWidth="400"/>
 
                     <Button x:Name="Submit"
                             IsEnabled="False"

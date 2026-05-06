@@ -5,11 +5,11 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls">
 
-    <StackPanel>
+    <Grid RowDefinitions="Auto,*">
 
         <controls:DataGrid
+            Grid.Row="0"
             ItemsSource="{Binding Productos}"
-            SelectedItem="{Binding ProductoSeleccionado, Mode=TwoWay}"
             AutoGenerateColumns="False"
             IsReadOnly="True"
             GridLinesVisibility="Vertical"
@@ -23,7 +23,9 @@
                         <DataTemplate>
                             <TextBlock Text="{Binding Nombre}"
                                Tapped="Nombre_Tapped"
-                               TextDecorations="Underline"/>
+                               TextDecorations="Underline"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"/>
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
@@ -73,5 +75,7 @@
 
         </controls:DataGrid>
 
-    </StackPanel>
+    <Button Content="Regresar" Click="BackButton_Click" Grid.Row="1" Margin="10 10 0 0"/>
+
+    </Grid>
 </Page>

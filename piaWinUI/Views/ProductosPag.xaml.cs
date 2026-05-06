@@ -28,6 +28,7 @@ namespace piaWinUI.Views
         public ProductosPag()
         {
             this.InitializeComponent();
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
 
             Submit.IsEnabled = false;
             Loaded += async (_, __) => await CargarProveedores();
@@ -83,6 +84,12 @@ namespace piaWinUI.Views
                 return;
             }
 
+            if (precioCompra >= precioVenta)
+            {
+                SetStatus("El precio de venta no puede ser menor o igual al precio de compra.");
+                return;
+            }
+
             if (precioCompra < 0 || precioVenta < 0)
             {
                 SetStatus("Los precios no pueden ser negativos.");
@@ -122,8 +129,8 @@ namespace piaWinUI.Views
                 var nuevo = new Producto
                 {
                     Id = Guid.NewGuid(),
-                    Nombre = txtNombre.Text,
-                    Descripcion = txtDescripcion.Text,
+                    Nombre = txtNombre.Text.Trim(),
+                    Descripcion = txtDescripcion.Text.Trim(),
                     Categoria = (cmbCategoria.SelectedItem as ComboBoxItem)?.Content?.ToString(),
 
                     PrecioCompra = decimal.Parse(txtPrecioCompra.Text),

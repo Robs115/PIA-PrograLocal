@@ -120,5 +120,13 @@ namespace piaWinUI.Views
             }
         }
 
+        private void BackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (Frame.CanGoBack)
+            {
+                Frame.GoBack();
+            }
+        }
+
     }
 }

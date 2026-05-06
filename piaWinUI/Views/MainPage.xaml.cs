@@ -67,6 +67,11 @@ namespace piaWinUI.Views
             }
         }
 
+        private void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            Application.Current.Exit();
+        }
+
     }
 }
 
