@@ -67,6 +67,69 @@ namespace piaWinUI.Views
             }
         }
 
+        private ContentDialog currentDialog;
+
+        private async void Settings_Click(object sender, RoutedEventArgs e)
+        {
+            var stack = new StackPanel
+            {
+                Spacing = 12,
+                Width = 280,
+                Padding = new Thickness(10)
+            };
+
+            var title = new TextBlock
+            {
+                Text = "Opciones",
+                FontSize = 26,
+                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                HorizontalAlignment = HorizontalAlignment.Center,
+                Margin = new Thickness(0, 0, 0, 30)
+            };
+
+            var btnUsuarios = new Button
+            {
+                Content = "Usuarios",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                FontSize = 16,
+                Padding = new Thickness(12, 10, 12, 10)
+            };
+
+            btnUsuarios.Click += (s, args) =>
+            {
+                // abrir usuarios
+            };
+
+            var btnCerrar = new Button
+            {
+                Content = "Regresar",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                FontSize = 16,
+                Padding = new Thickness(12, 10, 12, 10)
+            };
+
+            btnCerrar.Click += (s, args) =>
+            {
+                // cerrar dialog
+                currentDialog?.Hide();
+            };
+
+            stack.Children.Add(title);
+            stack.Children.Add(btnUsuarios);
+            stack.Children.Add(btnCerrar);
+
+            var dialog = new ContentDialog
+            {
+                Content = stack,
+                XamlRoot = this.XamlRoot,
+                CloseButtonText = null, // importante: quitamos el botón feo default
+                MinWidth = 320
+            };
+
+            currentDialog = dialog;
+            await dialog.ShowAsync();
+        }
+
         private void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
         {
             Application.Current.Exit();
