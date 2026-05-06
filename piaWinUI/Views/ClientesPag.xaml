@@ -57,7 +57,8 @@ HorizontalAlignment ="Stretch" />
                        />
 
                 <DatePicker x:Name="FechaNacimiento" 
-                        Header ="Fecha de nacimiento *" 
+                        Header ="Fecha de nacimiento *"
+                            MaxYear="{x:Bind MaxFechaNacimiento}"
                                 />
 
                 <TextBox x:Name="Email"

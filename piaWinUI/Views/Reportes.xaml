@@ -7,84 +7,121 @@
     <ScrollViewer>
         <StackPanel Padding="20" Spacing="20">
 
-            <!-- TÍTULO -->
+            <!-- 🔹 TÍTULO -->
             <TextBlock Text="Dashboard de Reportes"
                        FontSize="28"
                        FontWeight="Bold"/>
+            
+            <StackPanel Orientation="Horizontal" Spacing="10">
 
-            <!-- KPIs -->
+                <Button Content="Clientes"
+            Click="GoClientesReport"
+            Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Productos"
+            Click="GoProductosReport"
+            Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Ventas"
+            Click="GoVentasReport"
+            Style="{StaticResource AccentButtonStyle}"/>
+
+            </StackPanel>
+
+            <!-- 🔥 KPIs REALES -->
             <Grid ColumnDefinitions="*,*,*">
 
+                <!-- TOTAL VENTAS -->
                 <Border Background="#1E88E5" CornerRadius="10" Padding="15" Margin="5">
-                    <TextBlock Text="$5,230" FontSize="22" Foreground="White"/>
+                    <StackPanel>
+                        <TextBlock Text="Total ventas" Foreground="White" FontSize="12"/>
+                        <TextBlock x:Name="TotalVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
                 </Border>
 
+                <!-- PROMEDIO -->
                 <Border Background="#43A047" CornerRadius="10" Padding="15" Margin="5">
-                    <TextBlock Text="$8,120" FontSize="22" Foreground="White"/>
+                    <StackPanel>
+                        <TextBlock Text="Promedio por venta" Foreground="White" FontSize="12"/>
+                        <TextBlock x:Name="PromedioVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
                 </Border>
 
+                <!-- CANTIDAD -->
                 <Border Background="#E53935" CornerRadius="10" Padding="15" Margin="5">
-                    <TextBlock Text="$2,890" FontSize="22" Foreground="White"/>
+                    <StackPanel>
+                        <TextBlock Text="Número de ventas" Foreground="White" FontSize="12"/>
+                        <TextBlock x:Name="CantidadVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
                 </Border>
 
             </Grid>
 
-            <!--  BARRAS -->
+            <!-- 📊 BARRAS -->
             <Border Padding="15" CornerRadius="12" Background="#2C2C2C">
                 <StackPanel Spacing="8">
 
                     <TextBlock Text="Ventas por día"
-                   FontSize="18"
-                   FontWeight="SemiBold"
-                   Foreground="White"/>
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
 
-                    <TextBlock Text="Representa el total de ventas registradas en los últimos días"
-                   FontSize="12"
-                   Foreground="LightGray"/>
+                    <TextBlock Text="Total de ventas agrupadas por fecha"
+                               FontSize="12"
+                               Foreground="LightGray"/>
 
                     <lvc:CartesianChart 
-            Series="{Binding VentasSeries}" 
-            Height="250"/>
+                        Series="{Binding VentasSeries}" 
+                        Height="250"/>
 
                 </StackPanel>
             </Border>
 
-            <!--  LÍNEA -->
+            <!-- 📈 LÍNEA -->
             <Border Padding="15" CornerRadius="12" Background="#2C2C2C">
                 <StackPanel Spacing="8">
 
                     <TextBlock Text="Tendencia de ingresos"
-                   FontSize="18"
-                   FontWeight="SemiBold"
-                   Foreground="White"/>
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
 
-                    <TextBlock Text="Muestra el comportamiento de ingresos a lo largo del tiempo"
-                   FontSize="12"
-                   Foreground="LightGray"/>
+                    <TextBlock Text="Comportamiento de ingresos en el tiempo"
+                               FontSize="12"
+                               Foreground="LightGray"/>
 
                     <lvc:CartesianChart 
-            Series="{Binding TendenciaSeries}" 
-            Height="250"/>
+                        Series="{Binding TendenciaSeries}" 
+                        Height="250"/>
 
                 </StackPanel>
             </Border>
 
-            <!--  PASTEL -->
+            <!-- 🥧 PASTEL -->
             <Border Padding="15" CornerRadius="12" Background="#2C2C2C">
                 <StackPanel Spacing="8">
 
                     <TextBlock Text="Distribución de productos"
-                   FontSize="18"
-                   FontWeight="SemiBold"
-                   Foreground="White"/>
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
 
-                    <TextBlock Text="Porcentaje de ventas por tipo de producto"
-                   FontSize="12"
-                   Foreground="LightGray"/>
+                    <TextBlock Text="Cantidad de productos por categoría"
+                               FontSize="12"
+                               Foreground="LightGray"/>
 
                     <lvc:PieChart 
-            Series="{Binding ProductosSeries}" 
-            Height="250"
+                        Series="{Binding ProductosSeries}" 
+                        Height="250"
                         LegendPosition="Bottom"/>
 
                 </StackPanel>

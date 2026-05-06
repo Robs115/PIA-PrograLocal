@@ -1,0 +1,103 @@
+<Page
+    x:Class="piaWinUI.Views.ReporteVentasPag"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:lvc="using:LiveChartsCore.SkiaSharpView.WinUI">
+
+    <ScrollViewer>
+        <StackPanel Padding="20" Spacing="20">
+
+            <Button Content="← Volver"
+                    Click="Volver_Click"
+                    HorizontalAlignment="Left"/>
+
+            <TextBlock Text="Reporte de Ventas"
+                       FontSize="28"
+                       FontWeight="Bold"/>
+
+            <!-- KPIs -->
+            <StackPanel Orientation="Horizontal" Spacing="12">
+
+                <Border Background="#1E88E5" Padding="12" CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock Text="Total Ventas" Foreground="White"/>
+                        <TextBlock x:Name="TotalVentasText"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#43A047" Padding="12" CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock Text="Promedio" Foreground="White"/>
+                        <TextBlock x:Name="PromedioVentasText"
+                                   FontSize="20"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Background="#E53935" Padding="12" CornerRadius="10">
+                    <StackPanel>
+                        <TextBlock Text="Mejor día" Foreground="White"/>
+                        <TextBlock x:Name="MejorDiaText"
+                                   FontSize="16"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+
+            <!-- VENTAS POR DÍA -->
+            <Border Background="#2C2C2C" CornerRadius="12" Padding="15">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Ventas por día" FontSize="18" Foreground="White"/>
+                    <TextBlock Text="Ingresos generados por cada fecha"
+                               FontSize="12"
+                               Foreground="LightGray"/>
+
+                    <lvc:CartesianChart 
+                        Series="{Binding VentasSeries}"
+                        XAxes="{Binding XAxesDias}"
+                        YAxes="{Binding YAxes}"
+                        Height="250"/>
+                </StackPanel>
+            </Border>
+
+            <!-- TENDENCIA -->
+            <Border Background="#2C2C2C" CornerRadius="12" Padding="15">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Tendencia de ingresos" FontSize="18" Foreground="White"/>
+                    <TextBlock Text="Evolución de ventas en el tiempo"
+                               FontSize="12"
+                               Foreground="LightGray"/>
+
+                    <lvc:CartesianChart 
+                        Series="{Binding TendenciaSeries}"
+                        XAxes="{Binding XAxesDias}"
+                        YAxes="{Binding YAxes}"
+                        Height="250"/>
+                </StackPanel>
+            </Border>
+
+            <!-- POR MES -->
+            <Border Background="#2C2C2C" CornerRadius="12" Padding="15">
+                <StackPanel Spacing="8">
+                    <TextBlock Text="Ventas por mes" FontSize="18" Foreground="White"/>
+                    <TextBlock Text="Ingresos acumulados por mes"
+                               FontSize="12"
+                               Foreground="LightGray"/>
+
+                    <lvc:CartesianChart 
+                        Series="{Binding VentasMesSeries}"
+                        XAxes="{Binding XAxesMeses}"
+                        YAxes="{Binding YAxes}"
+                        Height="250"/>
+                </StackPanel>
+            </Border>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

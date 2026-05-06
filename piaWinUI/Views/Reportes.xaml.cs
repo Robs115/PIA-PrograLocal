@@ -1,19 +1,13 @@
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using piaWinUI.Models;
+using piaWinUI.Services;
+using piaWinUI.Views;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace piaWinUI
 {
@@ -23,37 +17,115 @@ namespace piaWinUI
         public ISeries[] TendenciaSeries { get; set; }
         public ISeries[] ProductosSeries { get; set; }
 
+        private readonly VentaService _ventaService = new VentaService();
+        private readonly ProductService _productService = new ProductService();
+
         public Reportes()
         {
             this.InitializeComponent();
+            this.DataContext = this;
 
-            // 📊 BARRAS
-            VentasSeries = new ISeries[]
+            CargarDatos();
+        }
+        private void GoClientesReport(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ReporteClientesPag));
+        }
+
+        private void GoProductosReport(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ReporteProductosPag));
+        }
+
+        private void GoVentasReport(object sender, RoutedEventArgs e)
+        {
+            Frame.Navigate(typeof(ReporteVentasPag));
+        }
+
+        private async void CargarDatos()
+        {
+            var ventas = await _ventaService.GetVentasAsync();
+            var productos = await _productService.GetProductsAsync();
+            double totalVentas = ventas.Sum(v => (double)v.Total);
+            double promedioVentas = ventas.Count > 0 ? ventas.Average(v => (double)v.Total) : 0;
+            int cantidadVentas = ventas.Count;
+
+            TotalVentasText.Text = $"${totalVentas:F2}";
+            PromedioVentasText.Text = $"${promedioVentas:F2}";
+            CantidadVentasText.Text = $"{cantidadVentas} ventas";
+
+            if (ventas.Count == 0)
             {
-                new ColumnSeries<double>
+                VentasSeries = new ISeries[]
                 {
-                    Values = new double[] { 200, 450, 300, 600, 500 }
-                }
-            };
+                    new ColumnSeries<double> { Values = new double[] { 0 } }
+                };
 
-            // 📈 LÍNEA
-            TendenciaSeries = new ISeries[]
-            {
-                new LineSeries<double>
+                TendenciaSeries = new ISeries[]
                 {
-                    Values = new double[] { 100, 300, 250, 400, 550 }
-                }
-            };
-
-            // 🥧 PASTEL
-            ProductosSeries = new ISeries[]
+                    new LineSeries<double> { Values = new double[] { 0 } }
+                };
+            }
+            else
             {
-                new PieSeries<double> { Values = new double[] { 40 } },
-                new PieSeries<double> { Values = new double[] { 30 } },
-                new PieSeries<double> { Values = new double[] { 20 } }
-            };
+                // 📊 AGRUPAR VENTAS POR DÍA
+                var ventasPorDia = ventas
+                    .GroupBy(v => v.Fecha.Date)
+                    .Select(g => new
+                    {
+                        Fecha = g.Key,
+                        Total = g.Sum(v => v.Total)
+                    })
+                    .OrderBy(x => x.Fecha)
+                    .ToList();
 
-            // 🔥 ESTO ES LO QUE TE FALTABA
+                // 📊 BARRAS
+                VentasSeries = new ISeries[]
+                {
+                    new ColumnSeries<double>
+                    {
+                        Values = ventasPorDia.Select(x => (double)x.Total).ToArray()
+                    }
+                };
+
+                // 📈 LÍNEA
+                TendenciaSeries = new ISeries[]
+                {
+                    new LineSeries<double>
+                    {
+                        Values = ventasPorDia.Select(x => (double)x.Total).ToArray()
+                    }
+                };
+            }
+
+            // 🥧 PRODUCTOS POR CATEGORÍA
+            if (productos.Count == 0)
+            {
+                ProductosSeries = new ISeries[]
+                {
+                    new PieSeries<double> { Values = new double[] { 1 }, Name = "Sin datos" }
+                };
+            }
+            else
+            {
+                var porCategoria = productos
+                    .GroupBy(p => p.Categoria)
+                    .Select(g => new
+                    {
+                        Categoria = g.Key,
+                        Cantidad = g.Count()
+                    })
+                    .ToList();
+
+                ProductosSeries = porCategoria.Select(x =>
+                    new PieSeries<double>
+                    {
+                        Values = new double[] { x.Cantidad },
+                        Name = x.Categoria
+                    }).ToArray();
+            }
+
+            this.DataContext = null;
             this.DataContext = this;
         }
     }

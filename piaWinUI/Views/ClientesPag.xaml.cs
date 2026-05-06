@@ -31,7 +31,7 @@ namespace piaWinUI.Views
             InitializeComponent();
         }
 
-
+        public DateTimeOffset MaxFechaNacimiento => DateTime.Now.AddYears(-15);
         private void SetStatus(string text, bool isError = true)
         {
             StatusTextBlock.Text = text;
@@ -88,9 +88,19 @@ namespace piaWinUI.Views
             }
 
 
+            // no puede ser futura
             if (fechanacimiento > DateTime.Now)
             {
-                SetStatus("El campo Fecha de Nacimiento ser menor a la fecha actual.");
+                SetStatus("La fecha de nacimiento no puede ser mayor a la fecha actual.");
+                return;
+            }
+
+            // debe tener al menos 15 años
+            DateTime fechaMinimaPermitida = DateTime.Now.AddYears(-15);
+
+            if (fechanacimiento > fechaMinimaPermitida)
+            {
+                SetStatus("El cliente debe tener al menos 15 años.");
                 return;
             }
 
