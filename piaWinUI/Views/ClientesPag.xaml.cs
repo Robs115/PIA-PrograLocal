@@ -109,8 +109,8 @@ namespace piaWinUI.Views
                 var clientes = await _service.GetClientesAsync();
                 var nuevo = new Cliente
                 {
-                    //algun dia el id tiene que sacar el ultimo de la lista del json
-                    Id = clientes.Count > 0 ? clientes.Max(c => c.Id) + 1 : 1,
+                    
+                    Id = Guid.NewGuid(),
                     Nombre = nombre,
                     Telefono = telefono,
                     FechaNacimiento = fechanacimiento,

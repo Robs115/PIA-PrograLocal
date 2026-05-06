@@ -129,7 +129,7 @@ namespace piaWinUI.Views
 
         private void BuscarProveedores_Click(object sender, RoutedEventArgs e)
         {
-           // Frame.Navigate(typeof(BuscarClientesPag));
+           Frame.Navigate(typeof(BuscarProveedoresPag));
 
 
         }

@@ -5,13 +5,13 @@ namespace piaWinUI.Models
 {
     public class Cliente : INotifyPropertyChanged
     {
-        private int id;
+        private Guid id;
         private string nombre;
         private string telefono;
         private DateTime fechanacimiento;
         private string email;
 
-        public int Id
+        public Guid Id
         {
             get => id;
             set

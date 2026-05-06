@@ -23,24 +23,24 @@ namespace piaWinUI.Views
     /// <summary>
     /// An empty page that can be used on its own or navigated to within a Frame.
     /// </summary>
-    public sealed partial class BuscarClientesPag : Page
+    public sealed partial class BuscarProveedoresPag : Page
     {
-        private ClienteService _service = new ClienteService();
-        private List<Cliente> listaClientes = new List<Cliente>();
-        private VentaService _ventaService = new VentaService();
-        private List<Venta> listaVentas = new List<Venta>();
-        public BuscarClientesPag()
+        private ProveedorService _service = new ProveedorService();
+        private List<Proveedor> listaProveedores = new List<Proveedor>();
+        private ProductService _ProductService = new ProductService();
+        private List<Producto> listaProductos = new List<Producto>();
+        public BuscarProveedoresPag()
         {
             InitializeComponent();
         }
 
         protected override async void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
-            listaClientes = await _service.GetClientesAsync();
+            listaProveedores = await _service.GetProveedorAsync();
 
             // Mostrar últimos primero
-            ClientesList.ItemsSource = listaClientes
-                .OrderByDescending(c => c.Id)
+            ProveedoresList.ItemsSource = listaProveedores
+                .OrderByDescending(c => c.IdProveedor)
                 .Take(10)
                 .ToList();
         }
@@ -48,16 +48,16 @@ namespace piaWinUI.Views
         {
             string texto = buscador.Text.ToLower();
 
-            var filtrados = listaClientes
+            var filtrados = listaProveedores
                 .Where(c => c.Nombre.ToLower().Contains(texto))
                 .ToList();
 
-            ClientesList.ItemsSource = filtrados;
+            ProveedoresList.ItemsSource = filtrados;
         }
 
-        public void EditarCliente_Click(object sender, RoutedEventArgs e)
+        public void EditarProveedor_Click(object sender, RoutedEventArgs e)
         {
-           
+
         }
 
         private async void Eliminar_Click(object sender, RoutedEventArgs e)
@@ -69,40 +69,42 @@ namespace piaWinUI.Views
                 return;
 
             // 🔥 convertir correctamente a Guid
-            Guid idCliente = (Guid)button.Tag;
+            Guid idProveedor = (Guid)button.Tag;
 
             // Obtener datos
-            var clientes = await _service.GetClientesAsync();
-            var ventas = await _ventaService.GetVentasAsync();
+            var proveedores = await _service.GetProveedorAsync();
+            var productos = await _ProductService.GetProductsAsync();
 
 
-            // Buscar cliente
-            var clienteSeleccionado = clientes.FirstOrDefault(c => c.Id == idCliente);
-            
-            if (clienteSeleccionado == null)
+            // Buscar proveedor
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor    == idProveedor);
+
+            if (proveedorSeleccionado == null)
                 return;
 
             // 🔥 VALIDACIÓN
-            bool tieneVentas = ventas.Any(v => v.IdCliente == idCliente);
-            if (tieneVentas)
+            bool tieneProductos = productos.Any(p => p.IdProveedor == idProveedor);
+            if (tieneProductos)
             {
                 var errorDialog = new ContentDialog
                 {
                     Title = "No se puede eliminar",
-                    Content = "Este cliente tiene ventas asociadas y no se puede eliminar.",
+                    Content = "Este proveedor tiene productos asociados y no se puede eliminar.",
                     CloseButtonText = "Aceptar",
                     XamlRoot = this.Content.XamlRoot
                 };
                 await errorDialog.ShowAsync();
+                return;
             }
             var dialog = new ContentDialog
             {
-                Title = "Eliminar cliente",
-                Content = "¿Seguro que quieres eliminar este cliente?",
+                Title = "Eliminar proveedor",
+                Content = "¿Seguro que quieres eliminar este proveedor?",
                 PrimaryButtonText = "Sí",
                 CloseButtonText = "No",
                 XamlRoot = this.Content.XamlRoot
             };
+
 
             var result = await dialog.ShowAsync();
 
@@ -110,15 +112,15 @@ namespace piaWinUI.Views
                 return;
 
             // Eliminar
-            clientes.RemoveAll(c => c.Id == idCliente);
+            proveedores.RemoveAll(c => c.IdProveedor == idProveedor);
 
             // Guardar cambios
-            await _service.SaveClienteAsync(clientes);
+            await _service.SaveProveedorAsync(proveedores);
 
             // Refrescar lista en pantalla
-            listaClientes = clientes;
-            ClientesList.ItemsSource = null;
-            ClientesList.ItemsSource = listaClientes;
+            listaProveedores = proveedores;
+            ProveedoresList.ItemsSource = null;
+            ProveedoresList.ItemsSource = listaProveedores;
         }
 
 
