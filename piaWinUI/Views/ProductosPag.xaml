@@ -9,7 +9,7 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
 
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8">
+                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8" Width="800">
                     <SymbolIcon Symbol="Tag" />
                     <TextBlock Text="Crear producto"  
                        Style="{StaticResource TitleTextBlockStyle}" 
@@ -29,7 +29,7 @@
                              PlaceholderText="Descripción del producto"
                              TextWrapping="Wrap"
                              AcceptsReturn="True"
-                             MaxLength="50"/>
+                             MaxLength="100"/>
 
                     <ComboBox x:Name="cmbCategoria"
                         Header="Categoría"
@@ -52,19 +52,19 @@
                              Header="Precio de compra"
                              PlaceholderText="0.00"
                              InputScope="Number"
-                             MaxLength="10"/>
+                             MaxLength="9"/>
 
                     <TextBox x:Name="txtPrecioVenta"
                              Header="Precio de venta"
                              PlaceholderText="0.00"
                              InputScope="Number"
-                              MaxLength="10"/>
+                              MaxLength="9"/>
 
                     <TextBox x:Name="txtStock"
                              Header="Stock"
                              PlaceholderText="0"
                              InputScope="Number"
-                             MaxLength="10"/>
+                             MaxLength="9"/>
 
                     <ComboBox x:Name="cmbProveedor"
                               Header="Proveedor"
@@ -73,7 +73,8 @@
 
                     <TextBlock x:Name="StatusTextBlock"
                                TextWrapping="Wrap"
-                               MaxWidth="400"/>
+                               MaxWidth="800"
+                               Margin="0 20 0 20"/>
 
                     <Button x:Name="Submit"
                             IsEnabled="False"
@@ -93,12 +94,8 @@
                     <Button Grid.Column="0" x:Name="reportesProductos"  
                             Content="Reportes de productos"  
                             Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch" />
-
-                    <Button Grid.Column="1" x:Name="buscarProductos"  
-                            Content="Buscar productos (Editar o eliminar)"  
-                            Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch" />
+                            HorizontalAlignment="Stretch" 
+                            Click="MoveTo"/>
 
                     <Button Grid.Column="2" x:Name="InventarioProductos"  
                             Content="Inventario de productos"

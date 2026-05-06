@@ -174,10 +174,13 @@ namespace piaWinUI.Views
             StatusTextBlock.Text = "";
         }
 
-        private void SetStatus(string text, bool isError = true)
+        private async Task SetStatus(string text, bool isError = true)
         {
             StatusTextBlock.Text = text;
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
+
+            await Task.Delay(3000);
+            StatusTextBlock.Text = "";
         }
 
         private void MoveTo(object sender, RoutedEventArgs e)
@@ -187,6 +190,11 @@ namespace piaWinUI.Views
             if (boton.Name == "InventarioProductos")
             {
                 Frame.Navigate(typeof(ListarProductosPage));
+            }
+
+            if (boton.Name == "reportesProductos")
+            {
+                Frame.Navigate(typeof(ReporteProductosPag));
             }
         }
 
