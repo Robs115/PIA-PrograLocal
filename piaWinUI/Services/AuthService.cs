@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using System.IO;
+using piaWinUI.Models;
 
 namespace piaWinUI.Services
 {
@@ -16,8 +17,6 @@ namespace piaWinUI.Services
         {
             _usersFilePath = usersFilePath;
         }
-
-        public record User(string Username, string Password);
 
         public async Task<List<User>> LoadUsersAsync()
         {

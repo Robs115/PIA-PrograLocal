@@ -8,29 +8,65 @@ using Microsoft.UI.Xaml.Navigation;
 using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Text.Json;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using piaWinUI.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace piaWinUI.Views
 {
-    /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
-    /// </summary>
     public sealed partial class UsersPage : Page
     {
         private AuthService _authService;
+
+        public ObservableCollection<User> Users { get; set; } = new();
+
+        private async void LoadUsers()
+        {
+            var users = await _authService.LoadUsersAsync();
+
+            Users.Clear();
+
+            foreach (var u in users)
+            {
+                Users.Add(u);
+            }
+        }
+
+        private void SaveUsers()
+        {
+            var json = JsonSerializer.Serialize(Users, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            File.WriteAllText(App.UsersFilePath, json);
+        }
+
         public UsersPage()
         {
             InitializeComponent();
+
             _authService = new AuthService(App.UsersFilePath);
+
+            LoadUsers();
         }
 
+        private void Save_Click(object sender, RoutedEventArgs e)
+        {
+            SaveUsers();
+        }
 
+        private void Reload_Click(object sender, RoutedEventArgs e)
+        {
+            LoadUsers();
+        }
     }
 }
