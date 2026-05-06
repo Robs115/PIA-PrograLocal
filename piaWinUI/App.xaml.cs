@@ -19,6 +19,7 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
+using piaWinUI.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -46,7 +47,7 @@ namespace piaWinUI
             {
                 var defaultUsers = new[]
                 {
-                    new { Username = "admin", Password = "1234" }
+                    new User { Username = "admin", Password = "1234" }
                 };
 
                 File.WriteAllText(

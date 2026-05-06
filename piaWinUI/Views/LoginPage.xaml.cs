@@ -35,8 +35,6 @@ namespace piaWinUI.Views
             _authService = new AuthService(App.UsersFilePath);
         }
 
-        private record User(string Username, string Password);
-
         private void SetStatus(string text, bool isError = true)
         {
             StatusTextBlock.Text = text;
