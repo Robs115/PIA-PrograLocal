@@ -15,151 +15,226 @@ using System.IO;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Collections.ObjectModel;
+
+
 
 namespace piaWinUI.Views
 {
-    public sealed partial class VentasPag : Page
-    {
-        private ProductService _productoService = new ProductService();
-        private VentaService _ventaService = new VentaService();
-        private List<DetalleVentas> carrito = new List<DetalleVentas>();
-        private List<Venta> listaVentas = new List<Venta>();
+        public sealed partial class VentasPag : Page
+        {
+            private ProductService _productoService = new ProductService();
+            private VentaService _ventaService = new VentaService();
+            
+            private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
+            bool    bandera = false;
 
         public VentasPag()
-        {
-            this.InitializeComponent();
-        }
+            {
+                this.InitializeComponent();
+            }
+        
+        private async Task ShowDialogAsync(string title, string content)
+            {
+                var dialog = new ContentDialog
+                {
+                    Title = title,
+                    Content = content,
+                    CloseButtonText = "Cerrar",
+                    XamlRoot = this.Content.XamlRoot
+                };
 
-        private async Task ShowDialogAsync(string title, string content, string closeText = "Cerrar")
+                await dialog.ShowAsync();
+            }
+
+            // 🔥 TOTAL
+            private void ActualizarTotal()
+            {
+                var total = carrito.Sum(p => p.Subtotal);
+                TotalText.Text = $"Total: {total:C}";
+            }
+
+            // 🔥 AGREGAR PRODUCTO
+            private async void CargarProductos()
+            {
+                var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
+
+                string codigo = CodigoBox.Text;
+
+                if (string.IsNullOrWhiteSpace(codigo))
+                {
+                    await ShowDialogAsync("Error", "No hay código.");
+
+                    return;
+                }
+
+                if (!Guid.TryParse(codigo, out Guid guidBuscado))
+                {
+                    await ShowDialogAsync("Error", "Código inválido");
+                CodigoBox.Text = "";
+                    return;
+                }
+
+                var producto = productos.FirstOrDefault(p => p.Id == guidBuscado);
+
+                if (producto == null)
+                {
+                    await ShowDialogAsync("Error", "Producto no encontrado");
+                    return;
+                }
+
+                var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
+
+                if (existente != null)
+                {
+                    existente.Cantidad++;
+                }
+                else
+                {
+                    var nuevo = new DetalleVentas
+                    {
+                        IdProducto = producto.Id,
+                        NombreProducto = producto.Nombre,
+                        PrecioUnitario = producto.PrecioVenta,
+                        Cantidad = 1,
+                        
+                        StockDisponible = producto.Stock
+                    };
+
+                    // 🔥 error desde modelo
+                    nuevo.OnError += async (mensaje) =>
+                    {
+                        await ShowDialogAsync("Error", mensaje);
+                        bandera = true;
+                    };
+
+                    // 🔥 actualizar total cuando cambie cantidad
+                    nuevo.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(DetalleVentas.Cantidad))
+                        {
+                            ActualizarTotal();
+                        }
+                    };
+
+                    carrito.Add(nuevo);
+                    nuevo.PropertyChanged += (s, e) =>
+                    {
+                        if (e.PropertyName == nameof(DetalleVentas.Cantidad) ||
+                            e.PropertyName == nameof(DetalleVentas.PrecioUnitario))
+                        {
+                            ActualizarTotal();
+                        }
+                    };
+                // 🔥 FORZAR PRIMER CALCULO
+                nuevo.Cantidad = nuevo.Cantidad;
+            }
+
+              
+                ProductosList.ItemsSource = carrito;
+
+                CodigoBox.Text = "";
+
+               
+
+            
+            
+            }
+        private async void EliminarProducto_Click(object sender, RoutedEventArgs e)
         {
-            var xamlRoot = this.Content?.XamlRoot;
-            if (xamlRoot == null)
+            var button = sender as Button;
+            var item = button?.Tag as DetalleVentas;
+
+            if (item == null)
                 return;
 
-            var dialog = new ContentDialog
+            var confirm = new ContentDialog
             {
-                Title = title,
-                Content = content,
-                CloseButtonText = closeText,
-                XamlRoot = xamlRoot
+                Title = "Eliminar",
+                Content = "¿Eliminar producto?",
+                PrimaryButtonText = "Sí",
+                CloseButtonText = "No",
+                XamlRoot = this.Content.XamlRoot
             };
 
-            await dialog.ShowAsync();
-        }
-
-        private async void CargarProductos()
-        {
-            var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
-
-            string codigo = CodigoBox?.Text ?? string.Empty;
-
-            if (string.IsNullOrWhiteSpace(codigo))
+            if (await confirm.ShowAsync() == ContentDialogResult.Primary)
             {
-                await ShowDialogAsync("Error", "No hay codigo.");
-                return;
+                carrito.Remove(item);
+                ActualizarTotal();
             }
-            if (!Guid.TryParse(codigo, out Guid guidBuscado))
-            {
-                await ShowDialogAsync("Error", "Codigo inválido");
-                return;
-            }
-
-            var producto = productos.FirstOrDefault(p => p.Id == guidBuscado);
-
-            if (producto == null)
-            {
-                await ShowDialogAsync("Error", "Producto no encontrado");
-                return;
-            }
-
-            
-            var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
-
-            if (existente != null)
-            {
-                existente.Cantidad++;
-
-                
-            }
-            else
-            {
-                
-
-
-                carrito.Add(new DetalleVentas
-                {
-                    IdProducto = producto.Id,
-                    NombreProducto = producto.Nombre,
-                    Cantidad = 1,
-                    PrecioUnitario = producto.PrecioVenta
-                });
-            }
-
-
-            
-
-
-            ProductosList.ItemsSource = null;
-            ProductosList.ItemsSource = carrito;
-            var cantidadActual = carrito
-    .Where(p => p.IdProducto == producto.Id)
-    .Sum(p => p.Cantidad);
-
-            if (cantidadActual > producto.Stock)
-            {
-                await ShowDialogAsync("Error", "Stock insuficiente");
-                return;
-            }
-            CodigoBox?.SetValue(Microsoft.UI.Xaml.Controls.TextBox.TextProperty, string.Empty);
         }
 
         private void obtenerproducto_keydown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                CargarProductos();
-            }
-        }
-
-        private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
-        {
-            if (carrito.Count == 0)
-            {
-                await ShowDialogAsync("Error", "No hay productos en la venta");
-                return;
+                if (e.Key == Windows.System.VirtualKey.Enter)
+                {
+                    CargarProductos();
+                }
             }
 
-            // 🔹 Crear venta
-            var venta = new Venta
+            // 🔥 GUARDAR VENTA
+            private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
             {
-                IdVenta = Guid.NewGuid(),
-                IdUsuario = Guid.NewGuid(), // luego pones el usuario real
-                IdCliente = Guid.NewGuid(), // luego cliente real
-                Fecha = DateTime.Now,
-                Total = carrito.Sum(p => p.Subtotal)
-            };
+                if (carrito.Count == 0)
+                {
+                    await ShowDialogAsync("Error", "No hay productos en la venta");
+                    return;
+                }
+
+            // Validación final
+                if (carrito.Any(p => p.Cantidad > p.StockDisponible) || bandera == true)
+                {
+                    await ShowDialogAsync("Error", "Hay cantidades inválidas");
+                bandera = false;
+                    return;
+                }
+
+                var venta = new Venta
+                {
+                    IdVenta = Guid.NewGuid(),
+                    IdUsuario = Guid.NewGuid(),
+                    IdCliente = Guid.NewGuid(),
+                    Fecha = DateTime.Now,
+                    Total = carrito.Sum(p => p.Subtotal)
+                };
+
+                foreach (var item in carrito)
+                {
+                    item.IdVenta = venta.IdVenta;
+                }
+
+                var ventas = await _ventaService.GetVentasAsync() ?? new List<Venta>();
+                ventas.Add(venta);
+                await _ventaService.SaveVentasAsync(ventas);
+
+                var detalleService = new DetalleVentasService();
+                var detalles = await detalleService.GetDetalleVentasAsync() ?? new List<DetalleVentas>();
+                detalles.AddRange(carrito);
+                await detalleService.SaveDetalleVentasAsync(detalles);
+            var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
 
             foreach (var item in carrito)
             {
-                item.IdVenta = venta.IdVenta;
+                var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
+
+                if (producto != null)
+                {
+                    producto.Stock -= item.Cantidad;
+
+                    if (producto.Stock < 0)
+                        producto.Stock = 0;
+                }
             }
 
-            var ventas = await _ventaService.GetVentasAsync() ?? new List<Venta>();
-            ventas.Add(venta);
-            await _ventaService.SaveVentasAsync(ventas);
-
-            var detalleService = new DetalleVentasService();
-            var detalles = await detalleService.GetDetalleVentasAsync() ?? new List<DetalleVentas>();
-            detalles.AddRange(carrito);
-            await detalleService.SaveDetalleVentasAsync(detalles);
-
-            // 🔹 Limpiar UI
+            await _productoService.SaveProductsAsync(productos);
             carrito.Clear();
-            ProductosList.ItemsSource = null;
+            CodigoBox.Text = "";
 
-            await ShowDialogAsync("Éxito", "Venta registrada correctamente", "OK");
-        }
+                ActualizarTotal();
 
+                await ShowDialogAsync("Éxito", "Venta registrada correctamente");
+            }
+       
         private async void BuscarProducto_Click(object sender, RoutedEventArgs e)
         {
             //not yet

@@ -14,7 +14,10 @@ namespace piaWinUI.Models
         private string nombreProducto;
         private decimal precioUnitario;
         private int cantidad;
+        public event Action<string> OnError;
+        public int StockDisponible { get; set; }
 
+        
         public Guid IdVenta
         {
             get => idVenta;
@@ -61,7 +64,23 @@ namespace piaWinUI.Models
             get => cantidad;
             set
             {
-                cantidad = value;
+                if (value < 1) {
+                    cantidad = 1;
+                    return;
+                }
+                
+                if (value > StockDisponible)
+                {
+                    
+                    
+                    OnError?.Invoke($"Stock insuficiente. Disponible: {StockDisponible}");
+                    return;
+                }
+                else
+                {
+                    cantidad = value;
+                }
+
                 OnPropertyChanged(nameof(Cantidad));
                 OnPropertyChanged(nameof(Subtotal));
             }

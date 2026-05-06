@@ -38,12 +38,14 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
             <TextBlock Text="Producto" FontWeight="Bold" Grid.Column="0"/>
             <TextBlock Text="Cantidad" FontWeight="Bold" Grid.Column="1"/>
             <TextBlock Text="Precio" FontWeight="Bold" Grid.Column="2"/>
             <TextBlock Text="Subtotal" FontWeight="Bold" Grid.Column="3"/>
+            <TextBlock Text="Eliminar" FontWeight="Bold" Grid.Column="4"/>
         </Grid>
 
         <!-- 🔹 LISTA -->
@@ -58,6 +60,7 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
                         <!-- Producto -->
@@ -68,7 +71,9 @@
                         <!-- Cantidad -->
                         <NumberBox Value="{Binding Cantidad, Mode=TwoWay}"
                                Width="80"
-                               Grid.Column="1"/>
+                               Grid.Column="1"
+                                   
+                                   Minimum="1"/>
 
                         <!-- Precio -->
                         <TextBlock Text="{Binding PrecioUnitario}"
@@ -79,12 +84,25 @@
                         <TextBlock Text="{Binding Subtotal}"
                                Grid.Column="3"
                                VerticalAlignment="Center"/>
+                        
+                        <!-- Eliminar -->
+                        <Button Grid.Column="4"
+        Click="EliminarProducto_Click"
+        Tag="{Binding}">
+                            <SymbolIcon Symbol="Delete"/>
+                        </Button>
+
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>
 
         </ListView>
-
+        <TextBlock x:Name="TotalText"
+           FontSize="20"
+           FontWeight="Bold"
+           HorizontalAlignment="Right"
+           Margin="0,10,0,0"
+           Grid.Row="4"/>
         <!-- Botones -->
         <Grid Grid.Row="4" ColumnSpacing="10">
             <Grid.ColumnDefinitions>
@@ -93,7 +111,7 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0"
-                Content="Buscar producto"
+                Content="Buscar producto (no es para literal buscar el producto, quiero abrir una ventana para buscar por nombre, idk)"
                 Style="{StaticResource AccentButtonStyle}"
                 Click="BuscarProducto_Click"/>
 
