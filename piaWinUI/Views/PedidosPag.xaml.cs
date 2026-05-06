@@ -27,6 +27,7 @@ namespace piaWinUI.Views
             this.InitializeComponent();
 
             Loaded += PedidosPag_Loaded;
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
         }
 
         private async void PedidosPag_Loaded(object sender, RoutedEventArgs e)
