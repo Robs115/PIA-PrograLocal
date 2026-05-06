@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -23,9 +24,11 @@ namespace piaWinUI.Views
     /// </summary>
     public sealed partial class UsersPage : Page
     {
+        private AuthService _authService;
         public UsersPage()
         {
             InitializeComponent();
+            _authService = new AuthService(App.UsersFilePath);
         }
     }
 }

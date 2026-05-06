@@ -97,7 +97,8 @@ namespace piaWinUI.Views
 
             btnUsuarios.Click += (s, args) =>
             {
-                // abrir usuarios
+                ContentFrame.Navigate(typeof(UsersPage));
+                currentDialog?.Hide();
             };
 
             var btnCerrar = new Button
