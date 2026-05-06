@@ -18,6 +18,7 @@ using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
+using Windows.ApplicationModel.DataTransfer;
 
 namespace piaWinUI.Views
 {
@@ -86,7 +87,11 @@ namespace piaWinUI.Views
 
         private void Edit_Click(object sender, RoutedEventArgs e)
         {
-            
+            if (sender is Button button &&
+                button.Tag is ProductoView productoView)
+            {
+                Frame.Navigate(typeof(EditProductoPage), productoView.Model);
+            }
         }
 
         private async void Delete_Click(object sender, RoutedEventArgs e)
@@ -97,6 +102,21 @@ namespace piaWinUI.Views
                 await _service.DeleteProductAsync(productoView.Model.Id);
 
                 Productos.Remove(productoView);
+            }
+        }
+
+        private void Nombre_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+            if (sender is TextBlock tb &&
+                tb.DataContext is ProductoView productoView)
+            {
+                var guid = productoView.Model.Id.ToString();
+
+                var dataPackage = new DataPackage();
+                dataPackage.SetText(guid);
+
+                Clipboard.SetContent(dataPackage);
+                Clipboard.Flush();
             }
         }
 

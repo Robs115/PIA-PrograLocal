@@ -124,7 +124,7 @@ namespace piaWinUI.Views
                     Id = Guid.NewGuid(),
                     Nombre = txtNombre.Text,
                     Descripcion = txtDescripcion.Text,
-                    Categoria = cmbCategoria.Text,
+                    Categoria = (cmbCategoria.SelectedItem as ComboBoxItem)?.Content?.ToString(),
 
                     PrecioCompra = decimal.Parse(txtPrecioCompra.Text),
                     PrecioVenta = decimal.Parse(txtPrecioVenta.Text),

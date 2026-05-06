@@ -18,8 +18,15 @@
 
             <controls:DataGrid.Columns>
 
-                <controls:DataGridTextColumn Header="Nombre"
-                                     Binding="{Binding Nombre}" />
+                <controls:DataGridTemplateColumn Header="Nombre">
+                    <controls:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Nombre}"
+                               Tapped="Nombre_Tapped"
+                               TextDecorations="Underline"/>
+                        </DataTemplate>
+                    </controls:DataGridTemplateColumn.CellTemplate>
+                </controls:DataGridTemplateColumn>
 
                 <controls:DataGridTextColumn Header="Descripción"
                                      Binding="{Binding Descripcion}" />
