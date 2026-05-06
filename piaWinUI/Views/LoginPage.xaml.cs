@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,48 +26,14 @@ namespace piaWinUI.Views
     /// </summary>
     public sealed partial class Login : Page
     {
-        private readonly string _dataFolder;
-        private readonly string _usersFilePath;
+
+        private AuthService _authService;
 
         public Login()
         {
             InitializeComponent();
-            //_dataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "EvidenciaWinUI");
-            //_usersFilePath = Path.Combine(_dataFolder, "users.json");
-            _dataFolder = Path.Combine(AppContext.BaseDirectory, "Data");
-            _usersFilePath = Path.Combine(_dataFolder, "users.json");
-            Directory.CreateDirectory(_dataFolder);
+            _authService = new AuthService(App.UsersFilePath);
         }
-
-        private record User(string Username, string Password);
-
-        private async Task<List<User>> LoadUsersAsync()
-        {
-            try
-            {
-                if (!Directory.Exists(_dataFolder)) Directory.CreateDirectory(_dataFolder);
-                if (!File.Exists(_usersFilePath)) return new List<User>();
-
-                using var stream = File.OpenRead(_usersFilePath);
-                var users = await JsonSerializer.DeserializeAsync<List<User>>(stream);
-                return users ?? new List<User>();
-            }
-            catch
-            {
-                return new List<User>();
-            }
-        }
-        
-
-        /*
-        private async Task SaveUsersAsync(List<User> users)
-        {
-            var options = new JsonSerializerOptions { WriteIndented = true };
-            using var stream = File.Create(_usersFilePath);
-            await JsonSerializer.SerializeAsync(stream, users, options);
-        }
-
-        */
 
         private void SetStatus(string text, bool isError = true)
         {
@@ -74,101 +41,27 @@ namespace piaWinUI.Views
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
 
-
-        private async void CreateUser_Click(object sender, RoutedEventArgs e)
-        {
-            /*
-            var username = UsernameTextBox.Text?.Trim();
-            var password = PasswordBox.Password ?? string.Empty;
-
-            if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
-            {
-                SetStatus("Ingrese un usuario y una contrasena.");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(username))
-            {
-                SetStatus("Ingrese un usuario.");
-                return;
-            }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                SetStatus("Ingrese una contrasena.");
-                return;
-            }
-
-            var users = await LoadUsersAsync();
-            if (users.Any(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase)))
-            {
-                SetStatus("Ya existe un usuario con el nombre seleccionado, selecciona otro nombre de usuario.");
-                return;
-            }
-
-            users.Add(new User(username, password));
-            await SaveUsersAsync(users);
-            SetStatus("Usuario creado.", isError: false);
-        
-        */
-        }
-
         private async Task DoLoginAsync()
         {
             var username = UsernameTextBox.Text?.Trim();
             var password = PasswordBox.Password ?? string.Empty;
 
-            
-
-            if (string.IsNullOrEmpty(username) & string.IsNullOrEmpty(password))
+            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
             {
-                SetStatus("Ingrese un usuario y una contrasena.");
+                SetStatus("Ingrese usuario y contraseña.");
                 return;
             }
 
-            if (string.IsNullOrEmpty(username))
+            bool ok = await _authService.ValidateLoginAsync(username, password);
+
+            if (!ok)
             {
-                SetStatus("Ingrese un usuario.");
+                SetStatus("Usuario o contraseña inválidos.");
                 return;
             }
-
-            if (string.IsNullOrEmpty(password))
-            {
-                SetStatus("Ingrese una contrasena.");
-                return;
-            }
-
-            if (username.Length > 20)
-            {
-                SetStatus("El usuario no debe de contener mas de 20 caracteres.");
-                return;
-            }
-
-            if (password.Length > 20)
-            {
-                SetStatus("La contraseña no debe contener mas de 20 caracteres.");
-            }
-
-            var users = await LoadUsersAsync();
-
-            var user = users.FirstOrDefault(u => string.Equals(u.Username, username, StringComparison.OrdinalIgnoreCase));
-            if (user is null)
-            {
-                SetStatus("Usuario o contrasena invalidos.");
-                return;
-            }
-
-            if (user.Password != password)
-            {
-                SetStatus("Usuario o contrasena invalidos.");
-                return;
-            }
-
-            SetStatus("Ingreso exitoso.", isError: false);
 
             Frame.Navigate(typeof(MainPage));
         }
-
 
         private async void Login_Click(object sender, RoutedEventArgs e)
         {

@@ -13,11 +13,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text.Json;
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
+using piaWinUI.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -38,7 +40,22 @@ namespace piaWinUI
         public App()
         {
             this.InitializeComponent();
-            System.IO.Directory.CreateDirectory(DataFolder);
+
+            Directory.CreateDirectory(DataFolder);
+
+            if (!File.Exists(UsersFilePath))
+            {
+                var defaultUsers = new[]
+                {
+                    new User { Username = "admin", Password = "1234" }
+                };
+
+                File.WriteAllText(
+                    UsersFilePath,
+                    JsonSerializer.Serialize(defaultUsers, new JsonSerializerOptions { })
+                );
+            }
+
         }
 
         /// <summary>
@@ -57,10 +74,9 @@ namespace piaWinUI
 
             _window.Activate();
         }
-    }
+    
 
-    public partial class App : Application
-    {
+    
         public static string DataFolder { get; } =
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "piaWinUI");
 

@@ -10,52 +10,46 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
-BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
-BorderThickness="1" 
-CornerRadius="8" 
-Width="400" 
-HorizontalAlignment="Center"  
-VerticalAlignment="Center" 
-Padding="32">
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
+            BorderThickness="1" 
+            CornerRadius="8" 
+            Width="400" 
+            HorizontalAlignment="Center"  
+            VerticalAlignment="Center" 
+            Padding="32">
             <StackPanel Spacing="16">
                 <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8">
                     <SymbolIcon Symbol="Contact" />
                     <TextBlock Text="Bienvenido"  
-Style="{StaticResource TitleTextBlockStyle}"  
-HorizontalAlignment="Center" />
+                        Style="{StaticResource TitleTextBlockStyle}"  
+                        HorizontalAlignment="Center" />
                     <TextBlock Text="Introduce tus credenciales"  
-Style="{StaticResource CaptionTextBlockStyle}"  
-Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
-HorizontalAlignment="Center" />
+                        Style="{StaticResource CaptionTextBlockStyle}"  
+                        Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
+                        HorizontalAlignment="Center" />
                 </StackPanel>
                 <TextBox x:Name="UsernameTextBox"  
-PlaceholderText="Usuario"  
-Header="Nombre de usuario" 
-KeyDown="Root_KeyDown"
+                    PlaceholderText="Usuario"  
+                    Header="Nombre de usuario" 
+                    KeyDown="Root_KeyDown"
                          />
                 <PasswordBox x:Name="PasswordBox"  
-PlaceholderText="Contraseña"  
-Header="Contraseña"
-KeyDown="Root_KeyDown"
+                    PlaceholderText="Contraseña"  
+                    Header="Contraseña"
+                    KeyDown="Root_KeyDown"
                              />
                 <TextBlock x:Name="StatusTextBlock"  
-Foreground="{ThemeResource SystemFillColorCriticalBrush}"  
-FontSize="12" 
-TextWrapping="Wrap"  
-HorizontalAlignment="Center"/>
+                    Foreground="{ThemeResource SystemFillColorCriticalBrush}"  
+                    FontSize="12" 
+                    TextWrapping="Wrap"  
+                    HorizontalAlignment="Center"/>
                 <StackPanel Spacing="12" Margin="0,8,0,0">
                     <Button x:Name="LoginButton"  
-Content="Iniciar Sesión"  
-Click="Login_Click"  
-Style="{StaticResource AccentButtonStyle}"  
-HorizontalAlignment="Stretch" />
-                    <Button x:Name="CreateUserButton"  
-Content="¿No tienes cuenta? Regístrate"  
-Click="CreateUser_Click"  
-Style="{StaticResource DefaultButtonStyle}" 
-HorizontalAlignment="Stretch"  
-BorderThickness="0"  
-Background="Transparent"/>
+                        Content="Iniciar Sesión"  
+                        Click="Login_Click"  
+                        Style="{StaticResource AccentButtonStyle}"  
+                        HorizontalAlignment="Stretch" />
+
                 </StackPanel>
             </StackPanel>
         </Border>

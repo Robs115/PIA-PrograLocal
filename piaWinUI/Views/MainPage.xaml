@@ -12,6 +12,8 @@
 
         <NavigationView x:Name="NavView"
                 PaneDisplayMode="Left"
+                IsBackButtonVisible="Collapsed"
+                IsSettingsVisible="False"
                 ItemInvoked="NavView_ItemInvoked">
 
             <NavigationView.MenuItems>
@@ -25,8 +27,11 @@
                 <NavigationViewItem Content="Proveedores" Tag="Proveedores"/>
 
             </NavigationView.MenuItems>
+            
+            
 
             <NavigationView.FooterMenuItems>
+                <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
                 <NavigationViewItem Content="Salir"
                             Icon="ClosePane"
                             Tapped="ExitApp_Tapped"/>
