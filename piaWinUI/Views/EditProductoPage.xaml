@@ -16,7 +16,7 @@
 
                 <StackPanel HorizontalAlignment="Center"
                         Margin="0,0,0,12"
-                        Spacing="8">
+                        Spacing="8" Width="800">
 
                     <SymbolIcon Symbol="Edit" />
 
@@ -41,7 +41,7 @@
                          PlaceholderText="Descripción del producto"
                          TextWrapping="Wrap"
                          AcceptsReturn="True"
-                         MaxLength="50"/>
+                         MaxLength="100"/>
 
                     <!-- Categoría -->
                     <ComboBox x:Name="cmbCategoria"
@@ -66,21 +66,21 @@
                          Header="Precio de compra"
                          PlaceholderText="0.00"
                          InputScope="Number"
-                         MaxLength="10"/>
+                         MaxLength="9"/>
 
                     <!-- Precio venta -->
                     <TextBox x:Name="txtPrecioVenta"
                          Header="Precio de venta"
                          PlaceholderText="0.00"
                          InputScope="Number"
-                         MaxLength="10"/>
+                         MaxLength="9"/>
 
                     <!-- Stock -->
                     <TextBox x:Name="txtStock"
                          Header="Stock"
                          PlaceholderText="0"
                          InputScope="Number"
-                         MaxLength="10"/>
+                         MaxLength="9"/>
 
                     <!-- Proveedor -->
                     <ComboBox x:Name="cmbProveedor"
