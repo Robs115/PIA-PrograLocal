@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Helpers;
 using piaWinUI.Models;
 using piaWinUI.Services;
 using System;
@@ -12,8 +13,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Media.Protection.PlayReady;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -29,6 +32,7 @@ namespace piaWinUI.Views
         public ClientesPag()
         {
             InitializeComponent();
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
         }
 
         public DateTimeOffset MaxFechaNacimiento => DateTime.Now.AddYears(-15);
@@ -38,7 +42,18 @@ namespace piaWinUI.Views
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
 
+        private async Task DialogError(string title, string content)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "Aceptar",
+                XamlRoot = this.Content.XamlRoot
+            };
 
+            await dialog.ShowAsync();
+        }
 
 
         private async void Guardar_Click(object sender, RoutedEventArgs e)
@@ -52,50 +67,32 @@ namespace piaWinUI.Views
 
             // validaciones basicas
 
-            if (string.IsNullOrWhiteSpace(nombre))
+            string error;
+
+            if (!ValidationHelper.ValidarNombre(nombre, out error))
             {
-                SetStatus("El campo nombre no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(telefono))
+            if (!ValidationHelper.ValidarTelefono(telefono, out error))
             {
-                SetStatus("El campo telfono no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!ValidationHelper.ValidarEmail(email, out error))
             {
-                SetStatus("El campo email no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
-
-            if (!email.Contains("@") || !email.Contains("."))
+            if (!ValidationHelper.ValidarFechaNacimiento(
+        FechaNacimiento.Date.DateTime,
+        out error))
             {
-                SetStatus($"El campo email debe contener un {"@"} y un {"."}.");
+                await DialogError("Error", error);
                 return;
             }
-
-            if (!telefono.All(char.IsDigit))
-            {
-                SetStatus("El campo telefono ddebe tener el formato adecuado.");
-                return;
-            }
-
-            if (telefono.Length != 10)
-            {
-                SetStatus("El campo telefono debe tener 10 digitos.");
-                return;
-            }
-
-
-            // no puede ser futura
-            if (fechanacimiento > DateTime.Now)
-            {
-                SetStatus("La fecha de nacimiento no puede ser mayor a la fecha actual.");
-                return;
-            }
-
             // debe tener al menos 15 años
             DateTime fechaMinimaPermitida = DateTime.Now.AddYears(-15);
 
@@ -105,9 +102,22 @@ namespace piaWinUI.Views
                 return;
             }
 
+            var clientes = await _service.GetClientesAsync();
+            //ver si ya existe un tlefono registrado
+            var existetelefono = clientes.FirstOrDefault(c => c.Telefono == telefono);
+
+            if (existetelefono != null)
+            {
+                await DialogError("Error", "El teléfono ya está registrado.");
+                return;
+            }
+
+           
+            
+            
             try
             {
-                var clientes = await _service.GetClientesAsync();
+               
                 var nuevo = new Cliente
                 {
                     

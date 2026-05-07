@@ -7,11 +7,13 @@ using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using piaWinUI.Models;
 using piaWinUI.Services;
+using piaWinUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -29,6 +31,7 @@ namespace piaWinUI.Views
         public ProveedoresPag()
         {
             InitializeComponent();
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
         }
 
         
@@ -41,7 +44,18 @@ namespace piaWinUI.Views
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
 
+        private async Task DialogError(string title, string content)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "Aceptar",
+                XamlRoot = this.Content.XamlRoot
+            };
 
+            await dialog.ShowAsync();
+        }
 
 
         private async void Guardar_Click(object sender, RoutedEventArgs e)
@@ -54,46 +68,39 @@ namespace piaWinUI.Views
             var email = Email.Text;
 
             // validaciones basicas
+            string error;
 
-            if (string.IsNullOrWhiteSpace(nombre))
+            if(!ValidationHelper.ValidarNombre(nombre, out error))
             {
-                SetStatus("El campo nombre no debe estar vacio.");
+                await DialogError("Error", error);
+                return;
+            }   
+            if (!ValidationHelper.ValidarTelefono(telefono, out error))
+                {
+                    await DialogError("Error", error);
+                    return;
+                }
+    
+            if(!ValidationHelper.ValidarEmail(email, out error))
+                {
+                    await DialogError("Error", error);
+                    return;
             }
+            
+            var provs = await _service.GetProveedorAsync();
+             
+            //ver si ya existe un tlefono registrado
+            var existetelefono = provs.FirstOrDefault(c => c.Telefono == telefono);
 
-            if (string.IsNullOrWhiteSpace(telefono))
+            if (existetelefono != null)
             {
-                SetStatus("El campo telefono no debe estar vacio.");
+                await DialogError("Error", "El teléfono ya está registrado.");
                 return;
             }
-
-            if (string.IsNullOrWhiteSpace(email))
-            {
-                SetStatus("El campo email no debe estar vacio.");
-                return;
-            }
-
-            if (!email.Contains("@") || !email.Contains("."))
-            {
-                SetStatus($"El campo email debe contener un {"@"} y un {"."}.");
-                return;
-            }
-
-            if (!telefono.All(char.IsDigit))
-            {
-                SetStatus("El campo telefono debe tener el formato adecuado.");
-                return;
-            }
-
-            if (telefono.Length != 10)
-            {
-                SetStatus("El campo telefono debe tener 10 digitos.");
-                return;
-            }
-
-
             try
             {
                 var proveedores = await _service.GetProveedorAsync();
+
                 var nuevo = new Proveedor
                 {
 

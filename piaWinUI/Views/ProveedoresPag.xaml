@@ -29,11 +29,11 @@ Spacing ="14">
                             <ColumnDefinition />
                             <ColumnDefinition />
                         </Grid.ColumnDefinitions >
-                        <Button Grid.Column="0" x:Name="reportesProveedores"  
+                      <!--  <Button Grid.Column="0" x:Name="reportesProveedores"  
             Content ="Reportes de proveedores"  
             
             Style ="{ StaticResource AccentButtonStyle }"  
-            HorizontalAlignment ="Stretch" />
+            HorizontalAlignment ="Stretch" /> -->
 
                         <Button Grid.Column="1"  x:Name="buscarProveedores"  
                                 Click="BuscarProveedores_Click"
@@ -49,17 +49,20 @@ HorizontalAlignment ="Stretch" />
 
                 <TextBox x:Name="Nombre" 
                      Header ="Nombre del proveedor *" 
-                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"/>
+                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"
+                         MaxLength="50"/>
 
                 <TextBox x:Name="Telefono" 
                        Header ="Teléfono *" 
                        PlaceholderText ="Ej. 81 1234 5678" 
+                         MaxLength="10"
                        />
 
                 
                 <TextBox x:Name="Email"
                      Header ="Introduzca el correo electrónico"
-                     PlaceholderText ="emilio@gmail.com"/>
+                     PlaceholderText ="emilio@gmail.com"
+                         MaxLength="50"/>
 
 
 

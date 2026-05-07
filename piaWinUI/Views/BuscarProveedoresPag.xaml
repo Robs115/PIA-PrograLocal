@@ -102,13 +102,16 @@ Spacing ="30">
             <StackPanel Spacing="10">
 
                 <TextBox x:Name="nombreeditar"
-         Header="Nombre"/>
+         Header="Nombre"
+                         MaxLength="50"/>
 
                 <TextBox x:Name="telefonoeditar"
-         Header="Teléfono"/>
+         Header="Teléfono"
+                         MaxLength="50"/>
 
                 <TextBox x:Name="emaileditar"
-         Header="Email"/>
+         Header="Email"
+                         MaxLength="50"/>
 
             </StackPanel>
         </ContentDialog>

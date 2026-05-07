@@ -27,7 +27,7 @@ namespace piaWinUI.Views
             private VentaService _ventaService = new VentaService();
              private List<Producto> todosProductos = new List<Producto>();
             private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
-            bool    bandera = false;
+           
 
         public VentasPag()
             {
@@ -88,6 +88,7 @@ namespace piaWinUI.Views
                 };
 
                 await dialog.ShowAsync();
+
             }
 
             // 🔥 TOTAL

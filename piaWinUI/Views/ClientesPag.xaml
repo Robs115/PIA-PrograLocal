@@ -49,12 +49,13 @@ HorizontalAlignment ="Stretch" />
 
                     <TextBox x:Name="Nombre" 
                      Header ="Nombre del cliente *" 
-                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"/>
+                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"
+                             MaxLength="50"/>
 
                     <TextBox x:Name="Telefono" 
                        Header ="Teléfono *" 
                        PlaceholderText ="Ej. 81 1234 5678" 
-                       />
+                       MaxLength="10"/>
 
                 <DatePicker x:Name="FechaNacimiento" 
                         Header ="Fecha de nacimiento *"
@@ -63,7 +64,8 @@ HorizontalAlignment ="Stretch" />
 
                 <TextBox x:Name="Email"
                      Header ="Introduzca el correo electrónico"
-                     PlaceholderText ="emilio@gmail.com"/>
+                     PlaceholderText ="emilio@gmail.com"
+                         MaxLength="50"/>
 
 
 

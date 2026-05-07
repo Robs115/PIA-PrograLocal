@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Helpers;
 using piaWinUI.Models;
 using piaWinUI.Services;
 using System;
@@ -12,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
@@ -32,6 +34,7 @@ namespace piaWinUI.Views
         public BuscarClientesPag()
         {
             InitializeComponent();
+            this.NavigationCacheMode = NavigationCacheMode.Enabled;
         }
 
         protected override async void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
@@ -55,9 +58,9 @@ namespace piaWinUI.Views
             ClientesList.ItemsSource = filtrados;
         }
 
-        public async void DialogError(string title, string content)
+        private async Task DialogError(string title, string content)
         {
-            var errorDialog = new ContentDialog
+            var dialog = new ContentDialog
             {
                 Title = title,
                 Content = content,
@@ -65,7 +68,7 @@ namespace piaWinUI.Views
                 XamlRoot = this.Content.XamlRoot
             };
 
-            await errorDialog.ShowAsync();
+            await dialog.ShowAsync();
         }
 
         private async void EditarCliente_Click(object sender, RoutedEventArgs e)
@@ -103,43 +106,35 @@ namespace piaWinUI.Views
             //validar 
 
 
-            if (string.IsNullOrWhiteSpace(nombre))
+            string error;
+
+            if (!ValidationHelper.ValidarNombre(nombre, out error))
             {
-                DialogError("Error", "El campo nombre no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(telefono))
+            if (!ValidationHelper.ValidarTelefono(telefono, out error))
             {
-                DialogError("Error", "El campo telefono no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
 
-            if (string.IsNullOrWhiteSpace(email))
+            if (!ValidationHelper.ValidarEmail(email, out error))
             {
-                DialogError("Error", "El campo email no debe estar vacio.");
+                await DialogError("Error", error);
                 return;
             }
 
-            if (!email.Contains("@") || !email.Contains("."))
+            
+            //ver si ya existe un tlefono registrado
+            var existetelefono = clientes.FirstOrDefault(c => c.Telefono == telefono);
+
+            if (existetelefono != null)
             {
-                DialogError("Error", "El campo email debe tener el formato adecuado.");
+                await DialogError("Error", "El teléfono ya está registrado.");
                 return;
             }
-
-            if (!telefono.All(char.IsDigit))
-            {
-                DialogError("Error", "El campo telefono debe contener digitos numericos.");
-                return;
-            }
-
-            if (telefono.Length != 10)
-            {
-                DialogError("Error", "El telefono debe tener 10 caracteres.");
-                return;
-            }
-
-
 
 
             // 🔥 Guardar cambios

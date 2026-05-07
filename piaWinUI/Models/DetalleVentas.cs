@@ -65,29 +65,36 @@ namespace piaWinUI.Models
             get => cantidad;
             set
             {
-                if (value < 1) {
+                if (value < 1)
+                {
                     cantidad = 1;
+                    TieneError = false;
+
+                    OnPropertyChanged(nameof(Cantidad));
+                    OnPropertyChanged(nameof(Subtotal));
+
                     return;
                 }
-                
+
                 if (value > StockDisponible)
                 {
-
                     TieneError = true;
+
                     OnError?.Invoke($"Stock insuficiente. Disponible: {StockDisponible}");
+
                     return;
                 }
-                else
-                {
-                    cantidad = value;
-                }
-                TieneError = false; 
+
+                TieneError = false;
+
                 cantidad = value;
 
                 OnPropertyChanged(nameof(Cantidad));
                 OnPropertyChanged(nameof(Subtotal));
             }
         }
+
+        
 
         // 🔥 Calculado automáticamente
         public decimal Subtotal => PrecioUnitario * Cantidad;
