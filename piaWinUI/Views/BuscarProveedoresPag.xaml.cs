@@ -225,7 +225,7 @@ namespace piaWinUI.Views
 
         public void regresar_click(object sender, RoutedEventArgs e)
         {
-            Frame.Navigate(typeof(ClientesPag));
+            Frame.Navigate(typeof(ProveedoresPag));
         }
     }
 }
