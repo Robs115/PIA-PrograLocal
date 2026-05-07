@@ -16,8 +16,9 @@ namespace piaWinUI.Models
         private int cantidad;
         public event Action<string> OnError;
         public int StockDisponible { get; set; }
+        public bool TieneError { get; private set; }
 
-        
+
         public Guid IdVenta
         {
             get => idVenta;
@@ -71,8 +72,8 @@ namespace piaWinUI.Models
                 
                 if (value > StockDisponible)
                 {
-                    
-                    
+
+                    TieneError = true;
                     OnError?.Invoke($"Stock insuficiente. Disponible: {StockDisponible}");
                     return;
                 }
@@ -80,6 +81,8 @@ namespace piaWinUI.Models
                 {
                     cantidad = value;
                 }
+                TieneError = false; 
+                cantidad = value;
 
                 OnPropertyChanged(nameof(Cantidad));
                 OnPropertyChanged(nameof(Subtotal));

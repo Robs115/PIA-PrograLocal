@@ -72,8 +72,10 @@
                         <NumberBox Value="{Binding Cantidad, Mode=TwoWay}"
                                Width="80"
                                Grid.Column="1"
-                                   
+                               
                                    Minimum="1"/>
+                        <!--    Foreground="{Binding TieneError, Converter={StaticResource BoolToColor}" -->
+
 
                         <!-- Precio -->
                         <TextBlock Text="{Binding PrecioUnitario}"
@@ -111,7 +113,7 @@
             </Grid.ColumnDefinitions>
 
             <Button Grid.Column="0"
-                Content="Buscar producto (no es para literal buscar el producto, quiero abrir una ventana para buscar por nombre, idk)"
+                Content="Buscar producto por nombre"
                 Style="{StaticResource AccentButtonStyle}"
                 Click="BuscarProducto_Click"/>
 
@@ -120,6 +122,33 @@
                 Style="{StaticResource AccentButtonStyle}"
                 Click="GuardarVenta_Click"/>
         </Grid>
+        <ContentDialog x:Name="BuscarProductoDialog"
+               Title="Buscar producto"
+               PrimaryButtonText="Seleccionar"
+               CloseButtonText="Cancelar">
 
+            <StackPanel Spacing="10">
+
+                <TextBox x:Name="BuscarProductoBox"
+                 PlaceholderText="Buscar por nombre..."
+                 TextChanged="BuscarProductoBox_TextChanged"/>
+
+                <ListView x:Name="ResultadosProductosList"
+                  Height="300"
+                  SelectionMode="Single">
+
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel>
+                                <TextBlock Text="{Binding Nombre}" FontWeight="Bold"/>
+                                <TextBlock Text="{Binding PrecioVenta}"/>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+
+                </ListView>
+
+            </StackPanel>
+        </ContentDialog>
     </Grid>
 </Page>

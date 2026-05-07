@@ -25,15 +25,58 @@ namespace piaWinUI.Views
         {
             private ProductService _productoService = new ProductService();
             private VentaService _ventaService = new VentaService();
-            
+             private List<Producto> todosProductos = new List<Producto>();
             private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
             bool    bandera = false;
 
         public VentasPag()
             {
                 this.InitializeComponent();
+                 ProductosList.ItemsSource = carrito;
+        }
+
+        private void AgregarProductoAlCarrito(Producto producto)
+        {
+            var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
+
+            if (existente != null)
+            {
+                existente.Cantidad++;
             }
-        
+            else
+            {
+                var nuevo = new DetalleVentas
+                {
+                    IdProducto = producto.Id,
+                    NombreProducto = producto.Nombre,
+                    PrecioUnitario = producto.PrecioVenta,
+                    Cantidad = 1,
+                    StockDisponible = producto.Stock
+                };
+
+                nuevo.OnError += async (mensaje) =>
+                {
+                    await ShowDialogAsync("Error", mensaje);
+                };
+
+                nuevo.PropertyChanged += (s, e) =>
+                {
+                    if (e.PropertyName == nameof(DetalleVentas.Cantidad) ||
+                        e.PropertyName == nameof(DetalleVentas.PrecioUnitario))
+                    {
+                        ActualizarTotal();
+                    }
+                };
+
+                carrito.Add(nuevo);
+
+                // 🔥 forzar cálculo inicial
+                nuevo.Cantidad = nuevo.Cantidad;
+            }
+            
+            ActualizarTotal();
+        }
+
         private async Task ShowDialogAsync(string title, string content)
             {
                 var dialog = new ContentDialog
@@ -53,93 +96,50 @@ namespace piaWinUI.Views
                 var total = carrito.Sum(p => p.Subtotal);
                 TotalText.Text = $"Total: {total:C}";
             }
+            private void limpiarbarrabusqueda() {
+            CodigoBox.Text = "";
+        }
+        // 🔥 AGREGAR PRODUCTO
+        private async void CargarProductos()
+        {
+            var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
 
-            // 🔥 AGREGAR PRODUCTO
-            private async void CargarProductos()
+            string codigo = CodigoBox.Text;
+
+            if (string.IsNullOrWhiteSpace(codigo))
             {
-                var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
-
-                string codigo = CodigoBox.Text;
-
-                if (string.IsNullOrWhiteSpace(codigo))
-                {
-                    await ShowDialogAsync("Error", "No hay código.");
-
-                    return;
-                }
-
-                if (!Guid.TryParse(codigo, out Guid guidBuscado))
-                {
-                    await ShowDialogAsync("Error", "Código inválido");
-                CodigoBox.Text = "";
-                    return;
-                }
-
-                var producto = productos.FirstOrDefault(p => p.Id == guidBuscado);
-
-                if (producto == null)
-                {
-                    await ShowDialogAsync("Error", "Producto no encontrado");
-                    return;
-                }
-
-                var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
-
-                if (existente != null)
-                {
-                    existente.Cantidad++;
-                }
-                else
-                {
-                    var nuevo = new DetalleVentas
-                    {
-                        IdProducto = producto.Id,
-                        NombreProducto = producto.Nombre,
-                        PrecioUnitario = producto.PrecioVenta,
-                        Cantidad = 1,
-                        
-                        StockDisponible = producto.Stock
-                    };
-
-                    // 🔥 error desde modelo
-                    nuevo.OnError += async (mensaje) =>
-                    {
-                        await ShowDialogAsync("Error", mensaje);
-                        bandera = true;
-                    };
-
-                    // 🔥 actualizar total cuando cambie cantidad
-                    nuevo.PropertyChanged += (s, e) =>
-                    {
-                        if (e.PropertyName == nameof(DetalleVentas.Cantidad))
-                        {
-                            ActualizarTotal();
-                        }
-                    };
-
-                    carrito.Add(nuevo);
-                    nuevo.PropertyChanged += (s, e) =>
-                    {
-                        if (e.PropertyName == nameof(DetalleVentas.Cantidad) ||
-                            e.PropertyName == nameof(DetalleVentas.PrecioUnitario))
-                        {
-                            ActualizarTotal();
-                        }
-                    };
-                // 🔥 FORZAR PRIMER CALCULO
-                nuevo.Cantidad = nuevo.Cantidad;
+                await ShowDialogAsync("Error", "No hay código.");
+                return;
             }
 
-              
-                ProductosList.ItemsSource = carrito;
-
-                CodigoBox.Text = "";
-
-               
-
-            
-            
+            if (!Guid.TryParse(codigo, out Guid guidBuscado))
+            {
+                await ShowDialogAsync("Error", "Código inválido");
+                limpiarbarrabusqueda();
+                return;
             }
+
+            var producto = productos.FirstOrDefault(p => p.Id == guidBuscado);
+
+            if (producto == null)
+            {
+                await ShowDialogAsync("Error", "Producto no encontrado");
+                limpiarbarrabusqueda();
+                return;
+            }
+
+            if (producto.Stock <= 0)
+            {
+                await ShowDialogAsync("Error", "No hay stock de este producto");
+                limpiarbarrabusqueda();
+                return;
+            }
+
+            // 🔥 SOLO ESTO
+            AgregarProductoAlCarrito(producto);
+           
+            limpiarbarrabusqueda();
+        }
         private async void EliminarProducto_Click(object sender, RoutedEventArgs e)
         {
             var button = sender as Button;
@@ -182,14 +182,13 @@ namespace piaWinUI.Views
                 }
 
             // Validación final
-                if (carrito.Any(p => p.Cantidad > p.StockDisponible) || bandera == true)
-                {
-                    await ShowDialogAsync("Error", "Hay cantidades inválidas");
-                bandera = false;
-                    return;
-                }
+            if (carrito.Any(p => p.TieneError))
+            {
+                await ShowDialogAsync("Error", "Hay productos con cantidades inválidas");
+                return;
+            }
 
-                var venta = new Venta
+            var venta = new Venta
                 {
                     IdVenta = Guid.NewGuid(),
                     IdUsuario = Guid.NewGuid(),
@@ -234,10 +233,39 @@ namespace piaWinUI.Views
 
                 await ShowDialogAsync("Éxito", "Venta registrada correctamente");
             }
-       
+
+        private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            string texto = BuscarProductoBox.Text.ToLower();
+
+            var filtrados = todosProductos
+                .Where(p => p.Nombre.ToLower().Contains(texto))
+                .ToList();
+
+            ResultadosProductosList.ItemsSource = filtrados;
+        }
         private async void BuscarProducto_Click(object sender, RoutedEventArgs e)
         {
-            //not yet
+            todosProductos = await _productoService.GetProductsAsync() ?? new List<Producto>();
+
+            ResultadosProductosList.ItemsSource = todosProductos;
+
+            var result = await BuscarProductoDialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            var seleccionado = ResultadosProductosList.SelectedItem as Producto;
+
+            if (seleccionado == null)
+                return;
+            if (seleccionado.Stock <= 0)
+            {
+                await ShowDialogAsync("Error", "No hay stock de este producto");
+                return;
+            }   
+
+            AgregarProductoAlCarrito(seleccionado);
         }
 
         private async void CargarVentas()
