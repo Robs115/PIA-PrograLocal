@@ -9,12 +9,14 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:piaWinUI.Models"
     mc:Ignorable="d">
+    
 
     <Grid>
+
         <controls:DataGrid
         ItemsSource="{x:Bind Users}"
         AutoGenerateColumns="False"
-        IsReadOnly="False"
+        IsReadOnly="True"
         Margin="10">
 
             <controls:DataGrid.Columns>
@@ -30,10 +32,17 @@
                 <controls:DataGridTemplateColumn Header="Acción">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <Button
-                            Content="Guardar"
-                            Click="SaveRow_Click"
-                            IsEnabled="{Binding IsDirty}" />
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+
+                                <Button
+                                Content="Editar"
+                                Click="EditUser_Click"/>
+
+                                <Button Content="Eliminar"
+                                Click="DeleteUser_Click"
+                                IsEnabled="{Binding CanDeleteUsers}"/>
+
+                            </StackPanel>
                         </DataTemplate>
                     </controls:DataGridTemplateColumn.CellTemplate>
                 </controls:DataGridTemplateColumn>
@@ -45,8 +54,14 @@
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
                 Margin="10">
+           
+            <Button Content="Nuevo usuario"
+                Click="AddUser_Click"
+                    Margin="0 0 10 10"/>
 
-            <Button Content="Recargar" Click="Reload_Click"/>
+            <Button Content="Recargar" Click="Reload_Click"
+                    Margin="0 0 0 10"/>
+            
         </StackPanel>
     </Grid>
     
