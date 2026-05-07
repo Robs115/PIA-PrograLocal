@@ -43,6 +43,8 @@ namespace piaWinUI
 
             Directory.CreateDirectory(DataFolder);
 
+
+
             if (!File.Exists(UsersFilePath))
             {
                 var defaultUsers = new[]
@@ -56,8 +58,10 @@ namespace piaWinUI
                 );
             }
 
-        }
 
+
+        }
+        public static string CajaFilePath => System.IO.Path.Combine(DataFolder, "caja.json");
         /// <summary>
         /// Invoked when the application is launched.
         /// </summary>

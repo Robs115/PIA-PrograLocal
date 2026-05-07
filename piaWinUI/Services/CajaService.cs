@@ -1,89 +1,283 @@
 ﻿using piaWinUI.Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
-
 
 namespace piaWinUI.Services
 {
     public class CajaService
     {
         private List<MovimientoCaja> _movimientos = new();
+
         private List<CorteCaja> _cortes = new();
 
+        private bool _corteRealizado = false;
+
         public bool CajaAbierta { get; private set; }
+
         public decimal Saldo { get; private set; }
 
-        public void AbrirCaja(decimal montoInicial)
+        public async Task LoadCajaAsync()
+        {
+            if (!File.Exists(App.CajaFilePath))
+                return;
+
+            var json =
+                await File.ReadAllTextAsync(App.CajaFilePath);
+
+            var data =
+                JsonSerializer.Deserialize<CajaData>(json);
+
+            if (data == null)
+                return;
+
+            CajaAbierta = data.CajaAbierta;
+
+            Saldo = data.Saldo;
+
+            _movimientos = data.Movimientos ?? new();
+
+            _cortes = data.Cortes ?? new();
+        }
+
+        public async Task SaveCajaAsync()
+        {
+            Directory.CreateDirectory(App.DataFolder);
+
+            var data = new CajaData
+            {
+                CajaAbierta = CajaAbierta,
+                Saldo = Saldo,
+                Movimientos = _movimientos,
+                Cortes = _cortes
+            };
+
+            var json = JsonSerializer.Serialize(
+                data,
+                new JsonSerializerOptions
+                {
+                    WriteIndented = true
+                });
+
+            await File.WriteAllTextAsync(
+                App.CajaFilePath,
+                json);
+        }
+
+        public async Task AbrirCaja(decimal montoInicial)
         {
             if (CajaAbierta)
-                throw new Exception("La caja ya está abierta");
+                throw new Exception(
+                    "La caja ya está abierta");
+
+            if (montoInicial < 0)
+                throw new Exception(
+                    "Monto inválido");
 
             CajaAbierta = true;
+
             Saldo = montoInicial;
-            _movimientos.Clear(); // nuevo turno
+
+            _movimientos.Clear();
+
+            _corteRealizado = false;
+
+            await SaveCajaAsync();
         }
 
-        public void CerrarCaja()
+        public async Task CerrarCaja()
         {
             if (!CajaAbierta)
-                throw new Exception("La caja ya está cerrada");
+                throw new Exception(
+                    "La caja ya está cerrada");
+
+            if (!_corteRealizado)
+                throw new Exception(
+                    "Debes realizar el corte");
 
             CajaAbierta = false;
+
+            await SaveCajaAsync();
         }
 
-        public void RegistrarMovimiento(string tipo, decimal monto, string concepto)
+        private async Task AgregarMovimiento(
+            MovimientoCaja mov)
+        {
+            _movimientos.Add(mov);
+
+            if (mov.Tipo == "Ingreso")
+                Saldo += mov.Monto;
+            else
+                Saldo -= mov.Monto;
+
+            await SaveCajaAsync();
+        }
+
+        public async Task RegistrarMovimiento(
+            string tipo,
+            decimal monto,
+            string concepto)
         {
             if (!CajaAbierta)
-                throw new Exception("No puedes registrar movimientos con la caja cerrada");
+                throw new Exception(
+                    "Caja cerrada");
+
+            if (string.IsNullOrWhiteSpace(concepto))
+                throw new Exception(
+                    "Ingresa concepto");
 
             if (monto <= 0)
-                throw new Exception("Monto inválido");
+                throw new Exception(
+                    "Monto inválido");
+
+            if (tipo == "Egreso" &&
+                monto > Saldo)
+            {
+                throw new Exception(
+                    "Saldo insuficiente");
+            }
 
             var mov = new MovimientoCaja
             {
                 Fecha = DateTime.Now,
                 Tipo = tipo,
                 Concepto = concepto,
-                Monto = monto
+                Monto = monto,
+                Origen = "Manual",
+                EsAutomatico = false
             };
 
-            _movimientos.Add(mov);
-
-            if (tipo == "Ingreso")
-                Saldo += monto;
-            else
-                Saldo -= monto;
+            await AgregarMovimiento(mov);
         }
 
-        public List<MovimientoCaja> ObtenerMovimientos() => _movimientos;
+        public async Task RegistrarVenta(Venta venta)
+        {
+            if (!CajaAbierta)
+                return;
 
-        public List<CorteCaja> ObtenerHistorialCortes() => _cortes;
+            bool existe = _movimientos.Any(x =>
+                x.Referencia ==
+                venta.IdVenta.ToString()
+                &&
+                x.Origen == "Ventas");
 
-        public (decimal ingresos, decimal egresos, decimal esperado, decimal diferencia)
+            if (existe)
+                return;
+
+            var mov = new MovimientoCaja
+            {
+                Fecha = DateTime.Now,
+                Tipo = "Ingreso",
+                Concepto = "Venta realizada",
+                Monto = venta.Total,
+                Origen = "Ventas",
+                Referencia = venta.IdVenta.ToString(),
+                EsAutomatico = true
+            };
+
+            await AgregarMovimiento(mov);
+        }
+
+        public async Task RegistrarPedido(
+            Pedidos pedido,
+            decimal costo)
+        {
+            if (!CajaAbierta)
+                return;
+
+            if (costo <= 0)
+                throw new Exception(
+                    "Costo inválido");
+
+            if (costo > Saldo)
+                throw new Exception(
+                    "Saldo insuficiente");
+
+            bool existe = _movimientos.Any(x =>
+                x.Referencia ==
+                pedido.Id.ToString()
+                &&
+                x.Origen == "Pedidos");
+
+            if (existe)
+                return;
+
+            var mov = new MovimientoCaja
+            {
+                Fecha = DateTime.Now,
+                Tipo = "Egreso",
+                Concepto =
+                    $"Pedido: {pedido.NombreProducto}",
+                Monto = costo,
+                Origen = "Pedidos",
+                Referencia = pedido.Id.ToString(),
+                EsAutomatico = true
+            };
+
+            await AgregarMovimiento(mov);
+        }
+
+        public List<MovimientoCaja>
+            ObtenerMovimientos()
+        {
+            return _movimientos
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+        }
+
+        public List<CorteCaja>
+            ObtenerHistorialCortes()
+        {
+            return _cortes
+                .OrderByDescending(x => x.Fecha)
+                .ToList();
+        }
+
+        public (
+            decimal ingresos,
+            decimal egresos,
+            decimal esperado,
+            decimal diferencia)
             CalcularCorte(decimal conteo)
         {
-            var ingresos = _movimientos
-                .Where(m => m.Tipo == "Ingreso")
-                .Sum(m => m.Monto);
+            var ingresos =
+                _movimientos
+                .Where(x => x.Tipo == "Ingreso")
+                .Sum(x => x.Monto);
 
-            var egresos = _movimientos
-                .Where(m => m.Tipo == "Egreso")
-                .Sum(m => m.Monto);
+            var egresos =
+                _movimientos
+                .Where(x => x.Tipo == "Egreso")
+                .Sum(x => x.Monto);
 
             var esperado = Saldo;
-            var diferencia = conteo - esperado;
 
-            return (ingresos, egresos, esperado, diferencia);
+            var diferencia =
+                conteo - esperado;
+
+            return (
+                ingresos,
+                egresos,
+                esperado,
+                diferencia);
         }
 
-        public string GuardarCorte(decimal conteo)
+        public async Task<string>
+            GuardarCorte(decimal conteo)
         {
-            var corte = CalcularCorte(conteo);
+            if (_corteRealizado)
+            {
+                throw new Exception(
+                    "El corte ya fue realizado");
+            }
 
-            var nuevoCorte = new CorteCaja
+            var corte =
+                CalcularCorte(conteo);
+
+            var nuevo = new CorteCaja
             {
                 Fecha = DateTime.Now,
                 Ingresos = corte.ingresos,
@@ -93,13 +287,13 @@ namespace piaWinUI.Services
                 Diferencia = corte.diferencia
             };
 
-            _cortes.Add(nuevoCorte);
+            _cortes.Add(nuevo);
 
-            // 🔥 ALERTA INTELIGENTE
-            if (Math.Abs(corte.diferencia) > 100)
-                return " Diferencia alta detectada";
+            _corteRealizado = true;
 
-            return " Corte correcto";
+            await SaveCajaAsync();
+
+            return "Corte guardado correctamente";
         }
     }
 }
