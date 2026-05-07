@@ -55,6 +55,7 @@ namespace piaWinUI.Views
             if (string.IsNullOrWhiteSpace(nombre))
             {
                 SetStatus("El campo nombre no debe estar vacio.");
+                return;
             }
 
             if (string.IsNullOrWhiteSpace(telefono))
