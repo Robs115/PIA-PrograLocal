@@ -69,8 +69,8 @@ namespace piaWinUI.Views
         {
             if (_producto == null) return;
 
-            _producto.Nombre = txtNombre.Text;
-            _producto.Descripcion = txtDescripcion.Text;
+            _producto.Nombre = txtNombre.Text.Trim();
+            _producto.Descripcion = txtDescripcion.Text.Trim();
 
             _producto.PrecioCompra = decimal.Parse(txtPrecioCompra.Text);
             _producto.PrecioVenta = decimal.Parse(txtPrecioVenta.Text);
