@@ -54,10 +54,108 @@ namespace piaWinUI.Views
 
             ProveedoresList.ItemsSource = filtrados;
         }
-
-        public void EditarProveedor_Click(object sender, RoutedEventArgs e)
+        public async void DialogError(string title, string content)
         {
+            var errorDialog = new ContentDialog
+            {
+                Title = title,
+                Content = content,
+                CloseButtonText = "Aceptar",
+                XamlRoot = this.Content.XamlRoot
+            };
 
+            await errorDialog.ShowAsync();
+        }
+
+        private async void EditarProveedor_Click(object sender, RoutedEventArgs e)
+        {
+            var button = sender as Button;
+
+            if (button?.Tag is not Guid idProveedor)
+                return;
+
+            // Obtener proveedores
+            var proveedores = await _service.GetProveedorAsync();   
+            // Buscar proveedor
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor == idProveedor);
+
+            if (proveedorSeleccionado == null)
+                return;
+
+            // 🔥 Cargar datos al dialog
+            nombreeditar.Text = proveedorSeleccionado.Nombre;
+            telefonoeditar.Text = proveedorSeleccionado.Telefono;
+            emaileditar.Text = proveedorSeleccionado.Email;
+
+
+            //variables para validar
+
+            
+
+            // 🔥 Mostrar dialog
+            var result = await EditarProveedorDialog.ShowAsync();   
+            // Si cancela
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            var nombre = nombreeditar.Text;
+            var telefono = telefonoeditar.Text;
+            var email = emaileditar.Text;
+            //validar 
+
+
+            if (string.IsNullOrWhiteSpace(nombre))
+            {
+                DialogError("Error", "El campo nombre no debe estar vacio.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(telefono))
+            {
+                DialogError("Error", "El campo telefono no debe estar vacio.");
+                return;
+            }
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+               DialogError("Error", "El campo email no debe estar vacio.");
+                return;
+            }
+
+            if (!email.Contains("@") || !email.Contains("."))
+            {
+                DialogError("Error", "El campo email debe tener el formato adecuado.");
+                return;
+            }
+
+            if (!telefono.All(char.IsDigit))
+            {
+                DialogError("Error", "El campo telefono debe contener digitos numericos.");
+                return;
+            }
+
+            if (telefono.Length != 10)
+            {
+                DialogError("Error", "El telefono debe tener 10 caracteres.");
+                return;
+            }
+
+
+            
+            
+            // 🔥 Guardar cambios
+            proveedorSeleccionado.Nombre = nombre;
+            proveedorSeleccionado.Telefono = telefono;
+            proveedorSeleccionado.Email = email;
+
+            // 🔥 Guardar JSON
+            await _service.SaveProveedorAsync(proveedores);
+
+            // 🔥 Refrescar lista
+            listaProveedores = proveedores;
+
+            ProveedoresList.ItemsSource = null;
+            ProveedoresList.ItemsSource = listaProveedores;
         }
 
         private async void Eliminar_Click(object sender, RoutedEventArgs e)
