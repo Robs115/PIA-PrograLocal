@@ -205,8 +205,9 @@ namespace piaWinUI.Views
                 var ventas = await _ventaService.GetVentasAsync() ?? new List<Venta>();
                 ventas.Add(venta);
                 await _ventaService.SaveVentasAsync(ventas);
+                await AppServices.Caja.RegistrarVenta(venta);
 
-                var detalleService = new DetalleVentasService();
+            var detalleService = new DetalleVentasService();
                 var detalles = await detalleService.GetDetalleVentasAsync() ?? new List<DetalleVentas>();
                 detalles.AddRange(carrito);
                 await detalleService.SaveDetalleVentasAsync(detalles);

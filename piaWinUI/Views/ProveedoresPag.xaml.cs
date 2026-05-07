@@ -62,7 +62,7 @@ namespace piaWinUI.Views
 
             if (string.IsNullOrWhiteSpace(telefono))
             {
-                SetStatus("El campo telfono no debe estar vacio.");
+                SetStatus("El campo telefono no debe estar vacio.");
                 return;
             }
 
@@ -80,7 +80,7 @@ namespace piaWinUI.Views
 
             if (!telefono.All(char.IsDigit))
             {
-                SetStatus("El campo telefono ddebe tener el formato adecuado.");
+                SetStatus("El campo telefono debe tener el formato adecuado.");
                 return;
             }
 
@@ -114,7 +114,7 @@ namespace piaWinUI.Views
                 Email.Text = string.Empty;
 
                 //mostrar mensaje de exito
-                SetStatus("Cliente guardado exitosamente");
+                SetStatus("Proveedor guardado exitosamente");
             }
             catch (Exception ex)
             {

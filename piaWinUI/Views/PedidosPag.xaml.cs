@@ -135,6 +135,12 @@ namespace piaWinUI.Views
                 await _pedidoService.SavePedidosAsync(pedidosModel);
                 await _productService.SaveProductsAsync(_productos);
 
+                decimal costoPedido = producto.PrecioCompra * cantidad;
+
+                await AppServices.Caja.RegistrarPedido(
+                    nuevo,
+                    costoPedido);
+
                 await CargarPedidos();
 
                 txtCantidadPedido.Text = "";

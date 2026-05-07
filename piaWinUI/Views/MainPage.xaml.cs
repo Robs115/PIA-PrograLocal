@@ -5,15 +5,17 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Views;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.ApplicationSettings;
-using piaWinUI.Views;
+using Windows.Storage;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -101,6 +103,25 @@ namespace piaWinUI.Views
                 currentDialog?.Hide();
             };
 
+            var btnAbrirCarpeta = new Button
+            {
+                Content = "Abrir carpeta de datos",
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                FontSize = 16,
+                Padding = new Thickness(12, 10, 12, 10)
+            };
+
+            btnAbrirCarpeta.Click += (s, args) =>
+            {
+                string localFolder = Path.Combine(ApplicationData.Current.LocalCacheFolder.Path,"Local","piaWinUI");
+
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = localFolder,
+                    UseShellExecute = true
+                });
+            };
+
             var btnCerrar = new Button
             {
                 Content = "Regresar",
@@ -117,6 +138,7 @@ namespace piaWinUI.Views
 
             stack.Children.Add(title);
             stack.Children.Add(btnUsuarios);
+            stack.Children.Add(btnAbrirCarpeta);
             stack.Children.Add(btnCerrar);
 
             var dialog = new ContentDialog
