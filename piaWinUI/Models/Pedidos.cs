@@ -95,7 +95,7 @@ namespace piaWinUI.Models
                 if (value <= 0)
                     throw new Exception("Cantidad debe ser mayor a 0");
 
-                if (value > 1000)
+                if (value > 10000)
                     throw new Exception("Cantidad sospechosamente alta");
 
                 cantidad = value;

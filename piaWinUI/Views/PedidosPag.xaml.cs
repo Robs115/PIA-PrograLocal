@@ -5,36 +5,141 @@ using piaWinUI.Models;
 using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
+
 
 namespace piaWinUI.Views
 {
     public sealed partial class PedidosPag : Page
     {
-        private readonly ProveedorService _proveedorService = new ProveedorService();
-        private readonly ProductService _productService = new ProductService();
-        private readonly PedidoService _pedidoService = new PedidoService();
+        private readonly ProveedorService _proveedorService = new();
+        private readonly ProductService _productService = new();
+        private readonly PedidoService _pedidoService = new();
 
         private List<Proveedor> _proveedores = new();
         private List<Producto> _productos = new();
         private List<PedidoView> _pedidos = new();
+
+        // 🔥 EVITAR BUCLES
+        private bool _actualizandoCombos = false;
+
+        // 🔥 GUARDAR ESTADO ENTRE PAGINAS
+        private Guid? _productoSeleccionadoId;
+        private Guid? _proveedorSeleccionadoId;
+
+        private string _cantidadTemporal = "";
+        private string _busquedaTemporal = "";
 
         public PedidosPag()
         {
             this.InitializeComponent();
 
             Loaded += PedidosPag_Loaded;
+
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
+
+            txtBuscar.TextChanged += TxtBuscarEstado_TextChanged;
         }
 
+        // 🔥 CARGA INICIAL
         private async void PedidosPag_Loaded(object sender, RoutedEventArgs e)
         {
             await CargarTodo();
         }
 
+        // 🔥 CARGAR TODO
+        private async Task CargarTodo()
+        {
+            try
+            {
+                _productos = await _productService.GetAllAsync() ?? new();
+                _proveedores = await _proveedorService.GetAllAsync() ?? new();
+
+                var pedidosModel = await _pedidoService.GetAllAsync();
+
+                _pedidos = pedidosModel?
+                    .Select(p => new PedidoView
+                    {
+                        NombreProducto = p.NombreProducto,
+                        NombreProveedor = p.NombreProveedor,
+                        Cantidad = p.Cantidad,
+                        Fecha = p.Fecha
+                    })
+                    .OrderByDescending(p => p.Fecha)
+                    .ToList()
+                    ?? new();
+
+                // 🔥 COMBOS
+                cmbProductoPedido.ItemsSource = _productos;
+                cmbProductoPedido.DisplayMemberPath = "Nombre";
+
+                cmbProveedorPedido.ItemsSource = _proveedores;
+                cmbProveedorPedido.DisplayMemberPath = "Nombre";
+
+                // 🔥 GRID
+                gridPedidos.ItemsSource = _pedidos;
+
+                // 🔥 RESTAURAR ESTADO
+                RestaurarEstado();
+            }
+            catch (Exception ex)
+            {
+                await MostrarDialogo("Error",
+                    $"Error al cargar datos.\n{ex.Message}");
+            }
+        }
+
+        // 🔥 RESTAURAR ESTADO
+        private void RestaurarEstado()
+        {
+            try
+            {
+                _actualizandoCombos = true;
+
+                // 🔥 PRODUCTO
+                if (_productoSeleccionadoId.HasValue)
+                {
+                    var producto = _productos
+                        .FirstOrDefault(p =>
+                            p.Id == _productoSeleccionadoId.Value);
+
+                    if (producto != null)
+                    {
+                        cmbProductoPedido.SelectedItem = producto;
+                    }
+                }
+
+                // 🔥 PROVEEDOR
+                if (_proveedorSeleccionadoId.HasValue)
+                {
+                    var proveedor = _proveedores
+                        .FirstOrDefault(p =>
+                            p.IdProveedor == _proveedorSeleccionadoId.Value);
+
+                    if (proveedor != null)
+                    {
+                        cmbProveedorPedido.SelectedItem = proveedor;
+                    }
+                }
+
+                // 🔥 TEXTOS
+                txtCantidadPedido.Text = _cantidadTemporal;
+                txtBuscar.Text = _busquedaTemporal;
+
+                // 🔥 FILTRO
+                if (!string.IsNullOrWhiteSpace(_busquedaTemporal))
+                {
+                    FiltrarPedidos(_busquedaTemporal);
+                }
+            }
+            finally
+            {
+                _actualizandoCombos = false;
+            }
+        }
+
+        // 🔥 FILTRAR
         private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
             FiltrarPedidos(txtBuscar.Text);
@@ -42,76 +147,236 @@ namespace piaWinUI.Views
 
         private void FiltrarPedidos(string texto)
         {
-            if (_pedidos == null) return;
+            if (_pedidos == null)
+                return;
+
+            texto ??= "";
 
             var filtrados = _pedidos
                 .Where(p =>
-                    p.NombreProducto.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    p.NombreProveedor.Contains(texto, StringComparison.OrdinalIgnoreCase) ||
-                    p.Cantidad.ToString().Contains(texto)
+                    p.NombreProducto.Contains(texto,
+                        StringComparison.OrdinalIgnoreCase) ||
+
+                    p.NombreProveedor.Contains(texto,
+                        StringComparison.OrdinalIgnoreCase) ||
+
+                    p.Cantidad.ToString().Contains(texto) ||
+
+                    p.FechaFormateada.Contains(texto,
+                        StringComparison.OrdinalIgnoreCase)
                 )
-                .Select(p => new PedidoView
-                {
-                    NombreProducto = p.NombreProducto,
-                    NombreProveedor = p.NombreProveedor,
-                    Cantidad = p.Cantidad,
-                    Fecha = p.Fecha // 👈 AQUÍ YA NO FORMATEAS
-                })
                 .ToList();
 
             gridPedidos.ItemsSource = filtrados;
         }
 
-        private async Task CargarTodo()
+        // 🔥 GUARDAR BUSQUEDA
+        private void TxtBuscarEstado_TextChanged(object sender, TextChangedEventArgs e)
         {
-            _productos = await _productService.GetAllAsync();
-            _proveedores = await _proveedorService.GetAllAsync();
+            _busquedaTemporal = txtBuscar.Text;
+        }
 
-            // Obtener modelos de servicio y mapear a PedidoView
-            var pedidosModel = await _pedidoService.GetAllAsync();
-            _pedidos = pedidosModel?
-                .Select(p => new PedidoView
+        // 🔥 VALIDAR CANTIDAD
+        private void txtCantidadPedido_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                _cantidadTemporal = txtCantidadPedido.Text;
+
+                // 🔥 SOLO NUMEROS
+                string soloNumeros = new string(
+                    txtCantidadPedido.Text
+                    .Where(char.IsDigit)
+                    .ToArray());
+
+                // 🔥 MAXIMO 4
+                if (soloNumeros.Length > 4)
                 {
-                    Fecha = p.Fecha,
-                    NombreProducto = p.NombreProducto,
-                    NombreProveedor = p.NombreProveedor,
-                    Cantidad = p.Cantidad
-                }).ToList() ?? new List<PedidoView>();
+                    soloNumeros = soloNumeros.Substring(0, 4);
+                }
 
-            // 🔽 Combo productos
-            cmbProductoPedido.ItemsSource = _productos;
-            cmbProductoPedido.DisplayMemberPath = "Nombre";
+                // 🔥 EVITAR RECURSION
+                if (txtCantidadPedido.Text != soloNumeros)
+                {
+                    int cursor = txtCantidadPedido.SelectionStart;
 
-            // 🔽 Combo proveedores
-            cmbProveedorPedido.ItemsSource = _proveedores;
-            cmbProveedorPedido.DisplayMemberPath = "Nombre";
+                    txtCantidadPedido.Text = soloNumeros;
 
-            // 🔽 Grid pedidos
-            gridPedidos.ItemsSource = _pedidos;
+                    txtCantidadPedido.SelectionStart =
+                        Math.Min(cursor, soloNumeros.Length);
+                }
+            }
+            catch
+            {
+                txtCantidadPedido.Text = "";
+            }
         }
 
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        // 🔥 PRODUCTO CAMBIADO
+        private void cmbProductoPedido_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            base.OnNavigatedTo(e);
+            if (_actualizandoCombos)
+                return;
 
-            await CargarPedidos();
+            try
+            {
+                _actualizandoCombos = true;
+
+                if (cmbProductoPedido.SelectedItem is Producto productoSeleccionado)
+                {
+                    _productoSeleccionadoId = productoSeleccionado.Id;
+                }
+                else
+                {
+                    _productoSeleccionadoId = null;
+                }
+
+                var producto = cmbProductoPedido.SelectedItem as Producto;
+
+                // 🔥 SI QUITAN PRODUCTO
+                if (producto == null)
+                {
+                    cmbProveedorPedido.IsEnabled = true;
+
+                    cmbProductoPedido.ItemsSource = _productos;
+
+                    return;
+                }
+
+                // 🔥 BUSCAR PROVEEDOR
+                var proveedor = _proveedores
+                    .FirstOrDefault(p =>
+                        p.IdProveedor == producto.IdProveedor);
+
+                if (proveedor != null)
+                {
+                    cmbProveedorPedido.SelectedItem = proveedor;
+
+                    cmbProveedorPedido.IsEnabled = false;
+                }
+            }
+            finally
+            {
+                _actualizandoCombos = false;
+            }
         }
 
+        // 🔥 PROVEEDOR CAMBIADO
+        private void cmbProveedorPedido_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_actualizandoCombos)
+                return;
+
+            try
+            {
+                _actualizandoCombos = true;
+
+                if (cmbProveedorPedido.SelectedItem is Proveedor proveedorSeleccionado)
+                {
+                    _proveedorSeleccionadoId =
+                        proveedorSeleccionado.IdProveedor;
+                }
+                else
+                {
+                    _proveedorSeleccionadoId = null;
+                }
+
+                // 🔥 SI YA HAY PRODUCTO
+                if (cmbProductoPedido.SelectedItem != null)
+                    return;
+
+                var proveedor = cmbProveedorPedido.SelectedItem as Proveedor;
+
+                // 🔥 RESTAURAR TODO
+                if (proveedor == null)
+                {
+                    cmbProductoPedido.ItemsSource = _productos;
+                    return;
+                }
+
+                // 🔥 FILTRAR PRODUCTOS
+                var productosFiltrados = _productos
+                    .Where(p =>
+                        p.IdProveedor == proveedor.IdProveedor)
+                    .ToList();
+
+                cmbProductoPedido.ItemsSource = productosFiltrados;
+            }
+            finally
+            {
+                _actualizandoCombos = false;
+            }
+        }
+
+        // 🔥 REGISTRAR
         private async void RegistrarPedido_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // 🔥 VALIDAR PRODUCTO
                 if (cmbProductoPedido.SelectedItem == null)
+                {
+                    await MostrarDialogo("Producto requerido",
+                        "Selecciona un producto.");
                     return;
+                }
+
+                // 🔥 VALIDAR PROVEEDOR
+                if (cmbProveedorPedido.SelectedItem == null)
+                {
+                    await MostrarDialogo("Proveedor requerido",
+                        "Selecciona un proveedor.");
+                    return;
+                }
 
                 var producto = cmbProductoPedido.SelectedItem as Producto;
                 var proveedor = cmbProveedorPedido.SelectedItem as Proveedor;
 
-                if (!int.TryParse(txtCantidadPedido.Text, out int cantidad))
+                // 🔥 VALIDAR CANTIDAD VACIA
+                if (string.IsNullOrWhiteSpace(txtCantidadPedido.Text))
+                {
+                    await MostrarDialogo("Cantidad requerida",
+                        "Ingresa una cantidad.");
                     return;
+                }
 
-                var pedidosModel = await _pedidoService.GetAllAsync();
+                // 🔥 VALIDAR ENTERO
+                if (!int.TryParse(txtCantidadPedido.Text, out int cantidad))
+                {
+                    await MostrarDialogo("Cantidad inválida",
+                        "Solo se permiten números.");
+                    return;
+                }
 
+                // 🔥 VALIDAR MAYOR A 0
+                if (cantidad <= 0)
+                {
+                    await MostrarDialogo("Cantidad inválida",
+                        "La cantidad debe ser mayor a 0.");
+                    return;
+                }
+
+                // 🔥 VALIDAR LIMITE
+                if (cantidad > 1000)
+                {
+                    await MostrarDialogo("Cantidad demasiado grande",
+                        "Máximo permitido: 1000");
+                    return;
+                }
+
+                // 🔥 VALIDAR RELACION
+                if (producto.IdProveedor != proveedor.IdProveedor)
+                {
+                    await MostrarDialogo("Error",
+                        "El producto no pertenece al proveedor.");
+                    return;
+                }
+
+                // 🔥 OBTENER PEDIDOS
+                var pedidosModel =
+                    await _pedidoService.GetAllAsync();
+
+                // 🔥 NUEVO PEDIDO
                 var nuevo = new Pedidos
                 {
                     Id = Guid.NewGuid(),
@@ -128,129 +393,77 @@ namespace piaWinUI.Views
 
                 pedidosModel.Add(nuevo);
 
-                // 🔥 AUMENTAR STOCK AUTOMÁTICAMENTE
+                // 🔥 AUMENTAR STOCK
                 producto.Stock += cantidad;
 
-                // 🔥 GUARDAR TODO
+                // 🔥 GUARDAR
                 await _pedidoService.SaveAllAsync(pedidosModel);
+
                 await _productService.SaveAllAsync(_productos);
 
-                decimal costoPedido = producto.PrecioCompra * cantidad;
-
-
+                // 🔥 RECARGAR
                 await CargarPedidos();
 
-                txtCantidadPedido.Text = "";
+                // 🔥 LIMPIAR
+                LimpiarFormulario();
+
+                await MostrarDialogo("Pedido registrado",
+                    "El pedido fue registrado correctamente.");
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
+                await MostrarDialogo("Error inesperado",
+                    ex.Message);
             }
         }
 
+        // 🔥 LIMPIAR
+        private void LimpiarFormulario()
+        {
+            _actualizandoCombos = true;
+
+            txtCantidadPedido.Text = "";
+
+            cmbProductoPedido.SelectedItem = null;
+            cmbProveedorPedido.SelectedItem = null;
+
+            cmbProveedorPedido.IsEnabled = true;
+
+            cmbProductoPedido.ItemsSource = _productos;
+
+            _actualizandoCombos = false;
+        }
+
+        // 🔥 RECARGAR PEDIDOS
         private async Task CargarPedidos()
         {
-            var pedidosModel = await _pedidoService.GetAllAsync();
-
-            var pedidosView = pedidosModel?
-                .Select(p => new PedidoView
-                {
-                    Fecha = p.Fecha,
-                    NombreProducto = p.NombreProducto,
-                    NombreProveedor = p.NombreProveedor,
-                    Cantidad = p.Cantidad
-                }).ToList() ?? new List<PedidoView>();
-
-            _pedidos = pedidosView;
-            gridPedidos.ItemsSource = pedidosView;
-        }
-
-        private void cmbProductoPedido_SelectionChanged(object sender, SelectionChangedEventArgs e)
-        {
-            var producto = cmbProductoPedido.SelectedItem as Producto;
-
-            if (producto == null || _proveedores == null)
-                return;
-
-            // 🔥 busca el proveedor ligado al producto
-            var proveedor = _proveedores
-                .FirstOrDefault(p => p.IdProveedor == producto.IdProveedor);
-
-            if (proveedor != null)
-            {
-                cmbProveedorPedido.SelectedItem = proveedor;
-            }
-        }
-
-        private async Task Inicializar()
-        {
-            await CargarProveedores();
-            await CargarProductos();
-
-            gridPedidos.ItemsSource = _pedidos;
-        }
-
-        // 🔥 CARGA PROVEEDORES (TU SERVICE)
-        private async Task CargarProveedores()
-        {
             try
             {
-                _proveedores = await _proveedorService.GetAllAsync();
+                var pedidosModel =
+                    await _pedidoService.GetAllAsync();
 
-                System.Diagnostics.Debug.WriteLine($"Proveedores: {_proveedores.Count}");
+                _pedidos = pedidosModel?
+                    .Select(p => new PedidoView
+                    {
+                        NombreProducto = p.NombreProducto,
+                        NombreProveedor = p.NombreProveedor,
+                        Cantidad = p.Cantidad,
+                        Fecha = p.Fecha
+                    })
+                    .OrderByDescending(p => p.Fecha)
+                    .ToList()
+                    ?? new();
 
-                if (_proveedores == null || !_proveedores.Any())
-                {
-                    cmbProveedorPedido.ItemsSource = null;
-                    return;
-                }
-
-                cmbProveedorPedido.ItemsSource = _proveedores;
-                cmbProveedorPedido.DisplayMemberPath = "Nombre";
+                gridPedidos.ItemsSource = _pedidos;
             }
-            catch
+            catch (Exception ex)
             {
-                cmbProveedorPedido.ItemsSource = null;
+                await MostrarDialogo("Error",
+                    $"No se pudieron cargar pedidos.\n{ex.Message}");
             }
         }
 
-        // 🔥 CARGA PRODUCTOS
-        private async Task CargarProductos()
-        {
-            try
-            {
-                _productos = await _productService.GetAllAsync();
-
-                if (_productos == null || !_productos.Any())
-                {
-                    cmbProductoPedido.ItemsSource = null;
-                    return;
-                }
-
-                cmbProductoPedido.ItemsSource = _productos;
-                cmbProductoPedido.DisplayMemberPath = "Nombre";
-            }
-            catch
-            {
-                cmbProductoPedido.ItemsSource = null;
-            }
-        }
-
-
-        // 🔍 BUSCAR
-        private void BuscarPedido_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            var filtro = txtBuscar.Text?.ToLower() ?? "";
-
-            var filtrados = _pedidos.Where(p =>
-                p.NombreProducto.ToLower().Contains(filtro) ||
-                p.NombreProveedor.ToLower().Contains(filtro)
-            ).ToList();
-
-            gridPedidos.ItemsSource = filtrados;
-        }
-
-        // 🔔 DIALOGO
+        // 🔥 DIALOGO
         private async Task MostrarDialogo(string titulo, string mensaje)
         {
             var dialog = new ContentDialog
@@ -265,7 +478,7 @@ namespace piaWinUI.Views
         }
     }
 
-    // 🔥 MODELO PARA EL GRID
+    // 🔥 VIEW GRID
     public class PedidoView
     {
         public string NombreProducto { get; set; } = "";
@@ -274,7 +487,7 @@ namespace piaWinUI.Views
 
         public DateTime Fecha { get; set; }
 
-        // 👇 SOLO PARA MOSTRAR BONITO
-        public string FechaFormateada => Fecha.ToString("dd/MM/yyyy HH:mm");
+        public string FechaFormateada =>
+            Fecha.ToString("dd/MM/yyyy HH:mm");
     }
 }
