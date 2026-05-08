@@ -91,6 +91,26 @@ namespace piaWinUI.Views
             };
         }
 
+        private void ValidarTexto(TextBox tb)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+                // ❌ No permitir iniciar con espacio
+                if (e.NewText.StartsWith(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // ❌ No permitir múltiples espacios seguidos
+                if (e.NewText.Contains("  "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            };
+        }
+
         // =========================
         // CARGAR DATOS
         // =========================
@@ -206,12 +226,16 @@ namespace piaWinUI.Views
                 MaxLength = 50
             };
 
+            ValidarTexto(nombre);
+
             var descripcion = new TextBox
             {
                 Header = "Descripción",
                 Text = producto.Descripcion ?? "",
                 MaxLength = 100
             };
+
+            ValidarTexto(descripcion);
 
             var categoria = new ComboBox
             {
@@ -295,10 +319,17 @@ namespace piaWinUI.Views
             {
                 error.Text = "";
 
-                if (string.IsNullOrWhiteSpace(nombre.Text))
+                if (string.IsNullOrWhiteSpace(nombre.Text.Trim()))
                 {
                     e.Cancel = true;
                     error.Text = "Nombre obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
+                {
+                    e.Cancel = true;
+                    error.Text = "Descripción obligatoria.";
                     return;
                 }
 
@@ -317,11 +348,11 @@ namespace piaWinUI.Views
                 }
 
                 if (string.IsNullOrWhiteSpace(stock.Text))
-{
-    e.Cancel = true;
-    error.Text = "Stock obligatorio.";
-    return;
-}
+                {
+                    e.Cancel = true;
+                    error.Text = "Stock obligatorio.";
+                    return;
+                }
 
                 if (!decimal.TryParse(precioCompra.Text, out decimal pc))
                 {
