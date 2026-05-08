@@ -8,8 +8,13 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:piaWinUI.Models"
-    mc:Ignorable="d">
-    
+    mc:Ignorable="d"
+    xmlns:converters="using:piaWinUI.Converters">
+
+    <Page.Resources>
+        <converters:PasswordMaskConverter x:Key="PasswordMaskConverter"/>
+    </Page.Resources>
+
 
     <Grid>
 
@@ -27,7 +32,7 @@
 
                 <controls:DataGridTextColumn
                 Header="Contraseña"
-                Binding="{Binding Password}" />
+                Binding="{Binding Password, Converter={StaticResource PasswordMaskConverter}}" />
 
                 <controls:DataGridTemplateColumn Header="Acción">
                     <controls:DataGridTemplateColumn.CellTemplate>

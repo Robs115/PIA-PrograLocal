@@ -12,10 +12,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using Windows.UI.ApplicationSettings;
 using Windows.Storage;
+using Windows.UI.ApplicationSettings;
+using static SkiaSharp.HarfBuzz.SKShaper;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -69,6 +71,12 @@ namespace piaWinUI.Views
 
         private async void Settings_Click(object sender, RoutedEventArgs e)
         {
+            NavView.SelectedItem = null;
+            bool ok = await RequireAdminLoginAsync();
+
+            if (!ok)
+                return;
+
             var stack = new StackPanel
             {
                 Spacing = 12,
@@ -153,6 +161,104 @@ namespace piaWinUI.Views
         {
             Application.Current.Exit();
         }
+
+        private async Task<bool> RequireAdminLoginAsync()
+        {
+            while (true)
+            {
+                var usernameBox = new TextBox
+                {
+                    Header = "Usuario",
+                    MaxLength = 10
+                };
+
+                usernameBox.BeforeTextChanging += Username_Login_BeforeTextChanging;
+
+                var passwordBox = new PasswordBox
+                {
+                    Header = "Contraseña",
+                    MaxLength = 15
+                };
+
+                passwordBox.PasswordChanged += LoginPassword_NoSpaces;
+
+                var panel = new StackPanel
+                {
+                    Spacing = 12
+                };
+
+                panel.Children.Add(usernameBox);
+                panel.Children.Add(passwordBox);
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Inicio de sesión requerido",
+                    Content = panel,
+                    PrimaryButtonText = "Entrar",
+                    CloseButtonText = "Cancelar",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
+
+                var result = await dialog.ShowAsync();
+
+                // ❌ cancelado → salir completamente
+                if (result != ContentDialogResult.Primary)
+                    return false;
+
+                var users = await new piaWinUI.Services.AuthService(_usersFilePath)
+                    .LoadUsersAsync();
+
+                var user = users.FirstOrDefault(u =>
+                    u.Username == usernameBox.Text &&
+                    u.Password == passwordBox.Password);
+
+                // ✅ login correcto
+                if (user != null)
+                return true;
+
+                // 🔴 login incorrecto → mostrar error y repetir loop
+                await new ContentDialog
+                {
+                    Title = "Error de autenticación",
+                    Content = "Usuario o contraseña incorrectos. Intente nuevamente.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
+                // el while(true) hace que se vuelva a mostrar el login
+            }
+        }
+
+        private void Username_Login_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+            var text = args.NewText;
+
+            // ❌ no espacios al inicio
+            if (text.StartsWith(" "))
+            {
+                args.Cancel = true;
+                return;
+            }
+
+            // ❌ no doble espacio
+            if (text.Contains("  "))
+            {
+                args.Cancel = true;
+                return;
+            }
+        }
+
+        private void LoginPassword_NoSpaces(object sender, RoutedEventArgs e)
+        {
+            var pb = (PasswordBox)sender;
+
+            if (pb.Password.Contains(" "))
+            {
+                pb.Password = pb.Password.Replace(" ", "");
+            }
+        }
+
 
     }
 }

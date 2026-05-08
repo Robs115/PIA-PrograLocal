@@ -15,8 +15,10 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -46,14 +48,57 @@ namespace piaWinUI.Views
             }
         }
 
-        private void SaveRow_Click(object sender, RoutedEventArgs e)
+        private void UsernameBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
-            var button = (Button)sender;
-            var user = (User)button.DataContext;
+            string text = args.NewText;
 
-            user.IsDirty = false;
+            // ❌ no espacios al inicio
+            if (text.StartsWith(" "))
+            {
+                args.Cancel = true;
+                return;
+            }
 
-            SaveAllUsers();
+            // ❌ no doble espacio
+            if (text.Contains("  "))
+            {
+                args.Cancel = true;
+                return;
+            }
+        }
+
+        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        {
+            var pb = (PasswordBox)sender;
+
+            if (pb.Password.Contains(" "))
+            {
+                pb.Password = pb.Password.Replace(" ", "");
+            }
+        }
+
+        private async Task<bool> VerifyPasswordAsync(User user)
+        {
+            var passwordBox = new PasswordBox
+            {
+                PlaceholderText = "Ingrese la contraseña actual"
+            };
+
+            var dialog = new ContentDialog
+            {
+                Title = "Verificación de seguridad",
+                Content = passwordBox,
+                PrimaryButtonText = "Continuar",
+                CloseButtonText = "Cancelar",
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+                return false;
+
+            return passwordBox.Password == user.Password;
         }
 
         private void SaveAllUsers()
@@ -104,11 +149,16 @@ namespace piaWinUI.Views
                     MaxLength = 10
                 };
 
+                usernameBox.BeforeTextChanging += UsernameBox_BeforeTextChanging;
+
                 var passwordBox = new PasswordBox
                 {
                     Header = "Contraseña",
                     MaxLength = 15
                 };
+
+
+                passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
 
                 var panel = new StackPanel
                 {
@@ -205,60 +255,99 @@ namespace piaWinUI.Views
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
-            while (true)
+            // 🔐 1. pedir password actual antes de permitir edición
+            var authBox = new PasswordBox
             {
-                var usernameBox = new TextBox
-                {
-                    Header = "Usuario",
-                    Text = user.Username,
-                    MaxLength = 10
-                };
+                PlaceholderText = "Ingrese la contraseña actual"
+            };
 
-                var passwordBox = new PasswordBox
-                {
-                    Header = "Contraseña",
-                    Password = user.Password,
-                    MaxLength = 15
-                };
+            var authDialog = new ContentDialog
+            {
+                Title = "Verificación de seguridad",
+                Content = authBox,
+                PrimaryButtonText = "Continuar",
+                CloseButtonText = "Cancelar",
+                XamlRoot = this.XamlRoot
+            };
 
-                var panel = new StackPanel
-                {
-                    Spacing = 12
-                };
+            var authResult = await authDialog.ShowAsync();
 
-                panel.Children.Add(usernameBox);
-                panel.Children.Add(passwordBox);
+            if (authResult != ContentDialogResult.Primary)
+                return;
 
-                var dialog = new ContentDialog
+            if (authBox.Password != user.Password)
+            {
+                await new ContentDialog
                 {
-                    Title = "Editar usuario",
-                    Content = panel,
-                    PrimaryButtonText = "Guardar",
-                    CloseButtonText = "Cancelar",
+                    Title = "Acceso denegado",
+                    Content = "La contraseña es incorrecta.",
+                    CloseButtonText = "Aceptar",
                     XamlRoot = this.XamlRoot
-                };
+                }.ShowAsync();
 
-                var result = await dialog.ShowAsync();
+                return;
+            }
 
-                if (result != ContentDialogResult.Primary)
-                    return;
+            // ✏️ 2. abrir editor
+            var usernameBox = new TextBox
+            {
+                Header = "Usuario",
+                Text = user.Username,
+                MaxLength = 10
+            };
 
-                string username = usernameBox.Text.Trim();
-                string password = passwordBox.Password;
+            usernameBox.BeforeTextChanging += UsernameBox_BeforeTextChanging;
 
-                if (string.IsNullOrWhiteSpace(username))
+            var passwordBox = new PasswordBox
+            {
+                Header = "Nueva contraseña (dejar vacío para no cambiar)",
+                MaxLength = 15
+            };
+
+            passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
+
+            var panel = new StackPanel
+            {
+                Spacing = 12
+            };
+
+            panel.Children.Add(usernameBox);
+            panel.Children.Add(passwordBox);
+
+            var dialog = new ContentDialog
+            {
+                Title = "Editar usuario",
+                Content = panel,
+                PrimaryButtonText = "Guardar",
+                CloseButtonText = "Cancelar",
+                XamlRoot = this.XamlRoot
+            };
+
+            var result = await dialog.ShowAsync();
+
+            if (result != ContentDialogResult.Primary)
+                return;
+
+            string username = usernameBox.Text.Trim();
+            string password = passwordBox.Password;
+
+            // 🧾 username validation
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                await new ContentDialog
                 {
-                    await new ContentDialog
-                    {
-                        Title = "Usuario inválido",
-                        Content = "Debe ingresar un nombre de usuario.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
-                    }.ShowAsync();
+                    Title = "Usuario inválido",
+                    Content = "Debe ingresar un nombre de usuario.",
+                    CloseButtonText = "Aceptar",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
 
-                    continue;
-                }
+                return;
+            }
 
+            // 🔐 password validation solo si se cambió
+            if (!string.IsNullOrEmpty(password))
+            {
                 if (password.Any(char.IsWhiteSpace))
                 {
                     await new ContentDialog
@@ -269,7 +358,7 @@ namespace piaWinUI.Views
                         XamlRoot = this.XamlRoot
                     }.ShowAsync();
 
-                    continue;
+                    return;
                 }
 
                 bool hasUppercase = password.Any(char.IsUpper);
@@ -286,17 +375,17 @@ namespace piaWinUI.Views
                         XamlRoot = this.XamlRoot
                     }.ShowAsync();
 
-                    continue;
+                    return;
                 }
 
-                user.Username = username;
                 user.Password = password;
-                user.IsDirty = false;
-
-                SaveAllUsers();
-
-                break;
             }
+
+            // 💾 guardar cambios
+            user.Username = username;
+            user.IsDirty = false;
+
+            SaveAllUsers();
         }
 
         private async void DeleteUser_Click(object sender, RoutedEventArgs e)
@@ -325,4 +414,18 @@ namespace piaWinUI.Views
 
     }
 
+    public class PasswordMaskConverter : IValueConverter
+    {
+        public object Convert(object value, Type targetType, object parameter, string language)
+        {
+            if (value == null) return "";
+
+            return new string('•', value.ToString().Length);
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, string language)
+            => throw new NotImplementedException();
+    }
+
 }
+
