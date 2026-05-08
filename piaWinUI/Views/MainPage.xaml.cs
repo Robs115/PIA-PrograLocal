@@ -80,7 +80,12 @@ namespace piaWinUI.Views
         private async void Settings_Click(object sender, RoutedEventArgs e)
         {
             NavView.SelectedItem = null;
+            NavView.Focus(FocusState.Programmatic);
             bool ok = await RequireAdminLoginAsync();
+            NavView.SelectedItem = null;
+            NavView.IsPaneToggleButtonVisible = true; // optional no-op safety
+
+            ContentFrame.Focus(FocusState.Programmatic);
 
             if (!ok)
                 return;
@@ -157,7 +162,7 @@ namespace piaWinUI.Views
             {
                 Content = stack,
                 XamlRoot = this.XamlRoot,
-                CloseButtonText = null, // importante: quitamos el botón feo default
+                CloseButtonText = null,
                 MinWidth = 320
             };
 
@@ -208,7 +213,15 @@ namespace piaWinUI.Views
                     XamlRoot = this.XamlRoot
                 };
 
+                NavView.SelectedItem = null;
+                NavView.Focus(FocusState.Programmatic);
+
                 var result = await dialog.ShowAsync();
+
+                NavView.SelectedItem = null;
+                NavView.IsPaneToggleButtonVisible = true; // optional no-op safety
+
+                ContentFrame.Focus(FocusState.Programmatic);
 
                 // ❌ cancelado → salir completamente
                 if (result != ContentDialogResult.Primary)
@@ -225,6 +238,9 @@ namespace piaWinUI.Views
                 if (user != null)
                 return true;
 
+                NavView.SelectedItem = null;
+                NavView.Focus(FocusState.Programmatic);
+
                 // 🔴 login incorrecto → mostrar error y repetir loop
                 await new ContentDialog
                 {
@@ -233,6 +249,10 @@ namespace piaWinUI.Views
                     CloseButtonText = "OK",
                     XamlRoot = this.XamlRoot
                 }.ShowAsync();
+
+                NavView.SelectedItem = null;
+                NavView.IsPaneToggleButtonVisible = true;
+
 
                 // el while(true) hace que se vuelva a mostrar el login
             }
