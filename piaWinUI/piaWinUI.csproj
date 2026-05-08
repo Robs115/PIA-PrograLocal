@@ -14,7 +14,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <None Remove="Views\EditProductoPage.xaml" />
     <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\ReporteProductosPag.xaml" />
     <None Remove="Views\Reportes.xaml" />
@@ -53,11 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Page Update="Views\BuscarProveedoresPag.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Page Update="Views\EditProductoPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>

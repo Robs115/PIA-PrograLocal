@@ -1,111 +1,104 @@
-<?xml version="1.0" encoding="utf-8"?>
-
 <Page
     x:Class="piaWinUI.Views.ProductosPag"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls">
 
-    <Grid>
-        <ScrollViewer VerticalScrollBarVisibility="Auto">
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="14">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" Padding="24">
 
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8" Width="800">
-                    <SymbolIcon Symbol="Tag" />
-                    <TextBlock Text="Crear producto"  
-                       Style="{StaticResource TitleTextBlockStyle}" 
-                       HorizontalAlignment="Center" />
-                    <TextBlock Text="Introduce los datos"  
-                       Style="{StaticResource CaptionTextBlockStyle}"  
-                       Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
-                       HorizontalAlignment="Center" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-                    <TextBox x:Name="txtNombre"
-                             Header="Nombre"
-                             PlaceholderText="Ej. Coca Cola 600ml"
-                             MaxLength="30"/>
+        <!-- HEADER -->
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
 
-                    <TextBox x:Name="txtDescripcion"
-                             Header="Descripción"
-                             PlaceholderText="Descripción del producto"
-                             TextWrapping="Wrap"
-                             AcceptsReturn="True"
-                             MaxLength="100"/>
+            <StackPanel>
+                <TextBlock Text="Productos"
+                           FontSize="28"
+                           FontWeight="Bold"/>
 
-                    <ComboBox x:Name="cmbCategoria"
-                        Header="Categoría"
-                        PlaceholderText="Selecciona una categoría">   
-
-                        <ComboBoxItem Content="Bebidas"/>
-                        <ComboBoxItem Content="Comida"/>
-                        <ComboBoxItem Content="Lácteos"/>
-                        <ComboBoxItem Content="Panadería"/>
-                        <ComboBoxItem Content="Congelados"/>
-                        <ComboBoxItem Content="Snacks"/>
-                        <ComboBoxItem Content="Limpieza"/>
-                        <ComboBoxItem Content="Higiene personal"/>
-                        <ComboBoxItem Content="Electrónica"/>
-                        <ComboBoxItem Content="Otros"/>
-
-                    </ComboBox>
-
-                    <TextBox x:Name="txtPrecioCompra"
-                             Header="Precio de compra"
-                             PlaceholderText="0.00"
-                             InputScope="Number"
-                             MaxLength="9"/>
-
-                    <TextBox x:Name="txtPrecioVenta"
-                             Header="Precio de venta"
-                             PlaceholderText="0.00"
-                             InputScope="Number"
-                              MaxLength="9"/>
-
-                    <TextBox x:Name="txtStock"
-                             Header="Stock"
-                             PlaceholderText="0"
-                             InputScope="Number"
-                             MaxLength="9"/>
-
-                    <ComboBox x:Name="cmbProveedor"
-                              Header="Proveedor"
-                              PlaceholderText="Selecciona un proveedor"
-                              DisplayMemberPath="Nombre"/>
-
-                    <TextBlock x:Name="StatusTextBlock"
-                               TextWrapping="Wrap"
-                               MaxWidth="800"
-                               Margin="0 20 0 20"/>
-
-                    <Button x:Name="Submit"
-                            IsEnabled="False"
-                            Content="Registrar datos"  
-                            Click="Validator"
-                            Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch"/>
-                </StackPanel>
-
-                <Grid ColumnSpacing="10">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                        <ColumnDefinition />
-                    </Grid.ColumnDefinitions>
-
-                    <Button Grid.Column="0" x:Name="reportesProductos"  
-                            Content="Reportes de productos"  
-                            Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch" 
-                            Click="MoveTo"/>
-
-                    <Button Grid.Column="2" x:Name="InventarioProductos"  
-                            Content="Inventario de productos"
-                            Click="MoveTo"
-                            Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch" />
-                </Grid>
-
+                <TextBlock Text="Gestión de inventario"
+                           Opacity="0.6"
+                           Margin="0,4,0,0"/>
             </StackPanel>
-        </ScrollViewer>
-    </Grid>
 
+            <Button Grid.Column="1"
+                    Content="＋ Agregar"
+                    Click="OpenAddDialog"
+                    Padding="14,8"
+                    CornerRadius="10"/>
+        </Grid>
+
+        <!-- TABLA -->
+        <Border Grid.Row="1"
+                Margin="0,20,0,0"
+                Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                CornerRadius="16"
+                Padding="16">
+
+            <controls:DataGrid
+                ItemsSource="{x:Bind Productos}"
+                AutoGenerateColumns="False"
+                IsReadOnly="True"
+                HeadersVisibility="Column"
+                GridLinesVisibility="Horizontal"
+                SelectionMode="Single"
+                CanUserReorderColumns="False"
+                CanUserResizeColumns="False">
+
+                <controls:DataGrid.Columns>
+
+                    <controls:DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="2*"/>
+                    <controls:DataGridTextColumn Header="Categoría" Binding="{Binding Categoria}" Width="*"/>
+                    <controls:DataGridTextColumn Header="Compra" Binding="{Binding PrecioCompra}" Width="*"/>
+                    <controls:DataGridTextColumn Header="Venta" Binding="{Binding PrecioVenta}" Width="*"/>
+                    <controls:DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="*"/>
+                    <controls:DataGridTextColumn Header="Proveedor" Binding="{Binding ProveedorNombre}" Width="2*"/>
+
+                    <!-- ACCIONES -->
+                    <controls:DataGridTemplateColumn Header="Acciones" Width="*">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+
+                                    <!-- EDITAR -->
+                                    <Button Content="Editar"
+                                            Click="Edit_Click"
+                                            Tag="{Binding}"
+                                            Padding="10,4"
+                                            CornerRadius="6"
+                                            Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                                            Foreground="White"
+                                            FontWeight="SemiBold"/>
+
+                                    <!-- ELIMINAR -->
+                                    <Button Content="Eliminar"
+                                            Click="Delete_Click"
+                                            Tag="{Binding}"
+                                            Padding="10,4"
+                                            CornerRadius="6"
+                                            Background="IndianRed"
+                                            Foreground="White"
+                                            FontWeight="SemiBold"/>
+
+                                </StackPanel>
+
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
+
+                </controls:DataGrid.Columns>
+
+            </controls:DataGrid>
+
+        </Border>
+
+    </Grid>
 </Page>

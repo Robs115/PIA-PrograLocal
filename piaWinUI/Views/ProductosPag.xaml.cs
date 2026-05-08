@@ -16,188 +16,374 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using System.Collections.ObjectModel;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace piaWinUI.Views
 {
-    public sealed partial class ProductosPag : Page
+
+    public class ProductoView
     {
+        public Producto Model { get; }
 
-        public ProductosPag()
+        public ProductoView(Producto model)
         {
-            this.InitializeComponent();
-            this.NavigationCacheMode = NavigationCacheMode.Enabled;
-
-            Submit.IsEnabled = false;
-            Loaded += async (_, __) => await CargarProveedores();
-
+            Model = model;
         }
 
+        public string Nombre => Model.Nombre;
+        public string Descripcion => Model.Descripcion;
+        public decimal PrecioCompra => Model.PrecioCompra;
+        public decimal PrecioVenta => Model.PrecioVenta;
+        public Guid IdProveedor => Model.IdProveedor;
+        public string Categoria => Model.Categoria;
+        public int Stock => Model.Stock;
+
+        public string ProveedorNombre { get; set; }
+    }
+    public sealed partial class ProductosPag : Page
+    {
         private readonly ProductService _service = new ProductService();
         private readonly ProveedorService _proveedorService = new ProveedorService();
 
-        private async Task CargarProveedores()
-        {
-            var proveedores = await _proveedorService.GetAllAsync();
+        public ObservableCollection<ProductoView> Productos { get; } = new();
 
-            cmbProveedor.ItemsSource = proveedores;
-            Submit.IsEnabled = true;
+        private Dictionary<Guid, string> _proveedorLookup = new();
+
+        public ProductosPag()
+        {
+            InitializeComponent();
+            Loaded += ProductosPag_Loaded;
         }
 
-        private async void Validator(object sender, RoutedEventArgs e)
+        private async void ProductosPag_Loaded(object sender, RoutedEventArgs e)
         {
-            if (string.IsNullOrWhiteSpace(txtNombre.Text))
-            {
-                SetStatus("El nombre es obligatorio.");
-                return;
-            }
-
-            if (txtNombre.Text.Length > 50)
-            {
-                SetStatus("Máximo 50 caracteres en nombre.");
-                return;
-            }
-
-            if (string.IsNullOrWhiteSpace(txtDescripcion.Text))
-            {
-                SetStatus("La descripción es obligatoria.");
-                return;
-            }
-
-            if (cmbCategoria.SelectedItem is null)
-            {
-                SetStatus("Selecciona una categoría.");
-                return;
-            }
-
-            if (!decimal.TryParse(txtPrecioCompra.Text, out decimal precioCompra))
-            {
-                SetStatus("Precio de compra inválido.");
-                return;
-            }
-
-            if (!decimal.TryParse(txtPrecioVenta.Text, out decimal precioVenta))
-            {
-                SetStatus("Precio de venta inválido.");
-                return;
-            }
-
-            if (precioCompra >= precioVenta)
-            {
-                SetStatus("El precio de venta no puede ser menor o igual al precio de compra.");
-                return;
-            }
-
-            if (precioCompra < 0 || precioVenta < 0)
-            {
-                SetStatus("Los precios no pueden ser negativos.");
-                return;
-            }
-
-            if (!int.TryParse(txtStock.Text, out int stock))
-            {
-                SetStatus("Stock inválido.");
-                return;
-            }
-
-            if (stock < 0)
-            {
-                SetStatus("El stock no puede ser negativo.");
-                return;
-            }
-
-            if (cmbProveedor.SelectedItem is null)
-            {
-                SetStatus("Selecciona un proveedor.");
-                return;
-            }
-
-            SetStatus("Producto válido.", false);
-
-            await Guardar_Click(sender, e);
-
+            await LoadData();
         }
 
-        private async Task Guardar_Click(object sender, RoutedEventArgs e)
+        // =========================
+        // BLOQUEO DE INPUT NUMÉRICO
+        // =========================
+        private void SoloNumeros(TextBox tb, bool allowDecimal = false)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+
+                if (e.NewText.Contains(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // Permitir vacío SOLO mientras escriben
+                if (string.IsNullOrEmpty(e.NewText))
+                    return;
+
+                // Validar entero o decimal
+                if (allowDecimal)
+                {
+                    e.Cancel = !decimal.TryParse(e.NewText, out _);
+                }
+                else
+                {
+                    e.Cancel = !int.TryParse(e.NewText, out _);
+                }
+            };
+        }
+
+        // =========================
+        // CARGAR DATOS
+        // =========================
+        private async Task LoadData()
         {
             try
             {
                 var productos = await _service.GetAllAsync();
+                var proveedores = await _proveedorService.GetAllAsync();
 
-                var nuevo = new Producto
+                _proveedorLookup = proveedores.ToDictionary(p => p.IdProveedor, p => p.Nombre);
+
+                Productos.Clear();
+
+                foreach (var p in productos)
                 {
-                    Id = Guid.NewGuid(),
-                    Nombre = txtNombre.Text.Trim(),
-                    Descripcion = txtDescripcion.Text.Trim(),
-                    Categoria = (cmbCategoria.SelectedItem as ComboBoxItem)?.Content?.ToString(),
-
-                    PrecioCompra = decimal.Parse(txtPrecioCompra.Text),
-                    PrecioVenta = decimal.Parse(txtPrecioVenta.Text),
-
-                    Stock = int.Parse(txtStock.Text),
-
-                    IdProveedor = ((Proveedor)cmbProveedor.SelectedItem).IdProveedor
-                };
-
-                
-                productos.Add(nuevo);
-
-                await _service.SaveAllAsync(productos);
-
-                LimpiarFormulario();
-
-                SetStatus("Registro exitoso.", false);
-
-
+                    Productos.Add(new ProductoView(p)
+                    {
+                        ProveedorNombre = _proveedorLookup.TryGetValue(p.IdProveedor, out var nombre)
+                            ? nombre
+                            : "Desconocido"
+                    });
+                }
             }
-
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine(ex.Message);
+                System.Diagnostics.Debug.WriteLine(ex.ToString());
             }
         }
 
-        private void LimpiarFormulario()
+        // =========================
+        // AGREGAR
+        // =========================
+        private async void OpenAddDialog(object sender, RoutedEventArgs e)
         {
-            txtNombre.Text = "";
-            txtDescripcion.Text = "";
-            cmbCategoria.SelectedIndex = 0;
+            var producto = new Producto();
 
-            txtPrecioCompra.Text = "";
-            txtPrecioVenta.Text = "";
-            txtStock.Text = "";
+            var dialog = BuildDialog(producto, false);
 
-            cmbProveedor.SelectedIndex = 0;
+            var result = await dialog.ShowAsync();
 
-            StatusTextBlock.Text = "";
-        }
-
-        private async Task SetStatus(string text, bool isError = true)
-        {
-            StatusTextBlock.Text = text;
-            StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
-
-            await Task.Delay(3000);
-            StatusTextBlock.Text = "";
-        }
-
-        private void MoveTo(object sender, RoutedEventArgs e)
-        {
-            Button boton = (Button)sender;
-
-            if (boton.Name == "InventarioProductos")
+            if (result == ContentDialogResult.Primary)
             {
-                Frame.Navigate(typeof(ListarProductosPage));
-            }
+                var list = await _service.GetAllAsync();
 
-            if (boton.Name == "reportesProductos")
-            {
-                Frame.Navigate(typeof(ReporteProductosPag));
+                producto.Id = Guid.NewGuid();
+                list.Add(producto);
+
+                await _service.SaveAllAsync(list);
+
+                await LoadData();
             }
         }
 
+        // =========================
+        // EDITAR
+        // =========================
+        private async void Edit_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not ProductoView view)
+                return;
 
+            var dialog = BuildDialog(view.Model, true);
+
+            var result = await dialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                var list = await _service.GetAllAsync();
+
+                var index = list.FindIndex(x => x.Id == view.Model.Id);
+
+                if (index != -1)
+                {
+                    list[index] = view.Model;
+                    await _service.SaveAllAsync(list);
+                }
+
+                await LoadData();
+            }
+        }
+
+        // =========================
+        // ELIMINAR
+        // =========================
+        private async void Delete_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is not Button btn || btn.Tag is not ProductoView view)
+                return;
+
+            var list = await _service.GetAllAsync();
+
+            var item = list.FirstOrDefault(x => x.Id == view.Model.Id);
+
+            if (item != null)
+            {
+                list.Remove(item);
+                await _service.SaveAllAsync(list);
+            }
+
+            Productos.Remove(view);
+        }
+
+        // =========================
+        // MODAL ADD / EDIT
+        // =========================
+        private ContentDialog BuildDialog(Producto producto, bool isEdit)
+        {
+            var nombre = new TextBox
+            {
+                Header = "Nombre",
+                Text = producto.Nombre ?? "",
+                MaxLength = 50
+            };
+
+            var descripcion = new TextBox
+            {
+                Header = "Descripción",
+                Text = producto.Descripcion ?? "",
+                MaxLength = 100
+            };
+
+            var categoria = new ComboBox
+            {
+                Header = "Categoría",
+                Items =
+                {
+                    "Bebidas","Comida","Lácteos","Panadería",
+                    "Congelados","Snacks","Limpieza",
+                    "Higiene personal","Electrónica","Otros"
+                },
+                SelectedItem = producto.Categoria
+            };
+
+            var precioCompra = new TextBox
+            {
+                Header = "Precio compra",
+                Text = producto.PrecioCompra.ToString(),
+                MaxLength = 10
+            };
+            SoloNumeros(precioCompra, true);
+
+            var precioVenta = new TextBox
+            {
+                Header = "Precio venta",
+                Text = producto.PrecioVenta.ToString(),
+                MaxLength = 10
+            };
+            SoloNumeros(precioVenta, true);
+
+            var stock = new TextBox
+            {
+                Header = "Stock",
+                Text = producto.Stock.ToString(),
+                MaxLength = 6
+            };
+            SoloNumeros(stock, false);
+
+            var proveedor = new ComboBox
+            {
+                Header = "Proveedor",
+                ItemsSource = _proveedorLookup.Select(x => new KeyValuePair<Guid, string>(x.Key, x.Value)).ToList(),
+                DisplayMemberPath = "Value",
+                SelectedValuePath = "Key"
+            };
+
+            if (producto.IdProveedor != Guid.Empty)
+                proveedor.SelectedValue = producto.IdProveedor;
+
+            var error = new TextBlock
+            {
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red),
+                TextWrapping = TextWrapping.Wrap
+            };
+
+            var panel = new StackPanel
+            {
+                Spacing = 10,
+                Children =
+                {
+                    nombre,
+                    descripcion,
+                    categoria,
+                    precioCompra,
+                    precioVenta,
+                    stock,
+                    proveedor,
+                    error
+                }
+            };
+
+            var dialog = new ContentDialog
+            {
+                Title = isEdit ? "Editar producto" : "Nuevo producto",
+                PrimaryButtonText = "Guardar",
+                CloseButtonText = "Cancelar",
+                Content = panel,
+                XamlRoot = this.XamlRoot
+            };
+
+            dialog.PrimaryButtonClick += (s, e) =>
+            {
+                error.Text = "";
+
+                if (string.IsNullOrWhiteSpace(nombre.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Nombre obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(precioCompra.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio compra obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(precioVenta.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio venta obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(stock.Text))
+{
+    e.Cancel = true;
+    error.Text = "Stock obligatorio.";
+    return;
+}
+
+                if (!decimal.TryParse(precioCompra.Text, out decimal pc))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio compra inválido.";
+                    return;
+                }
+
+                if (!decimal.TryParse(precioVenta.Text, out decimal pv))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio venta inválido.";
+                    return;
+                }
+
+                if (pc < 0 || pv < 0)
+                {
+                    e.Cancel = true;
+                    error.Text = "Precios no pueden ser negativos.";
+                    return;
+                }
+
+                if (pc >= pv)
+                {
+                    e.Cancel = true;
+                    error.Text = "Venta debe ser mayor que compra.";
+                    return;
+                }
+
+                if (!int.TryParse(stock.Text, out int st))
+                {
+                    e.Cancel = true;
+                    error.Text = "Stock inválido.";
+                    return;
+                }
+
+                if (st < 0)
+                {
+                    e.Cancel = true;
+                    error.Text = "Stock no puede ser negativo.";
+                    return;
+                }
+
+                if (proveedor.SelectedValue is null)
+                {
+                    e.Cancel = true;
+                    error.Text = "Selecciona proveedor.";
+                    return;
+                }
+
+                producto.Nombre = nombre.Text.Trim();
+                producto.Descripcion = descripcion.Text.Trim();
+                producto.Categoria = categoria.SelectedItem?.ToString();
+
+                producto.PrecioCompra = pc;
+                producto.PrecioVenta = pv;
+                producto.Stock = st;
+
+                producto.IdProveedor = (Guid)proveedor.SelectedValue;
+            };
+
+            return dialog;
+        }
     }
 }
