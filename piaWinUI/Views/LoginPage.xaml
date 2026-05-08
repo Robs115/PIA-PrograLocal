@@ -32,12 +32,14 @@
                     PlaceholderText="Usuario"  
                     Header="Nombre de usuario" 
                     KeyDown="Root_KeyDown"
-                         MaxLength="10"/>
+                         MaxLength="10"
+                           BeforeTextChanging="Usuario_BeforeTextChanging"/>
                 <PasswordBox x:Name="PasswordBox"  
                     PlaceholderText="Contraseña"  
                     Header="Contraseña"
                     KeyDown="Root_KeyDown"
-                             MaxLength="15"/>
+                             MaxLength="15"
+                               PasswordChanging="Contrasena_BeforeTextChanging"/>
                 <TextBlock x:Name="StatusTextBlock"  
                     Foreground="{ThemeResource SystemFillColorCriticalBrush}"  
                     FontSize="12" 

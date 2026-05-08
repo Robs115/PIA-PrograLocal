@@ -40,7 +40,25 @@ namespace piaWinUI.Views
             StatusTextBlock.Text = text;
             StatusTextBlock.Foreground = isError ? new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Red) : new Microsoft.UI.Xaml.Media.SolidColorBrush(Microsoft.UI.Colors.Green);
         }
+        private void Usuario_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+           
+            var regex = @"^[a-zA-Z0-9_-]*$";
 
+            args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
+        }
+
+        private void Contrasena_BeforeTextChanging(PasswordBox sender, PasswordBoxPasswordChangingEventArgs args)
+        {
+          
+            var password = sender.Password;
+
+            if (password.Contains(" "))
+            {
+                
+                sender.Password = password.Replace(" ", "");
+            }
+        }
         private async Task DoLoginAsync()
         {
             var username = UsernameTextBox.Text?.Trim();

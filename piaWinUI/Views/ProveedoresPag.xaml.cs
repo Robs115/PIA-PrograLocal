@@ -78,6 +78,7 @@ namespace piaWinUI.Views
         // Guardar nuevo proveedor
         private async void Guardar_Click(object sender, RoutedEventArgs e)
         {
+            
             string nombre = Nombre.Text.Trim();
             string telefono = Telefono.Text.Trim();
             string email = Email.Text.Trim();
