@@ -87,11 +87,6 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Page Update="Views\CajaPag.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-  </ItemGroup>
-  <ItemGroup>
     <Page Update="Views\VentasPag.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
