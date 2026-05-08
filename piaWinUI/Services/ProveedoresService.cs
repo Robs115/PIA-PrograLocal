@@ -7,46 +7,36 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using piaWinUI.Helpers;
 
 namespace piaWinUI.Services
 {
     public class ProveedorService
+        : BaseJsonService<Proveedor>
     {
-        public async Task<List<Proveedor>> GetProveedorAsync()
+        public ProveedorService()
+            : base(FilePaths.Proveedores)
         {
-            if (!File.Exists(App.ProveedorFilePath))
-                return new List<Proveedor>();
-
-            using var stream = File.OpenRead(App.ProveedorFilePath);
-            System.Diagnostics.Debug.WriteLine(App.ProveedorFilePath);
-            return await JsonSerializer.DeserializeAsync<List<Proveedor>>(stream)
-                   ?? new List<Proveedor>();
         }
 
-        public async Task SaveProveedorAsync(List<Proveedor> proveedores)
+        public async Task AddProveedorAsync(
+            Proveedor proveedor)
         {
-            Debug.WriteLine("PATH: " + App.ProveedorFilePath);
-            Debug.WriteLine("EXISTE: " + File.Exists(App.ProveedorFilePath));
-            Directory.CreateDirectory(App.DataFolder);
+            var proveedores = await GetAllAsync();
 
-            var json = JsonSerializer.Serialize(proveedores, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            bool existe = proveedores.Any(p =>
+                p.Email.Trim().ToLower() ==
+                proveedor.Email.Trim().ToLower());
 
-            await File.WriteAllTextAsync(App.ProveedorFilePath, json);
+            if (existe)
+                throw new Exception(
+                    "Proveedor ya registrado");
 
-            Debug.WriteLine(File.Exists(App.ProveedorFilePath));
-            Debug.WriteLine(File.ReadAllText(App.ProveedorFilePath));
-            Debug.WriteLine(">" + App.ProveedorFilePath + "<");
-            System.Diagnostics.Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = "/select,\"" + App.ProveedorFilePath + "\"",
-                UseShellExecute = true
-            });
+            proveedor.IdProveedor = Guid.NewGuid();
 
+            proveedores.Add(proveedor);
+
+            await SaveAllAsync(proveedores);
         }
     }
 }
-

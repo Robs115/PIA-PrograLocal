@@ -6,34 +6,29 @@ using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
-using piaWinUI.Models;
-using System.Text.Json;
+using piaWinUI.Helpers;
+
 
 namespace piaWinUI.Services
 {
     public class PedidoService
+        : BaseJsonService<Pedidos>
     {
-        public async Task<List<Pedidos>> GetPedidosAsync()
+        public PedidoService()
+            : base(FilePaths.Pedidos)
         {
-            if (!File.Exists(App.PedidosFilePath))
-                return new List<Pedidos>();
-
-            using var stream = File.OpenRead(App.PedidosFilePath);
-
-            return await JsonSerializer.DeserializeAsync<List<Pedidos>>(stream)
-                   ?? new List<Pedidos>();
         }
 
-        public async Task SavePedidosAsync(List<Pedidos> pedidos)
+        public async Task AddPedidoAsync(
+            Pedidos pedido)
         {
-            Directory.CreateDirectory(App.DataFolder);
+            var pedidos = await GetAllAsync();
 
-            var json = JsonSerializer.Serialize(pedidos, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            pedido.Id = Guid.NewGuid();
 
-            await File.WriteAllTextAsync(App.PedidosFilePath, json);
+            pedidos.Add(pedido);
+
+            await SaveAllAsync(pedidos);
         }
     }
 }

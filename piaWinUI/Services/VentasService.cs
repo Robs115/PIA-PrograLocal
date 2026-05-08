@@ -1,40 +1,85 @@
-﻿using piaWinUI.Models;
+﻿using piaWinUI.Helpers;
+using piaWinUI.Models;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace piaWinUI.Services
 {
-    public class VentaService
+    public class VentasService
+        : BaseJsonService<Venta>
     {
-        
-        public async Task<List<Venta>> GetVentasAsync()
+        private readonly ProductService productoService;
+        private readonly DetalleVentaService detalleService;
+
+        public VentasService()
+            : base(FilePaths.Ventas)
         {
-            if (!File.Exists(App.VentasFilePath))
-                return new List<Venta>();
-
-            using var stream = File.OpenRead(App.VentasFilePath);
-
-            return await JsonSerializer.DeserializeAsync<List<Venta>>(stream)
-                   ?? new List<Venta>();
+            productoService = new ProductService();
+            detalleService = new DetalleVentaService();
         }
 
-        public async Task SaveVentasAsync(List<Venta> ventas)
+        public async Task RegistrarVentaAsync(
+            Venta venta,
+            List<DetalleVentas> detalles)
         {
-            Directory.CreateDirectory(App.DataFolder);
+            if (detalles.Count == 0)
+                throw new Exception(
+                    "La venta no tiene productos");
 
-            var json = JsonSerializer.Serialize(ventas, new JsonSerializerOptions
+            var productos =
+                await productoService.GetAllAsync();
+
+            foreach (var detalle in detalles)
             {
-                WriteIndented = true
-            });
+                var producto =
+                    productos.FirstOrDefault(p =>
+                        p.Id == detalle.IdProducto);
 
-            await File.WriteAllTextAsync(App.VentasFilePath, json);
+                if (producto == null)
+                    throw new Exception(
+                        $"Producto no encontrado");
 
-            Debug.WriteLine("Ventas guardadas en: " + App.VentasFilePath);
+                if (detalle.Cantidad <= 0)
+                    throw new Exception(
+                        "Cantidad inválida");
+
+                if (detalle.Cantidad > producto.Stock)
+                    throw new Exception(
+                        $"Stock insuficiente para {producto.Nombre}");
+
+                producto.Stock -= detalle.Cantidad;
+            }
+
+            venta.IdVenta = Guid.NewGuid();
+            venta.Fecha = DateTime.Now;
+            venta.Total = detalles.Sum(d => d.Subtotal);
+
+            var ventas = await GetAllAsync();
+
+            ventas.Add(venta);
+
+            await SaveAllAsync(ventas);
+
+            foreach (var detalle in detalles)
+            {
+                detalle.IdVenta = venta.IdVenta;
+            }
+
+            var todosDetalles =
+                await detalleService.GetAllAsync();
+
+            todosDetalles.AddRange(detalles);
+
+            await detalleService.SaveAllAsync(
+                todosDetalles);
+
+            await productoService.SaveAllAsync(
+                productos);
         }
     }
-
-    
 }

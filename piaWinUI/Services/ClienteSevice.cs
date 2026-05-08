@@ -1,4 +1,5 @@
-﻿using piaWinUI.Models;
+﻿using piaWinUI.Helpers;
+using piaWinUI.Models;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,45 +9,34 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
+
 namespace piaWinUI.Services
 {
     public class ClienteService
+        : BaseJsonService<Cliente>
     {
-        public async Task<List<Cliente>> GetClientesAsync()
+        public ClienteService()
+            : base(FilePaths.Clientes)
         {
-            if (!File.Exists(App.ClientesFilePath))
-                return new List<Cliente>();
-
-            using var stream = File.OpenRead(App.ClientesFilePath);
-            System.Diagnostics.Debug.WriteLine(App.ClientesFilePath);
-            return await JsonSerializer.DeserializeAsync<List<Cliente>>(stream)
-                   ?? new List<Cliente>();
         }
 
-        public async Task SaveClienteAsync(List<Cliente> clientes)
+        public async Task AddClienteAsync(Cliente cliente)
         {
-            Debug.WriteLine("PATH: " + App.ClientesFilePath);
-            Debug.WriteLine("EXISTE: " + File.Exists(App.ClientesFilePath));
-            Directory.CreateDirectory(App.DataFolder);
+            var clientes = await GetAllAsync();
 
-            var json = JsonSerializer.Serialize(clientes, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            });
+            bool existe = clientes.Any(c =>
+                c.Email.Trim().ToLower() ==
+                cliente.Email.Trim().ToLower());
 
-            await File.WriteAllTextAsync(App.ClientesFilePath, json);
+            if (existe)
+                throw new Exception(
+                    "Ya existe un cliente con ese correo");
 
-            Debug.WriteLine(File.Exists(App.ClientesFilePath));
-            Debug.WriteLine(File.ReadAllText(App.ClientesFilePath));
-            Debug.WriteLine(">" + App.ClientesFilePath + "<");
+            cliente.Id = Guid.NewGuid();
 
-            System.Diagnostics.Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = "/select,\"" + App.ClientesFilePath + "\"",
-                UseShellExecute = true
-            });
+            clientes.Add(cliente);
 
+            await SaveAllAsync(clientes);
         }
     }
 }
