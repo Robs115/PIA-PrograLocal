@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Text.RegularExpressions;
+using Windows.Foundation.Diagnostics;
 
 namespace piaWinUI.Helpers
 {
     public static class ValidationHelper
     {
-        
+
         public static bool ValidarNombre(string nombre, out string error)
         {
             error = "";
@@ -134,5 +135,6 @@ namespace piaWinUI.Helpers
 
             return true;
         }
+      
     }
 }

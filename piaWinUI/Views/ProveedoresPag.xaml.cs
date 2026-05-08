@@ -16,6 +16,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using LiveChartsCore.Kernel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -41,6 +42,12 @@ namespace piaWinUI.Views
         private async void ProveedoresPag_Loaded(object sender, RoutedEventArgs e)
         {
             await CargarProveedores();
+        }
+        private void Buscador_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+
+            var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
         private void Nombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
@@ -157,10 +164,12 @@ namespace piaWinUI.Views
         }
 
         // Buscar proveedores
-        private void Buscador_TextChanged(object sender, TextChangedEventArgs e)
+        private void  Buscador_TextChanged(object sender, TextChangedEventArgs e)
         {
             string texto = buscador.Text.Trim().ToLower();
 
+     
+            
             var filtrados = listaProveedores
                 .Where(p => p.Nombre.ToLower().Contains(texto))
                 .ToList();
