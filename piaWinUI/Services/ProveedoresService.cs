@@ -19,6 +19,8 @@ namespace piaWinUI.Services
         {
         }
 
+        
+
         public async Task AddProveedorAsync(
             Proveedor proveedor)
         {
@@ -38,5 +40,7 @@ namespace piaWinUI.Services
 
             await SaveAllAsync(proveedores);
         }
+
+
     }
 }

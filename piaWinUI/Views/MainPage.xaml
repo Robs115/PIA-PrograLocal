@@ -23,7 +23,6 @@
                 <NavigationViewItem Content="Productos" Tag="Productos"/>
                 <NavigationViewItem Content="Clientes" Tag="Clientes"/>
                 <NavigationViewItem Content="Pedidos" Tag="Pedidos"/>
-                <NavigationViewItem Content="Caja" Tag="Caja"/>
                 <NavigationViewItem Content="Proveedores" Tag="Proveedores"/>
 
             </NavigationView.MenuItems>
