@@ -32,15 +32,17 @@ namespace piaWinUI.Views
         public MainPage()
         {
             InitializeComponent();
-            ContentFrame.Navigate(typeof(Reportes));
+            ContentFrame.Navigate(typeof(InicioPag));
             _dataFolder = App.DataFolder;
             _usersFilePath = App.UsersFilePath;
 
         }
-        private void NavView_ItemInvoked(NavigationView sender,
-            NavigationViewItemInvokedEventArgs args)
+        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            switch (args.InvokedItem?.ToString())
+            var item = args.InvokedItemContainer as NavigationViewItem;
+            if (item == null) return;
+
+            switch (item.Tag?.ToString())
             {
                 case "Reportes":
                     ContentFrame.Navigate(typeof(Reportes));
@@ -53,12 +55,15 @@ namespace piaWinUI.Views
                 case "Ventas":
                     ContentFrame.Navigate(typeof(VentasPag));
                     break;
+
                 case "Clientes":
                     ContentFrame.Navigate(typeof(ClientesPag));
                     break;
+
                 case "Pedidos":
                     ContentFrame.Navigate(typeof(PedidosPag));
                     break;
+
                 case "Proveedores":
                     ContentFrame.Navigate(typeof(ProveedoresPag));
                     break;
