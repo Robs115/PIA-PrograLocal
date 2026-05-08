@@ -9,35 +9,31 @@
     mc:Ignorable="d">
 
     <Grid>
-
+        <!-- Para que no se vea feo al cerrar el menú -->
         <NavigationView x:Name="NavView"
                 PaneDisplayMode="Left"
                 IsBackButtonVisible="Collapsed"
                 IsSettingsVisible="False"
+                IsPaneOpen="True"
+                CompactPaneLength="48"
+                OpenPaneLength="200"
                 ItemInvoked="NavView_ItemInvoked">
 
             <NavigationView.MenuItems>
-
-                <NavigationViewItem Content="Reportes" Tag="Reportes"/>
-                <NavigationViewItem Content="Ventas" Tag="Ventas"/>
-                <NavigationViewItem Content="Productos" Tag="Productos"/>
-                <NavigationViewItem Content="Clientes" Tag="Clientes"/>
-                <NavigationViewItem Content="Pedidos" Tag="Pedidos"/>
-                <NavigationViewItem Content="Proveedores" Tag="Proveedores"/>
-
+                <NavigationViewItem Content="Inicio" Icon="Home" Tag="Inicio"/>
+                <NavigationViewItem Content="Inventario" Icon="Library" Tag="Productos"/>
+                <NavigationViewItem Content="Proveedores" Icon="Contact" Tag="Proveedores"/>
+                <NavigationViewItem Content="Pedidos" Icon="Shop" Tag="Pedidos"/>
+                <NavigationViewItem Content="Ventas" Icon="Paste" Tag="Ventas"/>
+                <NavigationViewItem Content="Reportes" Icon="List" Tag="Reportes"/>
             </NavigationView.MenuItems>
-            
-            
 
             <NavigationView.FooterMenuItems>
-                <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
-                <NavigationViewItem Content="Salir"
-                            Icon="ClosePane"
-                            Tapped="ExitApp_Tapped"/>
+               <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
+                <NavigationViewItem Content="Salir" Icon="LeaveChat" Tapped="ExitApp_Tapped"/>
             </NavigationView.FooterMenuItems>
 
             <Frame x:Name="ContentFrame"/>
-
         </NavigationView>
 
     </Grid>

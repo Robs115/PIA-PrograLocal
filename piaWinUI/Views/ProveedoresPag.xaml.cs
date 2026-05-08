@@ -104,14 +104,29 @@ namespace piaWinUI.Views
                 return;
             }
 
-            // Revisar teléfono duplicado
             var proveedoresExistentes = await _service.GetAllAsync();
+            //chekear nombre 
+            if (proveedoresExistentes.Any(p => p.Nombre.ToUpper() == nombre.ToUpper()))
+            {
+                await MostrarDialog("Error", "El nombre ya está registrado.");
+                return;
+            }
+
+            // Revisar teléfono duplicado
+            
             if (proveedoresExistentes.Any(p => p.Telefono == telefono))
             {
                 await MostrarDialog("Error", "El teléfono ya está registrado.");
                 return;
             }
 
+            
+            //chekear email duplicado
+            if (proveedoresExistentes.Any(p => p.Email.ToUpper() == email.ToUpper()))
+            {
+                await MostrarDialog("Error", "El email ya está registrado.");
+                return;
+            }
             try
             {
                 var nuevoProveedor = new Proveedor
@@ -209,8 +224,31 @@ namespace piaWinUI.Views
                 return;
             }
 
+
+            
             var proveedoresExistentes = await _service.GetAllAsync();
 
+            //chekear nombre 
+            if (proveedoresExistentes.Any(p => p.Nombre.ToUpper() == nombreDialog.Text.ToUpper() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            {
+                await MostrarDialog("Error", "El nombre ya está registrado.");
+                return;
+            }
+
+
+
+
+            if (proveedoresExistentes.Any(p => p.Telefono == telefonoDialog.Text.Trim() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            {
+                await MostrarDialog("Error", "El teléfono ya está registrado.");
+                return;
+            }
+
+            if (proveedoresExistentes.Any(p => p.Email.ToUpper() == emailDialog.Text.Trim().ToUpper() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            {
+                await MostrarDialog("Error", "El email ya está registrado.");
+                return;
+            }
             // Revisar duplicado
             var index = proveedoresExistentes.FindIndex(p => p.IdProveedor == proveedorSeleccionado.IdProveedor);
             if (index == -1)
