@@ -76,9 +76,10 @@
 
 
             <TextBox x:Name="buscador"
-                 PlaceholderText="Buscar..."
+                 PlaceholderText="Introduce el nombre....."
                  TextChanged="Buscador_TextChanged"
-                     BeforeTextChanging="Buscador_BeforeTextChanging"/>
+                     BeforeTextChanging="Buscador_BeforeTextChanging"
+                     MaxLength="50"/>
 
        
 
