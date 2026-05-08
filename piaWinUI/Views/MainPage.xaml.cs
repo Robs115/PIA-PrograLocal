@@ -44,6 +44,9 @@ namespace piaWinUI.Views
 
             switch (item.Tag?.ToString())
             {
+                case "Inicio":
+                    ContentFrame.Navigate(typeof(InicioPag));
+                    break;
                 case "Reportes":
                     ContentFrame.Navigate(typeof(Reportes));
                     break;

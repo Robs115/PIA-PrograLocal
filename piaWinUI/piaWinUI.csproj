@@ -14,6 +14,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="Views\InicioPag.xaml" />
     <None Remove="Views\MainPage.xaml" />
     <None Remove="Views\ReporteProductosPag.xaml" />
     <None Remove="Views\Reportes.xaml" />

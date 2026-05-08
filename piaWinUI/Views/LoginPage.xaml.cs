@@ -87,10 +87,10 @@ namespace piaWinUI.Views
                     break;
                 case LoginResult.UserNotFound:
                     SetStatus("Usuario no existe.");
-                    break;
+                    return;
                 case LoginResult.WrongPassword:
                     SetStatus("Contraseña incorrecta.");
-                    break;
+                    return;
             }
 
             Frame.Navigate(typeof(MainPage));
