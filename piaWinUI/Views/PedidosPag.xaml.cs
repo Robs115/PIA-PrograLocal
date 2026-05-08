@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-
 namespace piaWinUI.Views
 {
     public sealed partial class PedidosPag : Page
@@ -39,7 +38,85 @@ namespace piaWinUI.Views
 
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
 
-            txtBuscar.TextChanged += TxtBuscarEstado_TextChanged;
+            // 🔥 VALIDAR BUSCADOR
+            ValidarTexto(txtBuscar);
+        }
+
+        // 🔥 VALIDAR BUSCADOR
+        private void ValidarTexto(TextBox tb)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+                string texto = e.NewText;
+
+                // ✅ Permitir vacío
+                if (string.IsNullOrWhiteSpace(texto))
+                    return;
+
+                // ❌ No iniciar con espacio
+                if (texto.StartsWith(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // ❌ No permitir espacios dobles
+                if (texto.Contains("  "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // ❌ Bloquear caracteres especiales
+                foreach (char c in texto)
+                {
+                    bool valido =
+                        char.IsLetterOrDigit(c) ||
+                        char.IsWhiteSpace(c);
+
+                    if (!valido)
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                }
+            };
+
+            // 🔥 LIMPIEZA EXTRA
+            tb.TextChanged += (s, e) =>
+            {
+                try
+                {
+                    string texto = tb.Text;
+
+                    if (string.IsNullOrEmpty(texto))
+                        return;
+
+                    // 🔥 QUITAR DOBLES ESPACIOS
+                    while (texto.Contains("  "))
+                    {
+                        texto = texto.Replace("  ", " ");
+                    }
+
+                    // 🔥 QUITAR ESPACIOS AL INICIO
+                    texto = texto.TrimStart();
+
+                    // 🔥 EVITAR RECURSION
+                    if (tb.Text != texto)
+                    {
+                        int cursor = tb.SelectionStart;
+
+                        tb.Text = texto;
+
+                        tb.SelectionStart =
+                            Math.Min(cursor, texto.Length);
+                    }
+                }
+                catch
+                {
+                    tb.Text = "";
+                }
+            };
         }
 
         // 🔥 CARGA INICIAL
@@ -139,41 +216,71 @@ namespace piaWinUI.Views
             }
         }
 
-        // 🔥 FILTRAR
+        // 🔥 BUSCADOR
         private void txtBuscar_TextChanged(object sender, TextChangedEventArgs e)
         {
-            FiltrarPedidos(txtBuscar.Text);
+            try
+            {
+                string texto = txtBuscar.Text?.Trim() ?? "";
+
+                _busquedaTemporal = texto;
+
+                // 🔥 SI ESTA VACIO
+                if (string.IsNullOrWhiteSpace(texto))
+                {
+                    gridPedidos.ItemsSource = _pedidos;
+                    return;
+                }
+
+                FiltrarPedidos(texto);
+            }
+            catch
+            {
+                gridPedidos.ItemsSource = _pedidos;
+            }
         }
 
+        // 🔥 FILTRAR
         private void FiltrarPedidos(string texto)
         {
             if (_pedidos == null)
                 return;
 
-            texto ??= "";
+            texto = texto?.Trim() ?? "";
+
+            // 🔥 SI ESTA VACIO
+            if (string.IsNullOrWhiteSpace(texto))
+            {
+                gridPedidos.ItemsSource = _pedidos;
+                return;
+            }
 
             var filtrados = _pedidos
                 .Where(p =>
-                    p.NombreProducto.Contains(texto,
-                        StringComparison.OrdinalIgnoreCase) ||
 
-                    p.NombreProveedor.Contains(texto,
-                        StringComparison.OrdinalIgnoreCase) ||
+                    (!string.IsNullOrWhiteSpace(p.NombreProducto) &&
+                     p.NombreProducto.Contains(texto,
+                         StringComparison.OrdinalIgnoreCase))
 
-                    p.Cantidad.ToString().Contains(texto) ||
+                    ||
+
+                    (!string.IsNullOrWhiteSpace(p.NombreProveedor) &&
+                     p.NombreProveedor.Contains(texto,
+                         StringComparison.OrdinalIgnoreCase))
+
+                    ||
+
+                    p.Cantidad.ToString().Contains(texto)
+
+                    ||
 
                     p.FechaFormateada.Contains(texto,
                         StringComparison.OrdinalIgnoreCase)
+
                 )
                 .ToList();
 
             gridPedidos.ItemsSource = filtrados;
-        }
-
-        // 🔥 GUARDAR BUSQUEDA
-        private void TxtBuscarEstado_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            _busquedaTemporal = txtBuscar.Text;
         }
 
         // 🔥 VALIDAR CANTIDAD
@@ -252,6 +359,7 @@ namespace piaWinUI.Views
                 {
                     cmbProveedorPedido.SelectedItem = proveedor;
 
+                    // 🔥 BLOQUEAR CAMBIO
                     cmbProveedorPedido.IsEnabled = false;
                 }
             }
@@ -313,7 +421,6 @@ namespace piaWinUI.Views
         {
             try
             {
-                // 🔥 VALIDAR PRODUCTO
                 if (cmbProductoPedido.SelectedItem == null)
                 {
                     await MostrarDialogo("Producto requerido",
@@ -321,7 +428,6 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 VALIDAR PROVEEDOR
                 if (cmbProveedorPedido.SelectedItem == null)
                 {
                     await MostrarDialogo("Proveedor requerido",
@@ -332,7 +438,6 @@ namespace piaWinUI.Views
                 var producto = cmbProductoPedido.SelectedItem as Producto;
                 var proveedor = cmbProveedorPedido.SelectedItem as Proveedor;
 
-                // 🔥 VALIDAR CANTIDAD VACIA
                 if (string.IsNullOrWhiteSpace(txtCantidadPedido.Text))
                 {
                     await MostrarDialogo("Cantidad requerida",
@@ -340,7 +445,6 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 VALIDAR ENTERO
                 if (!int.TryParse(txtCantidadPedido.Text, out int cantidad))
                 {
                     await MostrarDialogo("Cantidad inválida",
@@ -348,7 +452,6 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 VALIDAR MAYOR A 0
                 if (cantidad <= 0)
                 {
                     await MostrarDialogo("Cantidad inválida",
@@ -356,7 +459,6 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 VALIDAR LIMITE
                 if (cantidad > 1000)
                 {
                     await MostrarDialogo("Cantidad demasiado grande",
@@ -364,7 +466,6 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 VALIDAR RELACION
                 if (producto.IdProveedor != proveedor.IdProveedor)
                 {
                     await MostrarDialogo("Error",
@@ -372,11 +473,9 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // 🔥 OBTENER PEDIDOS
                 var pedidosModel =
                     await _pedidoService.GetAllAsync();
 
-                // 🔥 NUEVO PEDIDO
                 var nuevo = new Pedidos
                 {
                     Id = Guid.NewGuid(),

@@ -45,6 +45,7 @@ namespace piaWinUI.Views
     {
         private readonly ProductService _service = new ProductService();
         private readonly ProveedorService _proveedorService = new ProveedorService();
+        private readonly DetalleVentasService _detalleVentasService = new DetalleVentasService();
 
         public ObservableCollection<ProductoView> Productos { get; } = new();
 
@@ -95,18 +96,34 @@ namespace piaWinUI.Views
         {
             tb.BeforeTextChanging += (s, e) =>
             {
-                // ❌ No permitir iniciar con espacio
-                if (e.NewText.StartsWith(" "))
+                string texto = e.NewText;
+
+                // Permitir vacío mientras escribe
+                if (string.IsNullOrEmpty(texto))
+                    return;
+
+                // ❌ No iniciar con espacio
+                if (texto.StartsWith(" "))
                 {
                     e.Cancel = true;
                     return;
                 }
 
-                // ❌ No permitir múltiples espacios seguidos
-                if (e.NewText.Contains("  "))
+                // ❌ No permitir espacios dobles
+                if (texto.Contains("  "))
                 {
                     e.Cancel = true;
                     return;
+                }
+
+                // ❌ Bloquear caracteres especiales
+                foreach (char c in texto)
+                {
+                    if (!char.IsLetterOrDigit(c) && c != ' ')   
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
                 }
             };
         }
@@ -201,17 +218,66 @@ namespace piaWinUI.Views
             if (sender is not Button btn || btn.Tag is not ProductoView view)
                 return;
 
-            var list = await _service.GetAllAsync();
+            // =========================
+            // VALIDAR SI EL PRODUCTO ESTÁ EN VENTAS
+            // =========================
 
-            var item = list.FirstOrDefault(x => x.Id == view.Model.Id);
+            var detalles =
+                await _detalleVentasService.GetAllAsync();
 
-            if (item != null)
+            bool productoEnUso =
+                detalles.Any(d =>
+                    d.IdProducto == view.Model.Id);
+
+            // ❌ NO permitir eliminar
+            if (productoEnUso)
             {
-                list.Remove(item);
-                await _service.SaveAllAsync(list);
+                var dialog = new ContentDialog
+                {
+                    Title = "Producto en uso",
+                    Content = "No puedes eliminar este producto porque ya está relacionado a una venta.",
+                    CloseButtonText = "Aceptar",
+                    XamlRoot = this.XamlRoot
+                };
+
+                await dialog.ShowAsync();
+
+                return;
+            }
+
+            // =========================
+            // ELIMINAR PRODUCTO
+            // =========================
+
+            var productos =
+                await _service.GetAllAsync();
+
+            var producto =
+                productos.FirstOrDefault(p =>
+                    p.Id == view.Model.Id);
+
+            if (producto != null)
+            {
+                productos.Remove(producto);
+
+                await _service.SaveAllAsync(productos);
             }
 
             Productos.Remove(view);
+
+            // =========================
+            // MENSAJE ÉXITO
+            // =========================
+
+            var successDialog = new ContentDialog
+            {
+                Title = "Producto eliminado",
+                Content = "El producto fue eliminado correctamente.",
+                CloseButtonText = "Aceptar",
+                XamlRoot = this.XamlRoot
+            };
+
+            await successDialog.ShowAsync();
         }
 
         // =========================
