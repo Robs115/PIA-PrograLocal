@@ -11,29 +11,48 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
-        <Grid>
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
+            <!-- HEADER -->
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <StackPanel>
-                <TextBlock Text="Productos"
+                <!-- TITULOS -->
+                <StackPanel>
+                    <TextBlock Text="Productos"
                            FontSize="28"
                            FontWeight="Bold"/>
 
-                <TextBlock Text="Gestión de inventario"
+                    <TextBlock Text="Gestión de inventario"
                            Opacity="0.6"
                            Margin="0,4,0,0"/>
-            </StackPanel>
+                </StackPanel>
 
-            <Button Grid.Column="1"
-                    Content="＋ Agregar"
-                    Click="OpenAddDialog"
-                    Padding="14,8"
-                    CornerRadius="10"/>
-        </Grid>
+                <!-- BOTONES (AGRUPADOS) -->
+                <StackPanel Grid.Column="1"
+                        Orientation="Horizontal"
+                        Spacing="10"
+                        HorizontalAlignment="Right">
+
+                    <Button Content="+ Agregar Categoría"
+                        Click="OpenCategoriaDialog"
+                        Padding="14,8"
+                        CornerRadius="10"
+                        Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                        Foreground="White"
+                        FontWeight="SemiBold"/>
+
+                    <Button Content="＋ Agregar Producto"
+                        Click="OpenAddDialog"
+                        Padding="14,8"
+                        CornerRadius="10"
+                        Background="{ThemeResource SystemControlBackgroundAccentBrush}"
+                        Foreground="White"
+                        FontWeight="SemiBold"/>
+                </StackPanel>
+
+            </Grid>
 
         <!-- TABLA -->
         <Border Grid.Row="1"
