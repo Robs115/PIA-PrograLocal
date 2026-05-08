@@ -188,7 +188,7 @@ namespace piaWinUI.Views
                     MaxLength = 15
                 };
 
-                passwordBox.PasswordChanged += LoginPassword_NoSpaces;
+                passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
                 var panel = new StackPanel
                 {
@@ -257,13 +257,15 @@ namespace piaWinUI.Views
             }
         }
 
-        private void LoginPassword_NoSpaces(object sender, RoutedEventArgs e)
+        private void Contrasena_BeforeTextChanging(PasswordBox sender, PasswordBoxPasswordChangingEventArgs args)
         {
-            var pb = (PasswordBox)sender;
 
-            if (pb.Password.Contains(" "))
+            var password = sender.Password;
+
+            if (password.Contains(" "))
             {
-                pb.Password = pb.Password.Replace(" ", "");
+
+                sender.Password = password.Replace(" ", "");
             }
         }
 
