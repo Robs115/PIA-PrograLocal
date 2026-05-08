@@ -81,23 +81,26 @@
                      BeforeTextChanging="Buscador_BeforeTextChanging"
                      MaxLength="50"/>
 
-       
 
-            
 
-         <controls:DataGrid
+
+
+            <controls:DataGrid
              x:Name="DataGridProveedores"
         
         AutoGenerateColumns="False"
-        IsReadOnly="True"
-        GridLinesVisibility="Vertical"
-        HeadersVisibility="Column"
-        CanUserResizeColumns="True"
-        Margin="10">
+                IsReadOnly="True"
+                GridLinesVisibility="Vertical"
+                HeadersVisibility="Column"
+                CanUserResizeColumns="True"
+                Margin="10"
+                SelectionMode="Single"
+                RowHeight="50">
 
-                    <controls:DataGrid.Columns>
+                <controls:DataGrid.Columns>
 
-                        <controls:DataGridTemplateColumn Header="Nombre">
+                        <controls:DataGridTemplateColumn Header="Nombre"
+                                                         Width="2*">
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding Nombre}"
@@ -110,14 +113,18 @@
                         </controls:DataGridTemplateColumn>
 
                     <controls:DataGridTextColumn Header="Telefono"
+                                                 Width="2*"
                                  Binding="{Binding Telefono}" />
 
                     <controls:DataGridTextColumn  Header="Email"
+                                                  Width="2*"
                                  Binding="{Binding Email}" />
 
                         
 
-                        <controls:DataGridTemplateColumn Header="Acciones">
+                        <controls:DataGridTemplateColumn Header="Acciones"
+                                                         Width="2*">
+                            
                             <controls:DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
 
