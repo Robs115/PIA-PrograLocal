@@ -27,15 +27,22 @@ namespace piaWinUI.Services
             return await JsonSerializer.DeserializeAsync<List<User>>(stream)
                    ?? new List<User>();
         }
-
-        public async Task<bool> ValidateLoginAsync(string username, string password)
+        public enum LoginResult
+        {
+            Success,
+            UserNotFound,
+            WrongPassword
+        }
+        public async Task<LoginResult> ValidateLoginAsync(string username, string password)
         {
             var users = await LoadUsersAsync();
 
-            var user = users.FirstOrDefault(u =>
-                u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+            var user = users.FirstOrDefault(u => u.Username.Equals(username));
 
-            return user != null && user.Password == password;
+            if (user == null) return LoginResult.UserNotFound;
+            if (user.Password != password) return LoginResult.WrongPassword;
+
+            return LoginResult.Success;
         }
     }
 }

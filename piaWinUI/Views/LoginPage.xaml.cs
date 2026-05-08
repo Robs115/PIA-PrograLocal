@@ -15,6 +15,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using static piaWinUI.Services.AuthService;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -64,18 +65,32 @@ namespace piaWinUI.Views
             var username = UsernameTextBox.Text?.Trim();
             var password = PasswordBox.Password ?? string.Empty;
 
-            if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            if (string.IsNullOrWhiteSpace(username) )
             {
-                SetStatus("Ingrese usuario y contraseña.");
+                SetStatus("Ingrese usuario");
                 return;
             }
 
-            bool ok = await _authService.ValidateLoginAsync(username, password);
-
-            if (!ok)
-            {
-                SetStatus("Usuario o contraseña inválidos.");
+           if (string.IsNullOrWhiteSpace(password))
+                {
+                SetStatus("Ingrese contraseña");
                 return;
+            }
+
+
+            var result = await _authService.ValidateLoginAsync(username, password);
+
+            switch (result)
+            {
+                case LoginResult.Success:
+                    // Continuar login
+                    break;
+                case LoginResult.UserNotFound:
+                    SetStatus("Usuario no existe.");
+                    return;
+                case LoginResult.WrongPassword:
+                    SetStatus("Contraseña incorrecta.");
+                    return;
             }
 
             Frame.Navigate(typeof(MainPage));
