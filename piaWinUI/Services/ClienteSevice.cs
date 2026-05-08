@@ -38,5 +38,10 @@ namespace piaWinUI.Services
 
             await SaveAllAsync(clientes);
         }
+
+        internal async Task<IEnumerable<object>> GetClientesAsync()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

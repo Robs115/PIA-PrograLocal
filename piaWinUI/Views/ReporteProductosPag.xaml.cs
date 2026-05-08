@@ -31,7 +31,7 @@ namespace piaWinUI.Views
 
         private async void CargarDatos()
         {
-            var productos = await _service.GetProductsAsync();
+            var productos = await _service.GetAllAsync();
 
             // PIE
             CategoriaSeries = productos

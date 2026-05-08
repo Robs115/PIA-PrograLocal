@@ -39,7 +39,7 @@ namespace piaWinUI.Views
 
         protected override async void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
-            listaProveedores = await _service.GetProveedorAsync();
+            listaProveedores = await _service.GetAllAsync();
 
             // Mostrar últimos primero
             ProveedoresList.ItemsSource = listaProveedores
@@ -91,7 +91,7 @@ namespace piaWinUI.Views
                 return;
 
             // Obtener proveedores
-            var proveedores = await _service.GetProveedorAsync();   
+            var proveedores = await _service.GetAllAsync();   
             // Buscar proveedor
             var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor == idProveedor);
 
@@ -158,7 +158,7 @@ namespace piaWinUI.Views
             proveedorSeleccionado.Email = email;
 
             // 🔥 Guardar JSON
-            await _service.SaveProveedorAsync(proveedores);
+            await _service.SaveAllAsync(proveedores);
 
             // 🔥 Refrescar lista
             listaProveedores = proveedores;
@@ -179,8 +179,8 @@ namespace piaWinUI.Views
             Guid idProveedor = (Guid)button.Tag;
 
             // Obtener datos
-            var proveedores = await _service.GetProveedorAsync();
-            var productos = await _ProductService.GetProductsAsync();
+            var proveedores = await _service.GetAllAsync();
+            var productos = await _ProductService.GetAllAsync();
 
 
             // Buscar proveedor
@@ -222,7 +222,7 @@ namespace piaWinUI.Views
             proveedores.RemoveAll(c => c.IdProveedor == idProveedor);
 
             // Guardar cambios
-            await _service.SaveProveedorAsync(proveedores);
+            await _service.SaveAllAsync(proveedores);
 
             // Refrescar lista en pantalla
             listaProveedores = proveedores;

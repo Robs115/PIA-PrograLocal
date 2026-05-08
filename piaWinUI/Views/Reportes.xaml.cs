@@ -17,7 +17,7 @@ namespace piaWinUI
         public ISeries[] TendenciaSeries { get; set; }
         public ISeries[] ProductosSeries { get; set; }
 
-        private readonly VentaService _ventaService = new VentaService();
+        private readonly VentasService _ventaService = new VentasService();
         private readonly ProductService _productService = new ProductService();
 
         public Reportes()
@@ -44,8 +44,8 @@ namespace piaWinUI
 
         private async void CargarDatos()
         {
-            var ventas = await _ventaService.GetVentasAsync();
-            var productos = await _productService.GetProductsAsync();
+            var ventas = await _ventaService.GetAllAsync();
+            var productos = await _productService.GetAllAsync();
             double totalVentas = ventas.Sum(v => (double)v.Total);
             double promedioVentas = ventas.Count > 0 ? ventas.Average(v => (double)v.Total) : 0;
             int cantidadVentas = ventas.Count;
@@ -68,7 +68,7 @@ namespace piaWinUI
             }
             else
             {
-                // 📊 AGRUPAR VENTAS POR DÍA
+          
                 var ventasPorDia = ventas
                     .GroupBy(v => v.Fecha.Date)
                     .Select(g => new
@@ -79,7 +79,7 @@ namespace piaWinUI
                     .OrderBy(x => x.Fecha)
                     .ToList();
 
-                // 📊 BARRAS
+               
                 VentasSeries = new ISeries[]
                 {
                     new ColumnSeries<double>
@@ -88,7 +88,6 @@ namespace piaWinUI
                     }
                 };
 
-                // 📈 LÍNEA
                 TendenciaSeries = new ISeries[]
                 {
                     new LineSeries<double>
@@ -98,7 +97,7 @@ namespace piaWinUI
                 };
             }
 
-            // 🥧 PRODUCTOS POR CATEGORÍA
+
             if (productos.Count == 0)
             {
                 ProductosSeries = new ISeries[]

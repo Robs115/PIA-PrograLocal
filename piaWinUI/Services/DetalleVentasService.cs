@@ -9,10 +9,10 @@ using piaWinUI.Helpers;
 
 namespace piaWinUI.Services
 {
-    public class DetalleVentaService
+    public class DetalleVentasService
         : BaseJsonService<DetalleVentas>
     {
-        public DetalleVentaService()
+        public DetalleVentasService()
             : base(FilePaths.DetalleVentas)
         {
         }

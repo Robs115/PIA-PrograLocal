@@ -37,7 +37,7 @@ namespace piaWinUI.Views
 
         private async void CargarDatos()
         {
-            var clientes = await _service.GetClientesAsync();
+            var clientes = await _service.GetAllAsync();
             var hoy = DateTime.Now;
 
             // 🔥 PIE EDADES

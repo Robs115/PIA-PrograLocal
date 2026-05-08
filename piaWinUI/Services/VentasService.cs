@@ -14,13 +14,13 @@ namespace piaWinUI.Services
         : BaseJsonService<Venta>
     {
         private readonly ProductService productoService;
-        private readonly DetalleVentaService detalleService;
+        private readonly DetalleVentasService detalleService;
 
         public VentasService()
             : base(FilePaths.Ventas)
         {
             productoService = new ProductService();
-            detalleService = new DetalleVentaService();
+            detalleService = new DetalleVentasService();
         }
 
         public async Task RegistrarVentaAsync(

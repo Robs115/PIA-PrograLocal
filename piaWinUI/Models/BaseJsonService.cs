@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -60,6 +61,22 @@ namespace piaWinUI.Services
                 throw new Exception(
                     $"Error guardando datos: {ex.Message}");
             }
+
+        }
+     
+        private void AbrirCarpetaDatos()
+        {
+            string? folder =
+                Path.GetDirectoryName(filePath);
+
+            if (folder == null)
+                return;
+
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = folder,
+                UseShellExecute = true
+            });
         }
     }
 }

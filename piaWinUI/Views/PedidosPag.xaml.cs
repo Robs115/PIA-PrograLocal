@@ -64,11 +64,11 @@ namespace piaWinUI.Views
 
         private async Task CargarTodo()
         {
-            _productos = await _productService.GetProductsAsync();
-            _proveedores = await _proveedorService.GetProveedorAsync();
+            _productos = await _productService.GetAllAsync();
+            _proveedores = await _proveedorService.GetAllAsync();
 
             // Obtener modelos de servicio y mapear a PedidoView
-            var pedidosModel = await _pedidoService.GetPedidosAsync();
+            var pedidosModel = await _pedidoService.GetAllAsync();
             _pedidos = pedidosModel?
                 .Select(p => new PedidoView
                 {
@@ -110,7 +110,7 @@ namespace piaWinUI.Views
                 if (!int.TryParse(txtCantidadPedido.Text, out int cantidad))
                     return;
 
-                var pedidosModel = await _pedidoService.GetPedidosAsync();
+                var pedidosModel = await _pedidoService.GetAllAsync();
 
                 var nuevo = new Pedidos
                 {
@@ -132,14 +132,11 @@ namespace piaWinUI.Views
                 producto.Stock += cantidad;
 
                 // 🔥 GUARDAR TODO
-                await _pedidoService.SavePedidosAsync(pedidosModel);
-                await _productService.SaveProductsAsync(_productos);
+                await _pedidoService.SaveAllAsync(pedidosModel);
+                await _productService.SaveAllAsync(_productos);
 
                 decimal costoPedido = producto.PrecioCompra * cantidad;
 
-                await AppServices.Caja.RegistrarPedido(
-                    nuevo,
-                    costoPedido);
 
                 await CargarPedidos();
 
@@ -153,7 +150,7 @@ namespace piaWinUI.Views
 
         private async Task CargarPedidos()
         {
-            var pedidosModel = await _pedidoService.GetPedidosAsync();
+            var pedidosModel = await _pedidoService.GetAllAsync();
 
             var pedidosView = pedidosModel?
                 .Select(p => new PedidoView
@@ -198,7 +195,7 @@ namespace piaWinUI.Views
         {
             try
             {
-                _proveedores = await _proveedorService.GetProveedorAsync();
+                _proveedores = await _proveedorService.GetAllAsync();
 
                 System.Diagnostics.Debug.WriteLine($"Proveedores: {_proveedores.Count}");
 
@@ -222,7 +219,7 @@ namespace piaWinUI.Views
         {
             try
             {
-                _productos = await _productService.GetProductsAsync();
+                _productos = await _productService.GetAllAsync();
 
                 if (_productos == null || !_productos.Any())
                 {

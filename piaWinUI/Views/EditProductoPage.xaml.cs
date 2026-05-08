@@ -60,7 +60,7 @@ namespace piaWinUI.Views
 
         private async Task CargarProveedores()
         {
-            var proveedores = await _proveedorService.GetProveedorAsync();
+            var proveedores = await _proveedorService.GetAllAsync();
 
             cmbProveedor.ItemsSource = proveedores;
         }
@@ -82,14 +82,14 @@ namespace piaWinUI.Views
             if (cmbProveedor.SelectedValue is Guid id)
                 _producto.IdProveedor = id;
 
-            var productos = await _service.GetProductsAsync();
+            var productos = await _service.GetAllAsync();
 
             var index = productos.FindIndex(p => p.Id == _producto.Id);
 
             if (index != -1)
             {
                 productos[index] = _producto;
-                await _service.SaveProductsAsync(productos);
+                await _service.SaveAllAsync(productos);
             }
 
             Frame.GoBack();

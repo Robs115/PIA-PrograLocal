@@ -68,8 +68,8 @@ namespace piaWinUI.Views
 
         private async Task LoadProductsData()
         {
-            var productos = await _service.GetProductsAsync();
-            var proveedores = await new ProveedorService().GetProveedorAsync();
+            var productos = await _service.GetAllAsync();
+            var proveedores = await new ProveedorService().GetAllAsync();
             _proveedorLookup = proveedores.ToDictionary(p => p.IdProveedor, p => p.Nombre);
 
             Productos.Clear();
@@ -99,7 +99,7 @@ namespace piaWinUI.Views
             if (sender is Button button &&
                 button.Tag is ProductoView productoView)
             {
-                await _service.DeleteProductAsync(productoView.Model.Id);
+                await _service.DeleteProductoAsync(productoView.Model.Id);
 
                 Productos.Remove(productoView);
             }

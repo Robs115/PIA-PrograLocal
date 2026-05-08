@@ -29,7 +29,7 @@ namespace piaWinUI.Views
     {
         private ClienteService _service = new ClienteService();
         private List<Cliente> listaClientes = new List<Cliente>();
-        private VentaService _ventaService = new VentaService();
+        private VentasService _ventaService = new VentasService();
         private List<Venta> listaVentas = new List<Venta>();
         public BuscarClientesPag()
         {
@@ -39,7 +39,7 @@ namespace piaWinUI.Views
 
         protected override async void OnNavigatedTo(Microsoft.UI.Xaml.Navigation.NavigationEventArgs e)
         {
-            listaClientes = await _service.GetClientesAsync();
+            listaClientes = await _service.GetAllAsync();
 
             // Mostrar últimos primero
             ClientesList.ItemsSource = listaClientes
@@ -79,7 +79,7 @@ namespace piaWinUI.Views
                 return;
 
             // Obtener clientes
-            var clientes = await _service.GetClientesAsync();
+            var clientes = await _service.GetAllAsync();
 
             // Buscar cliente
             var clienteSeleccionado = clientes.FirstOrDefault(c => c.Id == idCliente);
@@ -143,7 +143,7 @@ namespace piaWinUI.Views
             clienteSeleccionado.Email = email;
 
             // 🔥 Guardar JSON
-            await _service.SaveClienteAsync(clientes);
+            await _service.SaveAllAsync(clientes);
 
             // 🔥 Refrescar lista
             listaClientes = clientes;
@@ -163,8 +163,8 @@ namespace piaWinUI.Views
             Guid idCliente = (Guid)button.Tag;
 
             // Obtener datos
-            var clientes = await _service.GetClientesAsync();
-            var ventas = await _ventaService.GetVentasAsync();
+            var clientes = await _service.GetAllAsync();
+            var ventas = await _ventaService.GetAllAsync();
 
 
             // Buscar cliente
@@ -205,7 +205,7 @@ namespace piaWinUI.Views
             clientes.RemoveAll(c => c.Id == idCliente);
 
             // Guardar cambios
-            await _service.SaveClienteAsync(clientes);
+            await _service.SaveAllAsync(clientes);
 
             // Refrescar lista en pantalla
             listaClientes = clientes;

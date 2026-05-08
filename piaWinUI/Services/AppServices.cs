@@ -8,7 +8,6 @@ namespace piaWinUI.Services
 {
     public static class AppServices
     {
-        public static CajaService Caja { get; } = new CajaService();
         public static PedidoService Pedido { get; } = new PedidoService();
     }
 }

@@ -23,7 +23,7 @@ namespace piaWinUI.Views
         public Axis[] XAxesMeses { get; set; }
         public Axis[] YAxes { get; set; }
 
-        private readonly VentaService _ventaService = new VentaService();
+        private readonly VentasService _ventaService = new VentasService();
 
         public ReporteVentasPag()
         {
@@ -34,7 +34,7 @@ namespace piaWinUI.Views
 
         private async void CargarDatos()
         {
-            var ventas = await _ventaService.GetVentasAsync();
+            var ventas = await _ventaService.GetAllAsync();
 
 
             var ventasPorDia = ventas

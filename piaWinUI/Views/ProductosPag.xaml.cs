@@ -40,7 +40,7 @@ namespace piaWinUI.Views
 
         private async Task CargarProveedores()
         {
-            var proveedores = await _proveedorService.GetProveedorAsync();
+            var proveedores = await _proveedorService.GetAllAsync();
 
             cmbProveedor.ItemsSource = proveedores;
             Submit.IsEnabled = true;
@@ -124,7 +124,7 @@ namespace piaWinUI.Views
         {
             try
             {
-                var productos = await _service.GetProductsAsync();
+                var productos = await _service.GetAllAsync();
 
                 var nuevo = new Producto
                 {
@@ -144,7 +144,7 @@ namespace piaWinUI.Views
                 
                 productos.Add(nuevo);
 
-                await _service.SaveProductsAsync(productos);
+                await _service.SaveAllAsync(productos);
 
                 LimpiarFormulario();
 

@@ -102,7 +102,7 @@ namespace piaWinUI.Views
                 return;
             }
 
-            var clientes = await _service.GetClientesAsync();
+            var clientes = await _service.GetAllAsync();
             //ver si ya existe un tlefono registrado
             var existetelefono = clientes.FirstOrDefault(c => c.Telefono == telefono);
 
@@ -130,7 +130,7 @@ namespace piaWinUI.Views
 
                 clientes.Add(nuevo);
 
-                await _service.SaveClienteAsync(clientes);
+                await _service.SaveAllAsync(clientes);
 
                 //limpiar campos
                 Nombre.Text = string.Empty;

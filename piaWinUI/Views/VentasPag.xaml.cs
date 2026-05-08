@@ -24,7 +24,7 @@ namespace piaWinUI.Views
         public sealed partial class VentasPag : Page
         {
             private ProductService _productoService = new ProductService();
-            private VentaService _ventaService = new VentaService();
+            private VentasService _ventaService = new VentasService();
              private List<Producto> todosProductos = new List<Producto>();
             private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
            
@@ -103,7 +103,7 @@ namespace piaWinUI.Views
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
         {
-            var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
+            var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
 
             string codigo = CodigoBox.Text;
 
@@ -203,17 +203,16 @@ namespace piaWinUI.Views
                     item.IdVenta = venta.IdVenta;
                 }
 
-                var ventas = await _ventaService.GetVentasAsync() ?? new List<Venta>();
+                var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
                 ventas.Add(venta);
-                await _ventaService.SaveVentasAsync(ventas);
-                await AppServices.Caja.RegistrarVenta(venta);
+                await _ventaService.SaveAllAsync(ventas);
+                
 
             var detalleService = new DetalleVentasService();
-                var detalles = await detalleService.GetDetalleVentasAsync() ?? new List<DetalleVentas>();
+                var detalles = await detalleService.GetAllAsync() ?? new List<DetalleVentas>();
                 detalles.AddRange(carrito);
-                await detalleService.SaveDetalleVentasAsync(detalles);
-            var productos = await _productoService.GetProductsAsync() ?? new List<Producto>();
-
+                await detalleService.SaveAllAsync(detalles);
+            var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
             foreach (var item in carrito)
             {
                 var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
@@ -227,7 +226,7 @@ namespace piaWinUI.Views
                 }
             }
 
-            await _productoService.SaveProductsAsync(productos);
+            await _productoService.SaveAllAsync(productos);
             carrito.Clear();
             CodigoBox.Text = "";
 
@@ -248,7 +247,7 @@ namespace piaWinUI.Views
         }
         private async void BuscarProducto_Click(object sender, RoutedEventArgs e)
         {
-            todosProductos = await _productoService.GetProductsAsync() ?? new List<Producto>();
+            todosProductos = await _productoService.GetAllAsync() ?? new List<Producto>();
 
             ResultadosProductosList.ItemsSource = todosProductos;
 
