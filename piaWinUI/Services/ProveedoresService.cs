@@ -34,7 +34,7 @@ namespace piaWinUI.Services
                 throw new Exception(
                     "Proveedor ya registrado");
 
-            proveedor.IdProveedor = Guid.NewGuid();
+            proveedor.Id =GenerarId(proveedores, p => p.Id);
 
             proveedores.Add(proveedor);
 
