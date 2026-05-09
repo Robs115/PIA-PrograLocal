@@ -57,6 +57,7 @@ namespace piaWinUI.Services
 
             venta.IdVenta = Guid.NewGuid();
             venta.Fecha = DateTime.Now;
+            venta.MetodoPago = "Efectivo";
             venta.Total = detalles.Sum(d => d.Subtotal);
 
             var ventas = await GetAllAsync();

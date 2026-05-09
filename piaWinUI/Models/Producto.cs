@@ -10,10 +10,10 @@ namespace piaWinUI.Models
     public class Producto : INotifyPropertyChanged
     {
         private Guid id;
-        private string nombre;
+        private string nombre { get; set; }
         private string descripcion;
         private decimal precioCompra;
-        private decimal precioVenta;
+        private decimal precioVenta {  get; set; }
         private Guid idProveedor;
         private string categoria;
         private int stock;
