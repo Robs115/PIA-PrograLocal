@@ -137,25 +137,7 @@ namespace piaWinUI.Views
             CodigoBox.Text = "";
         }
 
-        // Obtiene el id del usuario logueado desde LocalSettings (clave "UserId").
-        // Si no existe devuelve 0.
-        private int GetLoggedUserId()
-        {
-            try
-            {
-                var local = ApplicationData.Current.LocalSettings;
-                if (local.Values.TryGetValue("UserId", out object? raw) && raw != null)
-                {
-                    if (int.TryParse(raw.ToString(), out int id))
-                        return id;
-                }
-            }
-            catch
-            {
-                // ignorar y devolver 0
-            }
-            return 0;
-        }
+       
 
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
@@ -251,7 +233,7 @@ namespace piaWinUI.Views
             var venta = new Venta
                 {
                     Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
-                    IdUsuario = GetLoggedUserId(), // se agrega automáticamente el id del usuario logueado
+
 
                     Fecha = DateTime.Now,
                     Total = carrito.Sum(p => p.Subtotal)
