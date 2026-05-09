@@ -139,23 +139,7 @@ namespace piaWinUI.Views
 
         // Obtiene el id del usuario logueado desde LocalSettings (clave "UserId").
         // Si no existe devuelve 0.
-        private int GetLoggedUserId()
-        {
-            try
-            {
-                var local = ApplicationData.Current.LocalSettings;
-                if (local.Values.TryGetValue("UserId", out object? raw) && raw != null)
-                {
-                    if (int.TryParse(raw.ToString(), out int id))
-                        return id;
-                }
-            }
-            catch
-            {
-                // ignorar y devolver 0
-            }
-            return 0;
-        }
+        
 
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
@@ -234,6 +218,8 @@ namespace piaWinUI.Views
             // 🔥 GUARDAR VENTA
         private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
             {
+
+
             var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
             if (carrito.Count == 0)
                 {
@@ -251,9 +237,9 @@ namespace piaWinUI.Views
             var venta = new Venta
                 {
                     Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
-                    IdUsuario = GetLoggedUserId(), // se agrega automáticamente el id del usuario logueado
-
-                    Fecha = DateTime.Now,
+                    IdUsuario = 1, // se agrega automáticamente el id del usuario logueado
+                    MetodoPago = "Efecctivo", // por ahora fijo, se puede mejorar con un selector
+                Fecha = DateTime.Now,
                     Total = carrito.Sum(p => p.Subtotal)
                 };
 
@@ -343,6 +329,9 @@ namespace piaWinUI.Views
             var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
             var detalleService = new DetalleVentasService();
             var todosDetalles = await detalleService.GetAllAsync(); // Todos los detalles
+            //sacar fecha de hoy
+
+
 
             var stackVentas = new StackPanel { Spacing = 10 };
 
@@ -355,7 +344,7 @@ namespace piaWinUI.Views
 
                 stackVentas.Children.Add(CrearVentaExpander(venta, detallesDeVenta));
             }
-
+            
             ContentDialog ventasDialog = new ContentDialog
             {
                 Title = "Ventas Recientes",
@@ -364,7 +353,8 @@ namespace piaWinUI.Views
                 Content = new ScrollViewer
                 {
                     Content = stackVentas,
-                    Height = 400
+                    Height = 400, 
+                    
                 },
                 XamlRoot = this.XamlRoot
             };
@@ -380,7 +370,7 @@ namespace piaWinUI.Views
             // Agregar cada detalle
             foreach (var d in detalles)
             {
-                sb.AppendLine($"{d.Cantidad}x ProductoID {d.IdProducto} (${d.Subtotal})");
+                sb.AppendLine($"{d.Cantidad}x Producto {d.NombreProducto} (${d.Subtotal})");
             }
 
             sb.AppendLine($"Total: ${venta.Total} | Pago: {venta.MetodoPago}");
