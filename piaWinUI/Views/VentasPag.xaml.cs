@@ -25,18 +25,36 @@ namespace piaWinUI.Views
         {
             private ProductService _productoService = new ProductService();
             private VentasService _ventaService = new VentasService();
-             private List<Producto> todosProductos = new List<Producto>();
-            
+        private List<Producto> todosProductos = new List<Producto>();
+        private List<DetalleVentas> _detalleService = new List<DetalleVentas>();
         private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
            
 
         public VentasPag()
             {
                 this.InitializeComponent();
+           
               ProductosList.ItemsSource = carrito;
             cargarCatalogo();
+            ResultadosProductosList.ItemsSource = todosProductos;
+
+        }
+        private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+
+            var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
+        private void BuscadorCodigo_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+            
+            var regex = @"^[0-9a-fA-F-]*$";
+
+            args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
+        }
+
+       
         private void AgregarProductoAlCarrito(Producto producto)
         { 
             var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
@@ -177,8 +195,8 @@ namespace piaWinUI.Views
             }
 
             // 🔥 GUARDAR VENTA
-            private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
-            { /*
+        private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
+            { 
                 if (carrito.Count == 0)
                 {
                     await ShowDialogAsync("Error", "No hay productos en la venta");
@@ -235,7 +253,7 @@ namespace piaWinUI.Views
 
                 ActualizarTotal();
 
-                await ShowDialogAsync("Éxito", "Venta registrada correctamente"); */
+                await ShowDialogAsync("Éxito", "Venta registrada correctamente"); 
             }
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -250,10 +268,13 @@ namespace piaWinUI.Views
         }
         private async void cargarCatalogo()
         {
-     
-            todosProductos = await _productoService.GetAllAsync() ?? new List<Producto>();
 
-         
+            todosProductos = await _productoService.GetAllAsync();
+            //imprimir en consola para verificar que se cargaron los productos
+            foreach(var item in todosProductos) {
+                Console.WriteLine($"Producto: {item.Nombre}, Stock: {item.Stock}");
+            }
+
             ResultadosProductosList.ItemsSource = todosProductos;
 
             
@@ -278,9 +299,11 @@ namespace piaWinUI.Views
             ResultadosProductosList.IsItemClickEnabled = true;
         }
 
-        private async void CargarVentas()
-        { 
-            //not yet
-        } 
+
+       
+        
+
+
+
     } 
 }

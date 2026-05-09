@@ -22,10 +22,15 @@
                 <TextBlock Text="Ventas" FontSize="32" FontWeight="Bold" x:Name="TitleText"/>
             </StackPanel>
 
-            <Button x:Name="BtnVentasRecientes" Content="Ventas Recientes" 
-                    RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWith="TitleGroup">
-                
+            <Button x:Name="BtnVentasRecientes"
+        RelativePanel.AlignRightWithPanel="True"
+        RelativePanel.AlignVerticalCenterWith="TitleGroup"
+                    Click="HistorialVentas_Click">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <!-- Icono alternativo usando Segoe MDL2 Assets (Reloj de historial) -->
+                    <FontIcon Glyph="&#xE81C;" />
+                    <TextBlock Text="Ventas Recientes"/>
+                </StackPanel>
             </Button>
         </RelativePanel>
 
@@ -50,16 +55,16 @@
                         <!-- Botones ocupan su contenido -->
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="BuscarProductoBox"  PlaceholderText="Busqueda por nombre" Grid.Column="0" VerticalAlignment="Center" TextChanged="BuscarProductoBox_TextChanged"/>
-                    <TextBox x:Name="CodigoBox" PlaceholderText="Introduce codigo de barras: Ej: 1234567899000" Grid.Column="1" VerticalAlignment="Center" KeyDown="obtenerproducto_keydown"/>
+                    <TextBox x:Name="BuscarProductoBox"  PlaceholderText="Busqueda por nombre" Grid.Column="0" VerticalAlignment="Center" TextChanged="BuscarProductoBox_TextChanged" MaxLength="50" BeforeTextChanging="BuscadorNombre_BeforeTextChanging"/>
+                    <TextBox x:Name="CodigoBox" PlaceholderText="Introduce codigo de barras: Ej: 1234567899000" Grid.Column="1" VerticalAlignment="Center" KeyDown="obtenerproducto_keydown" MaxLength="42" BeforeTextChanging="BuscadorCodigo_BeforeTextChanging"/>
 
                     <!-- Ajuste: Agregué iconos a los botones para alinearlos visualmente con 
                          el resto de la interfaz (según la estética de image_4.png) -->
                     <Button x:Name="BtnEscanear" Style="{StaticResource AccentButtonStyle}" Grid.Column="2" VerticalAlignment="Center">
                         <StackPanel Orientation="Horizontal" Spacing="8">
-                            <FontIcon Glyph="&#xE8C4;"/>
+                            
                             <!-- Icono de Código de Barras -->
-                            <TextBlock Text="Escanear"/>
+                            <TextBlock Text="←Click para escanear."/>
                         </StackPanel>
                     </Button>
 
@@ -75,16 +80,17 @@
                                     <!--<Image Source="ms-appx:///Assets/placeholder.png" Height="80" Stretch="UniformToFill"/> -->
                                     <SymbolIcon Symbol="Shop" Height="80" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
                                     <!-- Nombre del producto -->
-                                    <TextBlock Text="{Binding nombre}" 
+                                    <TextBlock Text="{Binding Nombre}" 
                                FontWeight="SemiBold" 
                                HorizontalAlignment="Center" 
                                TextWrapping="Wrap"
                                TextAlignment="Center"/>
 
                                     <!-- Precio del producto -->
-                                    <TextBlock Text="{Binding precioVenta}" 
+                                    <TextBlock Text="{Binding PrecioVenta}" 
                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" 
-                               HorizontalAlignment="Center"/>
+                               HorizontalAlignment="Center"
+                                               />
                                 </StackPanel>
                             </Border>
                         </DataTemplate>
@@ -142,7 +148,10 @@
                                         <NumberBox Value="{Binding Cantidad, Mode=TwoWay}"
                         Width="80"
                         Grid.Column="1"
-                        
+                        AcceptsExpression="False"
+           
+           PlaceholderText="0"
+                                                   Maximum="999"
                             Minimum="1"/>
 
 
@@ -181,7 +190,7 @@
                         </Grid.ColumnDefinitions>
 
                         <Button Grid.Column="0" Height="80" HorizontalAlignment="Stretch" 
-                                Background="{ThemeResource SystemAccentColor}" Foreground="White">
+                                Background="{ThemeResource SystemAccentColor}" Foreground="White" Click="GuardarVenta_Click">
                             <StackPanel Spacing="8">
                                 <FontIcon Glyph="&#xE8C7;"/>
                                 <!-- Icono de Dinero -->
@@ -200,7 +209,8 @@
                 </Grid>
             </Border>
         </Grid>
-
+        <!-- Panel de Historial de Ventas -->
+       
         <!-- Footer -->
         <TextBlock Grid.Row="2" Text="Cajero: Ana | 10:30 AM" Foreground="Gray" FontSize="12" Margin="0,12,0,0"/>
     </Grid>

@@ -10,10 +10,10 @@ namespace piaWinUI.Models
     public class Producto : INotifyPropertyChanged
     {
         private Guid id;
-        private string nombre { get; set; }
+        private string nombre;
         private string descripcion;
         private decimal precioCompra;
-        private decimal precioVenta {  get; set; }
+        private decimal precioVenta;
         private Guid idProveedor;
         private string categoria;
         private int stock;
@@ -31,11 +31,7 @@ namespace piaWinUI.Models
         public string Nombre
         {
             get => nombre;
-            set
-            {
-                nombre = value;
-                OnPropertyChanged(nameof(Nombre));
-            }
+            set { nombre = value; OnPropertyChanged(nameof(Nombre)); }
         }
 
         public string Descripcion
@@ -62,11 +58,7 @@ namespace piaWinUI.Models
         public decimal PrecioVenta
         {
             get => precioVenta;
-            set
-            {
-                precioVenta = value;
-                OnPropertyChanged(nameof(PrecioVenta));
-            }
+            set { precioVenta = value; OnPropertyChanged(nameof(PrecioVenta)); }
         }
 
         public Guid IdProveedor
