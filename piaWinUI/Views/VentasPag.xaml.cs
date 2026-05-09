@@ -285,7 +285,9 @@ namespace piaWinUI.Views
             string texto = BuscarProductoBox.Text.ToLower();
 
             var filtrados = todosProductos
-                .Where(p => p.Nombre.ToLower().Contains(texto))
+                .Where(p => (p.Nombre ?? "")
+                .ToLower()
+                .Contains(texto))
                 .ToList();
 
             ResultadosProductosList.ItemsSource = filtrados; 
@@ -293,9 +295,11 @@ namespace piaWinUI.Views
         private async void cargarCatalogo()
         {
 
-            todosProductos = await _productoService.GetAllAsync();
+            todosProductos = await _productoService.GetAllAsync() ?? new List<Producto>();
+
+
             //imprimir en consola para verificar que se cargaron los productos
-            foreach(var item in todosProductos) {
+            foreach (var item in todosProductos) {
                 Console.WriteLine($"Producto: {item.Nombre}, Stock: {item.Stock}");
             }
 
