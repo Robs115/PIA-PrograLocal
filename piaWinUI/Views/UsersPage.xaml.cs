@@ -30,7 +30,6 @@ namespace piaWinUI.Views
         private AuthService _authService;
         public bool CanDeleteUsers => Users.Count > 1;
 
-
         public ObservableCollection<User> Users { get; set; } = new();
 
         private async void LoadUsers()
@@ -146,13 +145,16 @@ namespace piaWinUI.Views
 
         private async void AddUser_Click(object sender, RoutedEventArgs e)
         {
+            string cachedUsername = ""; 
+
             while (true)
             {
                 var usernameBox = new TextBox
                 {
                     Header = "Usuario",
                     PlaceholderText = "Ingrese el usuario",
-                    MaxLength = 10
+                    MaxLength = 10,
+                    Text = cachedUsername 
                 };
 
                 usernameBox.BeforeTextChanging += UsernameBox_BeforeTextChanging;
@@ -162,7 +164,6 @@ namespace piaWinUI.Views
                     Header = "Contraseña",
                     MaxLength = 15
                 };
-
 
                 passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
@@ -198,58 +199,52 @@ namespace piaWinUI.Views
                 if (result != ContentDialogResult.Primary)
                     return;
 
+                string username = usernameBox.Text.Trim();
                 string password = passwordBox.Password;
-
                 string confirmPassword = confirmPasswordBox.Password;
 
-                if (password != confirmPassword)
-                {
-                    var errorDialog = new ContentDialog
-                    {
-                        Title = "Contraseña inválida",
-                        Content = "Las contraseñas no coinciden.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary
-                    };
+                
+                cachedUsername = username;
 
-                    await errorDialog.ShowAsync();
-
-                    continue;
-                }
-
-
-
-                if (password.Any(char.IsWhiteSpace))
-                {
-                    var errorDialog = new ContentDialog
-                    {
-                        Title = "Contraseña inválida",
-                        Content = "La contraseña no puede contener espacios.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary,
-                    };
-
-                    await errorDialog.ShowAsync();
-
-                    continue;
-                }
-
-                string username = usernameBox.Text.Trim();
+                // =========================
+                // VALIDATIONS
+                // =========================
 
                 if (string.IsNullOrWhiteSpace(username))
                 {
-                    var errorDialog = new ContentDialog
+                    await new ContentDialog
                     {
                         Title = "Usuario inválido",
                         Content = "Debe ingresar un nombre de usuario.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary,
-                    };
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
 
-                    await errorDialog.ShowAsync();
+                    continue;
+                }
+
+                if (password != confirmPassword)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Las contraseñas no coinciden.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
+
+                if (password.Any(char.IsWhiteSpace))
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "La contraseña no puede contener espacios.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
 
                     continue;
                 }
@@ -261,19 +256,20 @@ namespace piaWinUI.Views
 
                 if (!validLength || !hasUppercase || !hasNumber || !hasLowercase)
                 {
-                    var errorDialog = new ContentDialog
+                    await new ContentDialog
                     {
                         Title = "Contraseña inválida",
-                        Content = "La contraseña debe tener mínimo 8 caracteres, una minuscula, una mayúscula y un número.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary,
-                    };
-
-                    await errorDialog.ShowAsync();
+                        Content = "Mínimo 8 caracteres, una minúscula, una mayúscula y un número.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
 
                     continue;
                 }
+
+                // =========================
+                // SUCCESS
+                // =========================
 
                 var newUser = new User
                 {
@@ -283,7 +279,6 @@ namespace piaWinUI.Views
                 };
 
                 Users.Add(newUser);
-
                 SaveAllUsers();
 
                 break;
@@ -295,254 +290,272 @@ namespace piaWinUI.Views
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
-            // 🔐 1. pedir password actual antes de permitir edición
-            var authBox = new PasswordBox
+            // 🔐 AUTH LOOP (must pass before editing)
+            while (true)
             {
-                PlaceholderText = "Ingrese la contraseña actual",
-                MaxLength = 15
-            };
-
-            authBox.PasswordChanging += Contrasena_BeforeTextChanging;
-
-
-            var authDialog = new ContentDialog
-            {
-                Title = "Verificación de seguridad",
-                Content = authBox,
-                PrimaryButtonText = "Continuar",
-                CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot,
-                DefaultButton = ContentDialogButton.Primary,
-            };
-
-            var authResult = await authDialog.ShowAsync();
-
-            if (authResult != ContentDialogResult.Primary)
-                return;
-
-            if (authBox.Password != user.Password)
-            {
-                await new ContentDialog
+                var authBox = new PasswordBox
                 {
-                    Title = "Acceso denegado",
-                    Content = "La contraseña es incorrecta.",
-                    CloseButtonText = "Aceptar",
+                    PlaceholderText = "Ingrese la contraseña actual",
+                    MaxLength = 15
+                };
+
+                authBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+                var authDialog = new ContentDialog
+                {
+                    Title = "Verificación de seguridad",
+                    Content = authBox,
+                    PrimaryButtonText = "Continuar",
+                    CloseButtonText = "Cancelar",
                     XamlRoot = this.XamlRoot,
                     DefaultButton = ContentDialogButton.Primary,
-                }.ShowAsync();
+                };
 
-                return;
+                var authResult = await authDialog.ShowAsync();
+
+                if (authResult != ContentDialogResult.Primary)
+                    return;
+
+                if (authBox.Password != user.Password)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Acceso denegado",
+                        Content = "La contraseña es incorrecta. Intente nuevamente.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue; // 🔁 retry auth
+                }
+
+                break; // ✅ authenticated
             }
 
-            // ✏️ 2. abrir editor
-            var usernameBox = new TextBox
+            // =========================
+            // EDIT LOOP
+            // =========================
+            while (true)
             {
-                Header = "Usuario",
-                Text = user.Username,
-                MaxLength = 10
-            };
-
-            usernameBox.BeforeTextChanging += UsernameBox_BeforeTextChanging;
-
-            var passwordBox = new PasswordBox
-            {
-                Header = "Nueva contraseña (dejar vacío para no cambiar)",
-                MaxLength = 15
-            };
-
-            passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
-
-            var confirmPasswordBox = new PasswordBox
-            {
-                Header = "Confirmar nueva contraseña",
-                MaxLength = 15
-            };
-
-            confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
-
-            var panel = new StackPanel
-            {
-                Spacing = 12
-            };
-
-            panel.Children.Add(usernameBox);
-            panel.Children.Add(passwordBox);
-            panel.Children.Add(confirmPasswordBox);
-
-            var dialog = new ContentDialog
-            {
-                Title = "Editar usuario",
-                Content = panel,
-                PrimaryButtonText = "Guardar",
-                CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot,
-                DefaultButton = ContentDialogButton.Primary
-            };
-
-            var result = await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
-                return;
-
-            string username = usernameBox.Text.Trim();
-            string password = passwordBox.Password;
-
-            // 🧾 username validation
-            if (string.IsNullOrWhiteSpace(username))
-            {
-                await new ContentDialog
+                var usernameBox = new TextBox
                 {
-                    Title = "Usuario inválido",
-                    Content = "Debe ingresar un nombre de usuario.",
-                    CloseButtonText = "Aceptar",
+                    Header = "Usuario",
+                    Text = user.Username,
+                    MaxLength = 10
+                };
+
+                usernameBox.BeforeTextChanging += UsernameBox_BeforeTextChanging;
+
+                var passwordBox = new PasswordBox
+                {
+                    Header = "Nueva contraseña (dejar vacío para no cambiar)",
+                    MaxLength = 15
+                };
+
+                passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+                var confirmPasswordBox = new PasswordBox
+                {
+                    Header = "Confirmar nueva contraseña",
+                    MaxLength = 15
+                };
+
+                confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+                var panel = new StackPanel
+                {
+                    Spacing = 12
+                };
+
+                panel.Children.Add(usernameBox);
+                panel.Children.Add(passwordBox);
+                panel.Children.Add(confirmPasswordBox);
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Editar usuario",
+                    Content = panel,
+                    PrimaryButtonText = "Guardar",
+                    CloseButtonText = "Cancelar",
                     XamlRoot = this.XamlRoot,
                     DefaultButton = ContentDialogButton.Primary
-                }.ShowAsync();
+                };
 
-                return;
+                var result = await dialog.ShowAsync();
+
+                if (result != ContentDialogResult.Primary)
+                    return;
+
+                string username = usernameBox.Text.Trim();
+                string password = passwordBox.Password;
+
+                // 🧾 USERNAME VALIDATION
+                if (string.IsNullOrWhiteSpace(username))
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Usuario inválido",
+                        Content = "Debe ingresar un nombre de usuario.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
+
+                // 🔐 PASSWORD VALIDATION (only if changed)
+                if (!string.IsNullOrEmpty(password))
+                {
+                    string confirmPassword = confirmPasswordBox.Password;
+
+                    if (password != confirmPassword)
+                    {
+                        await new ContentDialog
+                        {
+                            Title = "Contraseña inválida",
+                            Content = "Las contraseñas no coinciden.",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        }.ShowAsync();
+
+                        continue;
+                    }
+
+                    if (password.Any(char.IsWhiteSpace))
+                    {
+                        await new ContentDialog
+                        {
+                            Title = "Contraseña inválida",
+                            Content = "No puede contener espacios.",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        }.ShowAsync();
+
+                        continue;
+                    }
+
+                    bool hasLowercase = password.Any(char.IsLower);
+                    bool hasUppercase = password.Any(char.IsUpper);
+                    bool hasNumber = password.Any(char.IsDigit);
+                    bool validLength = password.Length >= 8;
+
+                    if (!validLength || !hasUppercase || !hasNumber || !hasLowercase)
+                    {
+                        await new ContentDialog
+                        {
+                            Title = "Contraseña inválida",
+                            Content = "Contraseña invalida, se requieren minimo 8 caracteres, una minuscula, una mayúscula y un número.",
+                            CloseButtonText = "OK",
+                            XamlRoot = this.XamlRoot
+                        }.ShowAsync();
+
+                        continue;
+                    }
+
+                    user.Password = password;
+                }
+
+                // 💾 SAVE
+                user.Username = username;
+                user.IsDirty = false;
+                SaveAllUsers();
+
+                break; // ✅ success exit
             }
-
-            // 🔐 password validation solo si se cambió
-            if (!string.IsNullOrEmpty(password))
-            {
-                string confirmPassword = confirmPasswordBox.Password;
-
-                if (password != confirmPassword)
-                {
-                    await new ContentDialog
-                    {
-                        Title = "Contraseña inválida",
-                        Content = "Las contraseñas no coinciden.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary
-                    }.ShowAsync();
-
-                    return;
-                }
-                if (password.Any(char.IsWhiteSpace))
-                {
-                    await new ContentDialog
-                    {
-                        Title = "Contraseña inválida",
-                        Content = "La contraseña no puede contener espacios.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary
-                    }.ShowAsync();
-
-                    return;
-                }
-
-                bool hasUppercase = password.Any(char.IsUpper);
-                bool hasNumber = password.Any(char.IsDigit);
-                bool validLength = password.Length >= 8;
-
-                if (!validLength || !hasUppercase || !hasNumber)
-                {
-                    await new ContentDialog
-                    {
-                        Title = "Contraseña inválida",
-                        Content = "La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot,
-                        DefaultButton = ContentDialogButton.Primary
-                    }.ShowAsync();
-
-                    return;
-                }
-
-                user.Password = password;
-            }
-
-            // 💾 guardar cambios
-            user.Username = username;
-            user.IsDirty = false;
-
-            SaveAllUsers();
         }
 
         private async void DeleteUser_Click(object sender, RoutedEventArgs e)
         {
             if (Users.Count <= 1)
             {
-                var dialog = new ContentDialog
+                await new ContentDialog
                 {
                     Title = "No se puede eliminar",
                     Content = "Debe existir al menos un usuario.",
                     CloseButtonText = "Aceptar",
-                    XamlRoot = this.XamlRoot,
-                    DefaultButton = ContentDialogButton.Primary
-                };
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
 
-                await dialog.ShowAsync();
                 return;
             }
 
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
-            // 🔐 pedir contraseña actual
-            var authBox = new PasswordBox
+            // =========================
+            // 🔐 AUTH LOOP (retry until correct or cancel)
+            // =========================
+            while (true)
             {
-                PlaceholderText = "Ingrese la contraseña actual",
-                MaxLength = 15
-            };
-
-            authBox.PasswordChanging += Contrasena_BeforeTextChanging;
-
-            var authDialog = new ContentDialog
-            {
-                Title = "Verificación de seguridad",
-                Content = authBox,
-                PrimaryButtonText = "Eliminar",
-                CloseButtonText = "Cancelar",
-                DefaultButton = ContentDialogButton.Primary,
-                XamlRoot = this.XamlRoot
-            };
-
-            var authResult = await authDialog.ShowAsync();
-
-            if (authResult != ContentDialogResult.Primary)
-                return;
-
-            // ❌ contraseña incorrecta
-            if (authBox.Password != user.Password)
-            {
-                await new ContentDialog
+                var authBox = new PasswordBox
                 {
-                    Title = "Acceso denegado",
-                    Content = "La contraseña es incorrecta.",
-                    CloseButtonText = "Aceptar",
-                    XamlRoot = this.XamlRoot,
-                    DefaultButton = ContentDialogButton.Primary
-                }.ShowAsync();
+                    PlaceholderText = "Ingrese la contraseña actual",
+                    MaxLength = 15
+                };
 
-                return;
+                authBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+                var authDialog = new ContentDialog
+                {
+                    Title = "Verificación de seguridad",
+                    Content = authBox,
+                    PrimaryButtonText = "Continuar",
+                    CloseButtonText = "Cancelar",
+                    DefaultButton = ContentDialogButton.Primary,
+                    XamlRoot = this.XamlRoot
+                };
+
+                var authResult = await authDialog.ShowAsync();
+
+                // ❌ user cancelled
+                if (authResult != ContentDialogResult.Primary)
+                    return;
+
+                // ❌ wrong password → retry
+                if (authBox.Password != user.Password)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Acceso denegado",
+                        Content = "La contraseña es incorrecta. Intente nuevamente.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
+
+                break; // ✅ authenticated
             }
 
-            // ⚠ confirmación final
-            var confirmDialog = new ContentDialog
+            // =========================
+            // ⚠ CONFIRMATION LOOP (optional retry safety)
+            // =========================
+            while (true)
             {
-                Title = "Confirmar eliminación",
-                Content = $"¿Desea eliminar el usuario \"{user.Username}\"?",
-                PrimaryButtonText = "Eliminar",
-                CloseButtonText = "Cancelar",
-                DefaultButton = ContentDialogButton.Close,
-                XamlRoot = this.XamlRoot
-            };
+                var confirmDialog = new ContentDialog
+                {
+                    Title = "Confirmar eliminación",
+                    Content = $"¿Desea eliminar el usuario \"{user.Username}\"?",
+                    PrimaryButtonText = "Eliminar",
+                    CloseButtonText = "Cancelar",
+                    DefaultButton = ContentDialogButton.Close,
+                    XamlRoot = this.XamlRoot
+                };
 
-            var confirmResult = await confirmDialog.ShowAsync();
+                var confirmResult = await confirmDialog.ShowAsync();
 
-            if (confirmResult != ContentDialogResult.Primary)
-                return;
+                // ❌ cancelled → exit
+                if (confirmResult != ContentDialogResult.Primary)
+                    return;
 
-            // 🗑 eliminar
-            Users.Remove(user);
+                // 🗑 delete
+                Users.Remove(user);
+                SaveAllUsers();
 
-            SaveAllUsers();
+                break;
+            }
         }
-
     }
 
     public class PasswordMaskConverter : IValueConverter
