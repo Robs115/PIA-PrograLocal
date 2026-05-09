@@ -30,7 +30,7 @@
 
             <NavigationView.FooterMenuItems>
                <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
-                <NavigationViewItem Content="Salir" Icon="LeaveChat" Tapped="ExitApp_Tapped"/>
+                <NavigationViewItem Content="Salir" Icon="Cancel" Tapped="ExitApp_Tapped"/>
             </NavigationView.FooterMenuItems>
 
             <Frame x:Name="ContentFrame"/>

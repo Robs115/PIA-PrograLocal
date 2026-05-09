@@ -67,13 +67,15 @@ namespace piaWinUI.Views
             }
         }
 
-        private void PasswordBox_PasswordChanged(object sender, RoutedEventArgs e)
+        private void Contrasena_BeforeTextChanging(PasswordBox sender, PasswordBoxPasswordChangingEventArgs args)
         {
-            var pb = (PasswordBox)sender;
 
-            if (pb.Password.Contains(" "))
+            var password = sender.Password;
+
+            if (password.Contains(" "))
             {
-                pb.Password = pb.Password.Replace(" ", "");
+
+                sender.Password = password.Replace(" ", "");
             }
         }
 
@@ -81,8 +83,11 @@ namespace piaWinUI.Views
         {
             var passwordBox = new PasswordBox
             {
-                PlaceholderText = "Ingrese la contraseña actual"
+                PlaceholderText = "Ingrese la contraseña actual",
+                MaxLength=15
             };
+
+            passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
             var dialog = new ContentDialog
             {
@@ -90,7 +95,8 @@ namespace piaWinUI.Views
                 Content = passwordBox,
                 PrimaryButtonText = "Continuar",
                 CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot
+                XamlRoot = this.XamlRoot,
+                DefaultButton = ContentDialogButton.Primary,
             };
 
             var result = await dialog.ShowAsync();
@@ -158,7 +164,15 @@ namespace piaWinUI.Views
                 };
 
 
-                passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
+                passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+                var confirmPasswordBox = new PasswordBox
+                {
+                    Header = "Confirmar contraseña",
+                    MaxLength = 15
+                };
+
+                confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
                 var panel = new StackPanel
                 {
@@ -167,6 +181,7 @@ namespace piaWinUI.Views
 
                 panel.Children.Add(usernameBox);
                 panel.Children.Add(passwordBox);
+                panel.Children.Add(confirmPasswordBox);
 
                 var dialog = new ContentDialog
                 {
@@ -174,7 +189,8 @@ namespace piaWinUI.Views
                     Content = panel,
                     PrimaryButtonText = "Crear",
                     CloseButtonText = "Cancelar",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary,
                 };
 
                 var result = await dialog.ShowAsync();
@@ -184,6 +200,26 @@ namespace piaWinUI.Views
 
                 string password = passwordBox.Password;
 
+                string confirmPassword = confirmPasswordBox.Password;
+
+                if (password != confirmPassword)
+                {
+                    var errorDialog = new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Las contraseñas no coinciden.",
+                        CloseButtonText = "Aceptar",
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary
+                    };
+
+                    await errorDialog.ShowAsync();
+
+                    continue;
+                }
+
+
+
                 if (password.Any(char.IsWhiteSpace))
                 {
                     var errorDialog = new ContentDialog
@@ -191,7 +227,8 @@ namespace piaWinUI.Views
                         Title = "Contraseña inválida",
                         Content = "La contraseña no puede contener espacios.",
                         CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary,
                     };
 
                     await errorDialog.ShowAsync();
@@ -208,7 +245,8 @@ namespace piaWinUI.Views
                         Title = "Usuario inválido",
                         Content = "Debe ingresar un nombre de usuario.",
                         CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary,
                     };
 
                     await errorDialog.ShowAsync();
@@ -216,18 +254,20 @@ namespace piaWinUI.Views
                     continue;
                 }
 
+                bool hasLowercase = password.Any(char.IsLower);
                 bool hasUppercase = password.Any(char.IsUpper);
                 bool hasNumber = password.Any(char.IsDigit);
                 bool validLength = password.Length >= 8;
 
-                if (!validLength || !hasUppercase || !hasNumber)
+                if (!validLength || !hasUppercase || !hasNumber || !hasLowercase)
                 {
                     var errorDialog = new ContentDialog
                     {
                         Title = "Contraseña inválida",
-                        Content = "La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.",
+                        Content = "La contraseña debe tener mínimo 8 caracteres, una minuscula, una mayúscula y un número.",
                         CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary,
                     };
 
                     await errorDialog.ShowAsync();
@@ -258,8 +298,12 @@ namespace piaWinUI.Views
             // 🔐 1. pedir password actual antes de permitir edición
             var authBox = new PasswordBox
             {
-                PlaceholderText = "Ingrese la contraseña actual"
+                PlaceholderText = "Ingrese la contraseña actual",
+                MaxLength = 15
             };
+
+            authBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
 
             var authDialog = new ContentDialog
             {
@@ -267,7 +311,8 @@ namespace piaWinUI.Views
                 Content = authBox,
                 PrimaryButtonText = "Continuar",
                 CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot
+                XamlRoot = this.XamlRoot,
+                DefaultButton = ContentDialogButton.Primary,
             };
 
             var authResult = await authDialog.ShowAsync();
@@ -282,7 +327,8 @@ namespace piaWinUI.Views
                     Title = "Acceso denegado",
                     Content = "La contraseña es incorrecta.",
                     CloseButtonText = "Aceptar",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary,
                 }.ShowAsync();
 
                 return;
@@ -304,7 +350,15 @@ namespace piaWinUI.Views
                 MaxLength = 15
             };
 
-            passwordBox.PasswordChanged += PasswordBox_PasswordChanged;
+            passwordBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+            var confirmPasswordBox = new PasswordBox
+            {
+                Header = "Confirmar nueva contraseña",
+                MaxLength = 15
+            };
+
+            confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
             var panel = new StackPanel
             {
@@ -313,6 +367,7 @@ namespace piaWinUI.Views
 
             panel.Children.Add(usernameBox);
             panel.Children.Add(passwordBox);
+            panel.Children.Add(confirmPasswordBox);
 
             var dialog = new ContentDialog
             {
@@ -320,7 +375,8 @@ namespace piaWinUI.Views
                 Content = panel,
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot
+                XamlRoot = this.XamlRoot,
+                DefaultButton = ContentDialogButton.Primary
             };
 
             var result = await dialog.ShowAsync();
@@ -339,7 +395,8 @@ namespace piaWinUI.Views
                     Title = "Usuario inválido",
                     Content = "Debe ingresar un nombre de usuario.",
                     CloseButtonText = "Aceptar",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary
                 }.ShowAsync();
 
                 return;
@@ -348,6 +405,21 @@ namespace piaWinUI.Views
             // 🔐 password validation solo si se cambió
             if (!string.IsNullOrEmpty(password))
             {
+                string confirmPassword = confirmPasswordBox.Password;
+
+                if (password != confirmPassword)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Las contraseñas no coinciden.",
+                        CloseButtonText = "Aceptar",
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary
+                    }.ShowAsync();
+
+                    return;
+                }
                 if (password.Any(char.IsWhiteSpace))
                 {
                     await new ContentDialog
@@ -355,7 +427,8 @@ namespace piaWinUI.Views
                         Title = "Contraseña inválida",
                         Content = "La contraseña no puede contener espacios.",
                         CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary
                     }.ShowAsync();
 
                     return;
@@ -372,7 +445,8 @@ namespace piaWinUI.Views
                         Title = "Contraseña inválida",
                         Content = "La contraseña debe tener mínimo 8 caracteres, una mayúscula y un número.",
                         CloseButtonText = "Aceptar",
-                        XamlRoot = this.XamlRoot
+                        XamlRoot = this.XamlRoot,
+                        DefaultButton = ContentDialogButton.Primary
                     }.ShowAsync();
 
                     return;
@@ -397,7 +471,8 @@ namespace piaWinUI.Views
                     Title = "No se puede eliminar",
                     Content = "Debe existir al menos un usuario.",
                     CloseButtonText = "Aceptar",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary
                 };
 
                 await dialog.ShowAsync();
@@ -407,6 +482,62 @@ namespace piaWinUI.Views
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
+            // 🔐 pedir contraseña actual
+            var authBox = new PasswordBox
+            {
+                PlaceholderText = "Ingrese la contraseña actual",
+                MaxLength = 15
+            };
+
+            authBox.PasswordChanging += Contrasena_BeforeTextChanging;
+
+            var authDialog = new ContentDialog
+            {
+                Title = "Verificación de seguridad",
+                Content = authBox,
+                PrimaryButtonText = "Eliminar",
+                CloseButtonText = "Cancelar",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.XamlRoot
+            };
+
+            var authResult = await authDialog.ShowAsync();
+
+            if (authResult != ContentDialogResult.Primary)
+                return;
+
+            // ❌ contraseña incorrecta
+            if (authBox.Password != user.Password)
+            {
+                await new ContentDialog
+                {
+                    Title = "Acceso denegado",
+                    Content = "La contraseña es incorrecta.",
+                    CloseButtonText = "Aceptar",
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary
+                }.ShowAsync();
+
+                return;
+            }
+
+            // ⚠ confirmación final
+            var confirmDialog = new ContentDialog
+            {
+                Title = "Confirmar eliminación",
+                Content = $"¿Desea eliminar el usuario \"{user.Username}\"?",
+                PrimaryButtonText = "Eliminar",
+                CloseButtonText = "Cancelar",
+                DefaultButton = ContentDialogButton.Close,
+                XamlRoot = this.XamlRoot
+            };
+
+            var confirmResult = await confirmDialog.ShowAsync();
+
+            if (confirmResult != ContentDialogResult.Primary)
+                return;
+
+            // 🗑 eliminar
             Users.Remove(user);
 
             SaveAllUsers();
@@ -428,4 +559,3 @@ namespace piaWinUI.Views
     }
 
 }
-
