@@ -92,7 +92,7 @@ namespace piaWinUI.Views
             };
         }
 
-        private void ValidarTexto(TextBox tb)
+        private void ValidarTexto(TextBox tb,bool permitirNumeros = false,bool permitirEspacios = true)
         {
             tb.BeforeTextChanging += (s, e) =>
             {
@@ -116,14 +116,23 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                // ❌ Bloquear caracteres especiales
                 foreach (char c in texto)
                 {
-                    if (!char.IsLetterOrDigit(c) && c != ' ')
-                    {
-                        e.Cancel = true;
-                        return;
-                    }
+                    // Letras
+                    if (char.IsLetter(c))
+                        continue;
+
+                    // Espacios
+                    if (permitirEspacios && c == ' ')
+                        continue;
+
+                    // Números opcionales
+                    if (permitirNumeros && char.IsDigit(c))
+                        continue;
+
+                    // ❌ Todo lo demás bloqueado
+                    e.Cancel = true;
+                    return;
                 }
             };
         }
@@ -159,8 +168,11 @@ namespace piaWinUI.Views
             var input = new TextBox
             {
                 Header = "Nueva categoría",
-                PlaceholderText = "Ej. Bebidas"
+                PlaceholderText = "Ej. Bebidas",
+                MaxLength = 20
             };
+
+            ValidarTexto(input);
 
             var dialog = new ContentDialog
             {
@@ -176,12 +188,74 @@ namespace piaWinUI.Views
             if (result != ContentDialogResult.Primary)
                 return;
 
-            if (string.IsNullOrWhiteSpace(input.Text))
+            string nombreCategoria = input.Text.Trim();
+
+            if (string.IsNullOrWhiteSpace(nombreCategoria))
+            {
+                await new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "La categoría es obligatoria.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
                 return;
+            }
+
+            if (nombreCategoria.Length < 3)
+            {
+                await new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "La categoría debe tener mínimo 3 letras.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
+                return;
+            }
+
+            if (nombreCategoria.Length > 30)
+            {
+                await new ContentDialog
+                {
+                    Title = "Error",
+                    Content = "La categoría es demasiado larga.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
+                return;
+            }
+
+            // ❌ Evitar duplicados
+            bool existe = _categorias.Any(c =>
+                c.Nombre.Trim().Equals(
+                    nombreCategoria,
+                    StringComparison.OrdinalIgnoreCase));
+
+            if (existe)
+            {
+                await new ContentDialog
+                {
+                    Title = "Duplicado",
+                    Content = "La categoría ya existe.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
+                return;
+            }
+
+            // Primera letra mayúscula
+            nombreCategoria =
+                char.ToUpper(nombreCategoria[0]) +
+                nombreCategoria.Substring(1).ToLower();
 
             await _categoriaService.AddCategoriaAsync(new Categoria
             {
-                Nombre = input.Text.Trim()
+                Nombre = nombreCategoria
             });
 
             await CargarCategorias();
@@ -300,6 +374,7 @@ namespace piaWinUI.Views
                 ItemsSource = _categorias,
                 DisplayMemberPath = "Nombre"
             };
+            categoria.SelectedItem = _categorias.FirstOrDefault(c => c.Nombre == producto.Categoria);
 
             var precioCompra = new TextBox
             {
@@ -328,7 +403,7 @@ namespace piaWinUI.Views
             var proveedor = new ComboBox
             {
                 Header = "Proveedor",
-                ItemsSource = _proveedorLookup.Select(x => new KeyValuePair<Guid, string>(x.Key, x.Value)).ToList(),
+                ItemsSource = _proveedores.Select(x => new KeyValuePair<Guid, string>(x.Key, x.Value)).ToList(),
                 DisplayMemberPath = "Value",
                 SelectedValuePath = "Key"
             };
@@ -378,10 +453,31 @@ namespace piaWinUI.Views
                     return;
                 }
 
+                if (nombre.Text.Trim().Length < 3)
+                {
+                    e.Cancel = true;
+                    error.Text = "Nombre demasiado corto.";
+                    return;
+                }
+
                 if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
                 {
                     e.Cancel = true;
                     error.Text = "Descripción obligatoria.";
+                    return;
+                }
+
+                if (descripcion.Text.Trim().Length < 5)
+                {
+                    e.Cancel = true;
+                    error.Text = "Descripción demasiado corta.";
+                    return;
+                }
+
+                if (categoria.SelectedItem is null)
+                {
+                    e.Cancel = true;
+                    error.Text = "Selecciona una categoría.";
                     return;
                 }
 
@@ -405,6 +501,8 @@ namespace piaWinUI.Views
                     error.Text = "Stock obligatorio.";
                     return;
                 }
+
+
 
                 if (!decimal.TryParse(precioCompra.Text, out decimal pc))
                 {
@@ -457,7 +555,8 @@ namespace piaWinUI.Views
 
                 producto.Nombre = nombre.Text.Trim();
                 producto.Descripcion = descripcion.Text.Trim();
-                producto.Categoria = categoria.SelectedItem?.ToString();
+                producto.Categoria =
+                    (categoria.SelectedItem as Categoria)?.Nombre;
 
                 producto.PrecioCompra = pc;
                 producto.PrecioVenta = pv;
