@@ -33,6 +33,8 @@ namespace piaWinUI.Services
             UserNotFound,
             WrongPassword
         }
+        
+
         public async Task<LoginResult> ValidateLoginAsync(string username, string password)
         {
             var users = await LoadUsersAsync();
@@ -43,6 +45,7 @@ namespace piaWinUI.Services
             if (user.Password != password) return LoginResult.WrongPassword;
 
             return LoginResult.Success;
-        }
+           
+        }  
     }
 }
