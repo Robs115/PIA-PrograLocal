@@ -249,6 +249,19 @@ namespace piaWinUI.Views
                     continue;
                 }
 
+                if (string.IsNullOrWhiteSpace(password))
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Debes ingresar una contraseña.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
+
                 bool hasLowercase = password.Any(char.IsLower);
                 bool hasUppercase = password.Any(char.IsUpper);
                 bool hasNumber = password.Any(char.IsDigit);
@@ -315,6 +328,19 @@ namespace piaWinUI.Views
 
                 if (authResult != ContentDialogResult.Primary)
                     return;
+
+                if (string.IsNullOrWhiteSpace(authBox.Password))
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Debes ingresar una contraseña.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
 
                 if (authBox.Password != user.Password)
                 {
@@ -439,6 +465,7 @@ namespace piaWinUI.Views
                     bool hasNumber = password.Any(char.IsDigit);
                     bool validLength = password.Length >= 8;
 
+
                     if (!validLength || !hasUppercase || !hasNumber || !hasLowercase)
                     {
                         await new ContentDialog
@@ -510,6 +537,19 @@ namespace piaWinUI.Views
                 // ❌ user cancelled
                 if (authResult != ContentDialogResult.Primary)
                     return;
+
+                if (string.IsNullOrWhiteSpace(authBox.Password))
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Contraseña inválida",
+                        Content = "Debes ingresar una contraseña.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
 
                 // ❌ wrong password → retry
                 if (authBox.Password != user.Password)
