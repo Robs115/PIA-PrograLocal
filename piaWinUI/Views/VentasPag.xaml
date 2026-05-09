@@ -1,154 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
-<Page
-    x:Class="piaWinUI.Views.VentasPag"
+<Page x:Class="piaWinUI.Views.VentasPag"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-    xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls">
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Grid Padding="20" RowSpacing="15">
-
-        <!-- Filas -->
+    <Grid Padding="24" RowSpacing="12">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <!-- Headers -->
+            <!-- Encabezado -->
             <RowDefinition Height="*"/>
-            <!-- Lista -->
+            <!-- Contenido -->
             <RowDefinition Height="Auto"/>
+            <!-- Barra de estado inferior -->
         </Grid.RowDefinitions>
 
-        <!-- Título -->
-        <TextBlock Text="Pantalla de ventas"
-               Style="{StaticResource TitleTextBlockStyle}"
-               Grid.Row="0"/>
+        <!-- Encabezado: Título y Botón Historial -->
+        <!-- Ajuste: RelativePanel ahora alinea el icono y el texto juntos a la izquierda, 
+             y el botón "Ventas Recientes" a la derecha -->
+        <RelativePanel Grid.Row="0">
+            <StackPanel x:Name="TitleGroup" Orientation="Horizontal" Spacing="8" RelativePanel.AlignLeftWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True">
+                <SymbolIcon Symbol="Shop" Margin="0,0,8,0"/>
+                <TextBlock Text="Ventas" FontSize="32" FontWeight="Bold" x:Name="TitleText"/>
+            </StackPanel>
 
-        <!-- Código -->
-        <TextBox x:Name="CodigoBox"
-             PlaceholderText="Código de barras Ej: 1234567890"
-             Grid.Row="1"
-             KeyDown="obtenerproducto_keydown"/>
+            <Button x:Name="BtnVentasRecientes" Content="Ventas Recientes" 
+                    RelativePanel.AlignRightWithPanel="True"
+                    RelativePanel.AlignVerticalCenterWith="TitleGroup">
+                
+            </Button>
+        </RelativePanel>
 
-        <!-- 🔹 HEADERS -->
-        <Grid Grid.Row="2" ColumnSpacing="10" Margin="0,10,0,5">
+        <!-- Contenido Principal -->
+        <Grid Grid.Row="1" ColumnSpacing="20">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+                <!-- Catálogo -->
+                <ColumnDefinition Width="380"/>
+                <!-- Carrito/Ticket -->
             </Grid.ColumnDefinitions>
 
-            <TextBlock Text="Producto" FontWeight="Bold" Grid.Column="0"/>
-            <TextBlock Text="Cantidad" FontWeight="Bold" Grid.Column="1"/>
-            <TextBlock Text="Precio" FontWeight="Bold" Grid.Column="2"/>
-            <TextBlock Text="Subtotal" FontWeight="Bold" Grid.Column="3"/>
-            <TextBlock Text="Eliminar" FontWeight="Bold" Grid.Column="4"/>
-        </Grid>
+            <!-- SECCIÓN IZQUIERDA: CATÁLOGO -->
+            <StackPanel Spacing="15">
+                <!-- Ajuste: Usamos un Grid con columnas para organizar los nuevos botones 
+                     y el AutoSuggestBox de forma uniforme -->
+                <Grid ColumnSpacing="10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <!-- AutoSuggestBox ocupa el resto -->
+                        <ColumnDefinition Width="Auto"/>
+                        <!-- Botones ocupan su contenido -->
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="BuscarProductoBox"  PlaceholderText="Busqueda por nombre" Grid.Column="0" VerticalAlignment="Center" TextChanged="BuscarProductoBox_TextChanged"/>
+                    <TextBox x:Name="CodigoBox" PlaceholderText="Introduce codigo de barras: Ej: 1234567899000" Grid.Column="1" VerticalAlignment="Center" KeyDown="obtenerproducto_keydown"/>
 
-        <!-- 🔹 LISTA -->
-        <ListView x:Name="ProductosList"
-              Grid.Row="3">
+                    <!-- Ajuste: Agregué iconos a los botones para alinearlos visualmente con 
+                         el resto de la interfaz (según la estética de image_4.png) -->
+                    <Button x:Name="BtnEscanear" Style="{StaticResource AccentButtonStyle}" Grid.Column="2" VerticalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <FontIcon Glyph="&#xE8C4;"/>
+                            <!-- Icono de Código de Barras -->
+                            <TextBlock Text="Escanear"/>
+                        </StackPanel>
+                    </Button>
 
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <Grid ColumnSpacing="10" Padding="5">
+                   
+                </Grid>
+                <GridView x:Name="ResultadosProductosList" SelectionMode="None" Height="400">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                    CornerRadius="8" Padding="12" Width="140" Height="160" Margin="4">
+                                <StackPanel VerticalAlignment="Center" Spacing="4">
+                                    <!-- Imagen del producto (placeholder por ahora) -->
+                                    <!--<Image Source="ms-appx:///Assets/placeholder.png" Height="80" Stretch="UniformToFill"/> -->
+                                    <SymbolIcon Symbol="Shop" Height="80" Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+                                    <!-- Nombre del producto -->
+                                    <TextBlock Text="{Binding nombre}" 
+                               FontWeight="SemiBold" 
+                               HorizontalAlignment="Center" 
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"/>
+
+                                    <!-- Precio del producto -->
+                                    <TextBlock Text="{Binding precioVenta}" 
+                               Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" 
+                               HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView>
+                <!-- <GridView x:Name="ResultadosProductosList" SelectionMode="None">
+                    <GridView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                                    CornerRadius="8" Padding="12" Width="140" Height="160" Margin="4">
+                                <StackPanel VerticalAlignment="Center" Spacing="4">
+                                    <Image Source="ms-appx:///Assets/placeholder.png" Height="80"/>
+                                    <TextBlock Text="Producto" FontWeight="SemiBold" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="$0.00" Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" HorizontalAlignment="Center"/>
+                                </StackPanel>
+                            </Border>
+                        </DataTemplate>
+                    </GridView.ItemTemplate>
+                </GridView> -->
+            </StackPanel>
+
+            <!-- SECCIÓN DERECHA: TICKET -->
+            <Border Grid.Column="1" 
+                    Background="{ThemeResource LayerFillColorDefaultBrush}" 
+                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                    BorderThickness="1" CornerRadius="12" Padding="20">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <!-- Lista de artículos -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Totales -->
+                        <RowDefinition Height="Auto"/>
+                        <!-- Botones Cobro -->
+                    </Grid.RowDefinitions>
+
+                    <ListView x:Name="ProductosList" Grid.Row="0" Margin="0,0,0,20">
+                        <ListView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnSpacing="10" Padding="5">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="2*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+
+                                        <TextBlock Text="{Binding NombreProducto}"
+                        Grid.Column="0"
+                        VerticalAlignment="Center"/>
+
+
+                                        <NumberBox Value="{Binding Cantidad, Mode=TwoWay}"
+                        Width="80"
+                        Grid.Column="1"
+                        
+                            Minimum="1"/>
+
+
+
+                                        <TextBlock Text="{Binding PrecioUnitario}"
+                        Grid.Column="2"
+                        VerticalAlignment="Center"/>
+
+
+                                        <TextBlock Text="{Binding Subtotal}"
+                        Grid.Column="3"
+                        VerticalAlignment="Center"/>
+
+                                        <Button Grid.Column="4"
+ Click="EliminarProducto_Click"
+ Tag="{Binding}">
+                                            <SymbolIcon Symbol="Delete"/>
+                                        </Button>
+
+                                    </Grid>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
+                        </ListView>
+
+                    <StackPanel Grid.Row="1" HorizontalAlignment="Right" Margin="0,0,0,20">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="TOTAL: " FontSize="28" FontWeight="Bold" VerticalAlignment="Bottom"/>
+                            <TextBlock x:Name="TotalText" FontSize="36" FontWeight="Bold" Foreground="{ThemeResource SystemAccentColor}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Grid Grid.Row="2" ColumnSpacing="10">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="2*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Producto -->
-                        <TextBlock Text="{Binding NombreProducto}"
-                               Grid.Column="0"
-                               VerticalAlignment="Center"/>
-
-                        <!-- Cantidad -->
-                        <NumberBox Value="{Binding Cantidad, Mode=TwoWay}"
-                               Width="80"
-                               Grid.Column="1"
-                               
-                                   Minimum="1"/>
-                        <!--    Foreground="{Binding TieneError, Converter={StaticResource BoolToColor}" -->
-
-
-                        <!-- Precio -->
-                        <TextBlock Text="{Binding PrecioUnitario}"
-                               Grid.Column="2"
-                               VerticalAlignment="Center"/>
-
-                        <!-- Subtotal -->
-                        <TextBlock Text="{Binding Subtotal}"
-                               Grid.Column="3"
-                               VerticalAlignment="Center"/>
-                        
-                        <!-- Eliminar -->
-                        <Button Grid.Column="4"
-        Click="EliminarProducto_Click"
-        Tag="{Binding}">
-                            <SymbolIcon Symbol="Delete"/>
+                        <Button Grid.Column="0" Height="80" HorizontalAlignment="Stretch" 
+                                Background="{ThemeResource SystemAccentColor}" Foreground="White">
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE8C7;"/>
+                                <!-- Icono de Dinero -->
+                                <TextBlock Text="EFECTIVO" FontWeight="Bold"/>
+                            </StackPanel>
                         </Button>
 
-                    </Grid>
-                </DataTemplate>
-            </ListView.ItemTemplate>
-
-        </ListView>
-        <TextBlock x:Name="TotalText"
-           FontSize="20"
-           FontWeight="Bold"
-           HorizontalAlignment="Right"
-           Margin="0,10,0,0"
-           Grid.Row="4"/>
-        <!-- Botones -->
-        <Grid Grid.Row="4" ColumnSpacing="10">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition/>
-                <ColumnDefinition/>
-            </Grid.ColumnDefinitions>
-
-            <Button Grid.Column="0"
-                Content="Buscar producto por nombre"
-                Style="{StaticResource AccentButtonStyle}"
-                Click="BuscarProducto_Click"/>
-
-            <Button Grid.Column="1"
-                Content="Finalizar venta"
-                Style="{StaticResource AccentButtonStyle}"
-                Click="GuardarVenta_Click"/>
-        </Grid>
-        <ContentDialog x:Name="BuscarProductoDialog"
-               Title="Buscar producto"
-               PrimaryButtonText="Seleccionar"
-               CloseButtonText="Cancelar">
-
-            <StackPanel Spacing="10">
-
-                <TextBox x:Name="BuscarProductoBox"
-                 PlaceholderText="Buscar por nombre..."
-                 TextChanged="BuscarProductoBox_TextChanged"/>
-
-                <ListView x:Name="ResultadosProductosList"
-                  Height="300"
-                  SelectionMode="Single">
-
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <StackPanel>
-                                <TextBlock Text="{Binding Nombre}" FontWeight="Bold"/>
-                                <TextBlock Text="{Binding PrecioVenta}"/>
+                        <Button Grid.Column="1" Height="80" HorizontalAlignment="Stretch">
+                            <StackPanel Spacing="8">
+                                <FontIcon Glyph="&#xE7E1;"/>
+                                <!-- Icono de Tarjeta -->
+                                <TextBlock Text="TARJETA" FontWeight="Bold"/>
                             </StackPanel>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
+                        </Button>
+                    </Grid>
+                </Grid>
+            </Border>
+        </Grid>
 
-                </ListView>
-
-            </StackPanel>
-        </ContentDialog>
+        <!-- Footer -->
+        <TextBlock Grid.Row="2" Text="Cajero: Ana | 10:30 AM" Foreground="Gray" FontSize="12" Margin="0,12,0,0"/>
     </Grid>
 </Page>

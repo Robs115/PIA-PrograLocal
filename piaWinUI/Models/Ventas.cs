@@ -7,7 +7,7 @@ namespace piaWinUI.Models
     {
         private Guid idVenta = Guid.NewGuid();
         private Guid idUsuario;
-        private Guid idCliente;
+        private string metodopago;
         private decimal total;
         private DateTime fecha;
 
@@ -31,13 +31,13 @@ namespace piaWinUI.Models
             }
         }
 
-        public Guid IdCliente
+        public string MetodoPago
         {
-            get => idCliente;
+            get => metodopago;
             set
             {
-                idCliente = value;
-                OnPropertyChanged(nameof(IdCliente));
+                metodopago = value;
+                OnPropertyChanged(nameof(metodopago));
             }
         }
 
