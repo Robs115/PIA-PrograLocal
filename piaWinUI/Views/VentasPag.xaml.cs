@@ -17,6 +17,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 
 
 
@@ -35,9 +36,8 @@ namespace piaWinUI.Views
         
         
 
-      
 
-        public VentasPag()
+       public VentasPag()
             {
                 this.InitializeComponent();
             _timer = new DispatcherTimer();
@@ -136,6 +136,27 @@ namespace piaWinUI.Views
             private void limpiarbarrabusqueda() {
             CodigoBox.Text = "";
         }
+
+        // Obtiene el id del usuario logueado desde LocalSettings (clave "UserId").
+        // Si no existe devuelve 0.
+        private int GetLoggedUserId()
+        {
+            try
+            {
+                var local = ApplicationData.Current.LocalSettings;
+                if (local.Values.TryGetValue("UserId", out object? raw) && raw != null)
+                {
+                    if (int.TryParse(raw.ToString(), out int id))
+                        return id;
+                }
+            }
+            catch
+            {
+                // ignorar y devolver 0
+            }
+            return 0;
+        }
+
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
         {
@@ -149,14 +170,14 @@ namespace piaWinUI.Views
                 return;
             }
 
-            if (!Guid.TryParse(codigo, out Guid guidBuscado))
+            if (!int.TryParse(codigo, out int intBuscado))
             {
                 await ShowDialogAsync("Error", "Código inválido");
                 limpiarbarrabusqueda();
                 return;
             }
 
-            var producto = productos.FirstOrDefault(p => p.Id == guidBuscado);
+            var producto = productos.FirstOrDefault(p => p.Id == intBuscado);
 
             if (producto == null)
             {
@@ -212,8 +233,9 @@ namespace piaWinUI.Views
 
             // 🔥 GUARDAR VENTA
         private async void GuardarVenta_Click(object sender, RoutedEventArgs e)
-            { 
-                if (carrito.Count == 0)
+            {
+            var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
+            if (carrito.Count == 0)
                 {
                     await ShowDialogAsync("Error", "No hay productos en la venta");
                     return;
@@ -228,8 +250,8 @@ namespace piaWinUI.Views
 
             var venta = new Venta
                 {
-                    IdVenta = Guid.NewGuid(),
-                    IdUsuario = Guid.NewGuid(),
+                    Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
+                    IdUsuario = GetLoggedUserId(), // se agrega automáticamente el id del usuario logueado
 
                     Fecha = DateTime.Now,
                     Total = carrito.Sum(p => p.Subtotal)
@@ -237,10 +259,10 @@ namespace piaWinUI.Views
 
                 foreach (var item in carrito)
                 {
-                    item.IdVenta = venta.IdVenta;
+                    item.IdVenta = venta.Id;
                 }
 
-                var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
+                
                 ventas.Add(venta);
                 await _ventaService.SaveAllAsync(ventas);
                 
@@ -316,11 +338,6 @@ namespace piaWinUI.Views
         }
 
 
-        public void HistorialVentas_Click(object sender, RoutedEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
         {
             var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
@@ -333,7 +350,7 @@ namespace piaWinUI.Views
             {
                 // Filtrar detalles solo de esta venta
                 var detallesDeVenta = todosDetalles
-                                      .Where(d => d.IdVenta == venta.IdVenta)
+                                      .Where(d => d.IdVenta == venta.Id)
                                       .ToList();
 
                 stackVentas.Children.Add(CrearVentaExpander(venta, detallesDeVenta));
@@ -370,7 +387,7 @@ namespace piaWinUI.Views
 
             return new Expander
             {
-                Header = $"Folio: {venta.IdVenta} | {venta.Fecha:HH:mm} | Total: ${venta.Total}",
+                Header = $"Folio: {venta.Id} | {venta.Fecha:HH:mm} | Total: ${venta.Total}",
                 Content = new TextBlock
                 {
                     Text = sb.ToString(),

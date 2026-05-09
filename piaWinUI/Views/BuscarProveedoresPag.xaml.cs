@@ -43,7 +43,7 @@ namespace piaWinUI.Views
 
             // Mostrar últimos primero
             ProveedoresList.ItemsSource = listaProveedores
-                .OrderByDescending(c => c.IdProveedor)
+                .OrderByDescending(c => c.Id)
                 .Take(10)
                 .ToList();
         }
@@ -87,13 +87,13 @@ namespace piaWinUI.Views
         {
             var button = sender as Button;
 
-            if (button?.Tag is not Guid idProveedor)
+            if (button?.Tag is not int idProveedor)
                 return;
 
             // Obtener proveedores
             var proveedores = await _service.GetAllAsync();   
             // Buscar proveedor
-            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor == idProveedor);
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.Id == idProveedor);
 
             if (proveedorSeleccionado == null)
                 return;
@@ -169,14 +169,14 @@ namespace piaWinUI.Views
 
         private async void Eliminar_Click(object sender, RoutedEventArgs e)
         {
-            // 🔥 convertir correctamente a Guid
+            // 🔥 convertir correctamente a int
             var button = sender as Button;
 
             if (button?.Tag == null)
                 return;
 
-            // 🔥 convertir correctamente a Guid
-            Guid idProveedor = (Guid)button.Tag;
+            // 🔥 convertir correctamente a int
+            int idProveedor = (int)button.Tag;
 
             // Obtener datos
             var proveedores = await _service.GetAllAsync();
@@ -184,7 +184,7 @@ namespace piaWinUI.Views
 
 
             // Buscar proveedor
-            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor    == idProveedor);
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.Id  == idProveedor);
 
             if (proveedorSeleccionado == null)
                 return;
@@ -219,7 +219,7 @@ namespace piaWinUI.Views
                 return;
 
             // Eliminar
-            proveedores.RemoveAll(c => c.IdProveedor == idProveedor);
+            proveedores.RemoveAll(c => c.Id == idProveedor);
 
             // Guardar cambios
             await _service.SaveAllAsync(proveedores);

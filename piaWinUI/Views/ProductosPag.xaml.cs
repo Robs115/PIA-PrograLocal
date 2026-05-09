@@ -24,7 +24,7 @@ namespace piaWinUI.Views
         public string Descripcion => Model.Descripcion;
         public decimal PrecioCompra => Model.PrecioCompra;
         public decimal PrecioVenta => Model.PrecioVenta;
-        public Guid IdProveedor => Model.IdProveedor;
+        public int IdProveedor => Model.IdProveedor;
         public string Categoria => Model.Categoria;
         public int Stock => Model.Stock;
 
@@ -37,11 +37,11 @@ namespace piaWinUI.Views
         private readonly ProveedorService _proveedorService = new ProveedorService();
         private readonly DetalleVentasService _detalleVentasService = new DetalleVentasService();
         private readonly CategoriaService _categoriaService = new CategoriaService();
-        private Dictionary<Guid, string> _proveedorLookup = new();
+        private Dictionary<int, string> _proveedorLookup = new();
 
         public ObservableCollection<ProductoView> Productos { get; } = new();
 
-        private Dictionary<Guid, string> _proveedores = new();
+        private Dictionary<int, string> _proveedores = new();
         private List<Categoria> _categorias = new();
 
         public ProductosPag()
@@ -145,7 +145,7 @@ namespace piaWinUI.Views
             var productos = await _service.GetAllAsync();
             var proveedores = await _proveedorService.GetAllAsync();
 
-            _proveedores = proveedores.ToDictionary(p => p.IdProveedor, p => p.Nombre);
+            _proveedores = proveedores.ToDictionary(p => p.Id, p => p.Nombre);
 
             Productos.Clear();
 
@@ -275,7 +275,7 @@ namespace piaWinUI.Views
 
             var list = await _service.GetAllAsync();
 
-            producto.Id = Guid.NewGuid();
+            producto.Id = list.Any() ? list.Max(p => p.Id) + 1 : 1;
             list.Add(producto);
 
             await _service.SaveAllAsync(list);
@@ -403,12 +403,12 @@ namespace piaWinUI.Views
             var proveedor = new ComboBox
             {
                 Header = "Proveedor",
-                ItemsSource = _proveedores.Select(x => new KeyValuePair<Guid, string>(x.Key, x.Value)).ToList(),
+                ItemsSource = _proveedores.Select(x => new KeyValuePair<int, string>(x.Key, x.Value)).ToList(),
                 DisplayMemberPath = "Value",
                 SelectedValuePath = "Key"
             };
 
-            if (producto.IdProveedor != Guid.Empty)
+            if (producto.IdProveedor != 0)
                 proveedor.SelectedValue = producto.IdProveedor;
 
             var error = new TextBlock
@@ -562,7 +562,7 @@ namespace piaWinUI.Views
                 producto.PrecioVenta = pv;
                 producto.Stock = st;
 
-                producto.IdProveedor = (Guid)proveedor.SelectedValue;
+                producto.IdProveedor = (int)proveedor.SelectedValue;
             };
 
             return dialog;

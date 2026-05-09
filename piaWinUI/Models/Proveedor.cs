@@ -14,12 +14,13 @@ namespace piaWinUI.Models
         private string telefono = "";
         private string email = "";
 
+
         public int Id
         {
-            get => Id;
+            get => id;
             set
             {
-                Id = value;
+                id = value;
                 OnPropertyChanged(nameof(Id));
             }
         }
