@@ -37,6 +37,7 @@ namespace piaWinUI.Views
         private readonly ProveedorService _proveedorService = new ProveedorService();
         private readonly DetalleVentasService _detalleVentasService = new DetalleVentasService();
         private readonly CategoriaService _categoriaService = new CategoriaService();
+        private Dictionary<Guid, string> _proveedorLookup = new();
 
         public ObservableCollection<ProductoView> Productos { get; } = new();
 
@@ -62,6 +63,69 @@ namespace piaWinUI.Views
         {
             _categorias = await _categoriaService.GetAllAsync()
                          ?? new List<Categoria>();
+        }
+
+        private void SoloNumeros(TextBox tb, bool allowDecimal = false)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+
+                if (e.NewText.Contains(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // Permitir vacío SOLO mientras escriben
+                if (string.IsNullOrEmpty(e.NewText))
+                    return;
+
+                // Validar entero o decimal
+                if (allowDecimal)
+                {
+                    e.Cancel = !decimal.TryParse(e.NewText, out _);
+                }
+                else
+                {
+                    e.Cancel = !int.TryParse(e.NewText, out _);
+                }
+            };
+        }
+
+        private void ValidarTexto(TextBox tb)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+                string texto = e.NewText;
+
+                // Permitir vacío mientras escribe
+                if (string.IsNullOrEmpty(texto))
+                    return;
+
+                // ❌ No iniciar con espacio
+                if (texto.StartsWith(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // ❌ No permitir espacios dobles
+                if (texto.Contains("  "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                // ❌ Bloquear caracteres especiales
+                foreach (char c in texto)
+                {
+                    if (!char.IsLetterOrDigit(c) && c != ' ')
+                    {
+                        e.Cancel = true;
+                        return;
+                    }
+                }
+            };
         }
 
         // =========================
@@ -210,10 +274,25 @@ namespace piaWinUI.Views
         // =========================
         // DIALOG
         // =========================
-        private ContentDialog BuildDialog(Producto producto, bool edit)
+        private ContentDialog BuildDialog(Producto producto, bool isEdit)
         {
-            var nombre = new TextBox { Header = "Nombre", Text = producto.Nombre ?? "" };
-            var descripcion = new TextBox { Header = "Descripción", Text = producto.Descripcion ?? "" };
+            var nombre = new TextBox
+            {
+                Header = "Nombre",
+                Text = producto.Nombre ?? "",
+                MaxLength = 50
+            };
+
+            ValidarTexto(nombre);
+
+            var descripcion = new TextBox
+            {
+                Header = "Descripción",
+                Text = producto.Descripcion ?? "",
+                MaxLength = 100
+            };
+
+            ValidarTexto(descripcion);
 
             var categoria = new ComboBox
             {
@@ -222,20 +301,34 @@ namespace piaWinUI.Views
                 DisplayMemberPath = "Nombre"
             };
 
-            if (!string.IsNullOrWhiteSpace(producto.Categoria))
+            var precioCompra = new TextBox
             {
-                categoria.SelectedItem = _categorias
-                    .FirstOrDefault(c => c.Nombre == producto.Categoria);
-            }
+                Header = "Precio compra",
+                Text = producto.PrecioCompra.ToString(),
+                MaxLength = 10
+            };
+            SoloNumeros(precioCompra, true);
 
-            var precioCompra = new TextBox { Header = "Compra", Text = producto.PrecioCompra.ToString() };
-            var precioVenta = new TextBox { Header = "Venta", Text = producto.PrecioVenta.ToString() };
-            var stock = new TextBox { Header = "Stock", Text = producto.Stock.ToString() };
+            var precioVenta = new TextBox
+            {
+                Header = "Precio venta",
+                Text = producto.PrecioVenta.ToString(),
+                MaxLength = 10
+            };
+            SoloNumeros(precioVenta, true);
+
+            var stock = new TextBox
+            {
+                Header = "Stock",
+                Text = producto.Stock.ToString(),
+                MaxLength = 6
+            };
+            SoloNumeros(stock, false);
 
             var proveedor = new ComboBox
             {
                 Header = "Proveedor",
-                ItemsSource = _proveedores,
+                ItemsSource = _proveedorLookup.Select(x => new KeyValuePair<Guid, string>(x.Key, x.Value)).ToList(),
                 DisplayMemberPath = "Value",
                 SelectedValuePath = "Key"
             };
@@ -245,7 +338,8 @@ namespace piaWinUI.Views
 
             var error = new TextBlock
             {
-                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red)
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red),
+                TextWrapping = TextWrapping.Wrap
             };
 
             var panel = new StackPanel
@@ -253,15 +347,20 @@ namespace piaWinUI.Views
                 Spacing = 10,
                 Children =
                 {
-                    nombre, descripcion, categoria,
-                    precioCompra, precioVenta, stock,
-                    proveedor, error
+                    nombre,
+                    descripcion,
+                    categoria,
+                    precioCompra,
+                    precioVenta,
+                    stock,
+                    proveedor,
+                    error
                 }
             };
 
             var dialog = new ContentDialog
             {
-                Title = edit ? "Editar" : "Nuevo",
+                Title = isEdit ? "Editar producto" : "Nuevo producto",
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
                 Content = panel,
@@ -272,51 +371,99 @@ namespace piaWinUI.Views
             {
                 error.Text = "";
 
-                if (string.IsNullOrWhiteSpace(nombre.Text))
+                if (string.IsNullOrWhiteSpace(nombre.Text.Trim()))
                 {
                     e.Cancel = true;
-                    error.Text = "Nombre requerido";
+                    error.Text = "Nombre obligatorio.";
                     return;
                 }
 
-                if (!decimal.TryParse(precioCompra.Text, out var pc) ||
-                    !decimal.TryParse(precioVenta.Text, out var pv))
+                if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
                 {
                     e.Cancel = true;
-                    error.Text = "Precios inválidos";
+                    error.Text = "Descripción obligatoria.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(precioCompra.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio compra obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(precioVenta.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio venta obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(stock.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "Stock obligatorio.";
+                    return;
+                }
+
+                if (!decimal.TryParse(precioCompra.Text, out decimal pc))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio compra inválido.";
+                    return;
+                }
+
+                if (!decimal.TryParse(precioVenta.Text, out decimal pv))
+                {
+                    e.Cancel = true;
+                    error.Text = "Precio venta inválido.";
+                    return;
+                }
+
+                if (pc < 0 || pv < 0)
+                {
+                    e.Cancel = true;
+                    error.Text = "Precios no pueden ser negativos.";
                     return;
                 }
 
                 if (pc >= pv)
                 {
                     e.Cancel = true;
-                    error.Text = "Venta debe ser mayor";
+                    error.Text = "Venta debe ser mayor que compra.";
                     return;
                 }
 
-                if (!int.TryParse(stock.Text, out var st))
+                if (!int.TryParse(stock.Text, out int st))
                 {
                     e.Cancel = true;
-                    error.Text = "Stock inválido";
+                    error.Text = "Stock inválido.";
                     return;
                 }
 
-                if (proveedor.SelectedValue == null)
+                if (st < 0)
                 {
                     e.Cancel = true;
-                    error.Text = "Proveedor requerido";
+                    error.Text = "Stock no puede ser negativo.";
+                    return;
+                }
+
+                if (proveedor.SelectedValue is null)
+                {
+                    e.Cancel = true;
+                    error.Text = "Selecciona proveedor.";
                     return;
                 }
 
                 producto.Nombre = nombre.Text.Trim();
                 producto.Descripcion = descripcion.Text.Trim();
+                producto.Categoria = categoria.SelectedItem?.ToString();
+
                 producto.PrecioCompra = pc;
                 producto.PrecioVenta = pv;
                 producto.Stock = st;
-                producto.IdProveedor = (Guid)proveedor.SelectedValue;
 
-                if (categoria.SelectedItem is Categoria cat)
-                    producto.Categoria = cat.Nombre;
+                producto.IdProveedor = (Guid)proveedor.SelectedValue;
             };
 
             return dialog;
