@@ -1,21 +1,22 @@
-using piaWinUI.Models;
-using piaWinUI.Services;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Models;
+using piaWinUI.Services;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Text;
+using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using System.Collections.ObjectModel;
 
 
 
@@ -28,16 +29,31 @@ namespace piaWinUI.Views
         private List<Producto> todosProductos = new List<Producto>();
         private List<DetalleVentas> _detalleService = new List<DetalleVentas>();
         private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
-           
+
+        private DispatcherTimer _timer;
+
+        
+        
+
+      
 
         public VentasPag()
             {
                 this.InitializeComponent();
-           
-              ProductosList.ItemsSource = carrito;
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(1); // Cada segundo
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+            ProductosList.ItemsSource = carrito;
             cargarCatalogo();
             ResultadosProductosList.ItemsSource = todosProductos;
 
+        }
+        private void Timer_Tick(object sender, object e)
+        {
+            // Actualiza el TextBlock con la hora actual
+            var horaActual = DateTime.Now.ToString("HH:mm:ss"); // Formato 24h
+            CajeroHoraTextBlock.Text = $"Cajero: Ana | {horaActual}";
         }
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
@@ -301,7 +317,64 @@ namespace piaWinUI.Views
 
 
 
- 
+        private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
+        {
+            var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
+            var detalleService = new DetalleVentasService();
+            var todosDetalles = await detalleService.GetAllAsync(); // Todos los detalles
+
+            var stackVentas = new StackPanel { Spacing = 10 };
+
+            foreach (var venta in ventas)
+            {
+                // Filtrar detalles solo de esta venta
+                var detallesDeVenta = todosDetalles
+                                      .Where(d => d.IdVenta == venta.IdVenta)
+                                      .ToList();
+
+                stackVentas.Children.Add(CrearVentaExpander(venta, detallesDeVenta));
+            }
+
+            ContentDialog ventasDialog = new ContentDialog
+            {
+                Title = "Ventas Recientes",
+                CloseButtonText = "Cerrar",
+                PrimaryButtonText = "Imprimir Copia",
+                Content = new ScrollViewer
+                {
+                    Content = stackVentas,
+                    Height = 400
+                },
+                XamlRoot = this.XamlRoot
+            };
+
+            await ventasDialog.ShowAsync();
+        }
+
+        private Expander CrearVentaExpander(Venta venta, List<DetalleVentas> detalles)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("DETALLE DE VENTA:");
+
+            // Agregar cada detalle
+            foreach (var d in detalles)
+            {
+                sb.AppendLine($"{d.Cantidad}x ProductoID {d.IdProducto} (${d.Subtotal})");
+            }
+
+            sb.AppendLine($"Total: ${venta.Total} | Pago: {venta.MetodoPago}");
+
+            return new Expander
+            {
+                Header = $"Folio: {venta.IdVenta} | {venta.Fecha:HH:mm} | Total: ${venta.Total}",
+                Content = new TextBlock
+                {
+                    Text = sb.ToString(),
+                    TextWrapping = TextWrapping.Wrap
+                },
+                IsExpanded = false
+            };
+        }
 
 
 
@@ -309,5 +382,5 @@ namespace piaWinUI.Views
 
 
 
-} 
+    } 
 }
