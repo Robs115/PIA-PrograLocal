@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace piaWinUI.Models
@@ -62,7 +63,7 @@ namespace piaWinUI.Models
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public List<DetalleVentas> Detalles { get; set; } = new List<DetalleVentas>();
         protected void OnPropertyChanged(string nombrePropiedad)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombrePropiedad));

@@ -29,7 +29,8 @@
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
-               <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
+               
+                <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
                 <NavigationViewItem Content="Salir" Icon="Cancel" Tapped="ExitApp_Tapped"/>
             </NavigationView.FooterMenuItems>
 

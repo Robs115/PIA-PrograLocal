@@ -1,3 +1,4 @@
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -327,73 +328,136 @@ namespace piaWinUI.Views
             ResultadosProductosList.IsItemClickEnabled = true;
         }
 
-
+        
+       
         private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
-        {
-            var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
-            var detalleService = new DetalleVentasService();
-            var todosDetalles = await detalleService.GetAllAsync(); // Todos los detalles
-            //sacar fecha de hoy
+          {
+              var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
+              var detalleService = new DetalleVentasService();
+              var todosDetalles = await detalleService.GetAllAsync(); // Todos los detalles
+
+              // Filtrar ventas de hoy y ordenar de más recientes a más viejas
+              var hoy = DateTime.Today;
+              var ventasHoy = ventas
+                  .Where(v => v.Fecha.Date == hoy)
+                  .OrderByDescending(v => v.Fecha)
+                  .ToList();
+
+              if (!ventasHoy.Any())
+              {
+                  await new ContentDialog
+                  {
+                      Title = "Ventas de Hoy",
+                      Content = "No se han registrado ventas hoy.",
+                      CloseButtonText = "Cerrar",
+                      XamlRoot = this.XamlRoot
+                  }.ShowAsync();
+                  return;
+              }
+
+              var stackVentas = new StackPanel { Spacing = 20, Margin = new Thickness(10)};
+
+              foreach (var venta in ventasHoy)
+              {
+                  var detallesDeVenta = todosDetalles
+                      .Where(d => d.IdVenta == venta.Id)
+                      .ToList();
+
+                  stackVentas.Children.Add(CrearVentaExpanderUI(venta, detallesDeVenta));
+              }
+
+              ContentDialog ventasDialog = new ContentDialog
+              {
+                  Title = "Ventas de Hoy",
+                  CloseButtonText = "Cerrar",
+                  PrimaryButtonText = "Imprimir Copia",
+                  Content = new ScrollViewer
+                  {
+                      Content = stackVentas,
+                      Height = 600,  // mayor altura
+                      Width = 1000,  // ancho más amplio
+                      HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
+                  },
+                  XamlRoot = this.XamlRoot
+              };
+
+              await ventasDialog.ShowAsync();
+          }
+
+          // Expander con UI tipo tabla y usuario
+          private Expander CrearVentaExpanderUI(Venta venta, List<DetalleVentas> detalles)
+          {
+              // Grid para los detalles
+              var grid = new Grid
+              {
+                  ColumnDefinitions =
+          {
+              new ColumnDefinition { Width = new GridLength(3, GridUnitType.Star) }, // Producto
+              new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Cantidad
+              new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }  // Subtotal
+
+          },
+                  RowSpacing = 5,
+                  Width = 900
+
+
+              };
+
+              // Encabezados
+              grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+              var headerProducto = new TextBlock { Text = "Producto", FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5) };
+              Grid.SetRow(headerProducto, 0); Grid.SetColumn(headerProducto, 0); grid.Children.Add(headerProducto);
+
+              var headerCant = new TextBlock { Text = "Cant.", FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5) };
+              Grid.SetRow(headerCant, 0); Grid.SetColumn(headerCant, 1); grid.Children.Add(headerCant);
+
+              var headerSubtotal = new TextBlock { Text = "Subtotal", FontWeight = FontWeights.Bold, Margin = new Thickness(0, 0, 0, 5) };
+              Grid.SetRow(headerSubtotal, 0); Grid.SetColumn(headerSubtotal, 2); grid.Children.Add(headerSubtotal);
+
+              // Filas de detalle
+              int row = 1;
+              foreach (var d in detalles)
+              {
+                  grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                  var txtProducto = new TextBlock { Text = d.NombreProducto, TextWrapping = TextWrapping.Wrap };
+                  Grid.SetRow(txtProducto, row); Grid.SetColumn(txtProducto, 0); grid.Children.Add(txtProducto);
+
+                  var txtCantidad = new TextBlock { Text = d.Cantidad.ToString(), HorizontalAlignment = HorizontalAlignment.Center };
+                  Grid.SetRow(txtCantidad, row); Grid.SetColumn(txtCantidad, 1); grid.Children.Add(txtCantidad);
+
+                  var txtSubtotal = new TextBlock { Text = $"${d.Subtotal}", HorizontalAlignment = HorizontalAlignment.Right };
+                  Grid.SetRow(txtSubtotal, row); Grid.SetColumn(txtSubtotal, 2); grid.Children.Add(txtSubtotal);
+
+                  row++;
+              }
+
+              // Fila total y usuario
+              grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+              var txtTotal = new TextBlock
+              {
+                  Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago} | Usuario: {venta.IdUsuario}",
+                  FontWeight = FontWeights.Bold,
+                  Margin = new Thickness(0, 10, 0, 0),
+                  HorizontalAlignment = HorizontalAlignment.Center,
+
+              };
+              Grid.SetRow(txtTotal, row); Grid.SetColumnSpan(txtTotal, 3); grid.Children.Add(txtTotal);
+
+              // Expander
+              return new Expander
+              {
+                  Header = $"Folio: {venta.Id} | {venta.Fecha:HH:mm} | Total: ${venta.Total} | Usuario: {venta.IdUsuario}",
+                  Content = grid,
+                  IsExpanded = false,
+                  Margin = new Thickness(0, 0, 0, 15)
+              };
+          }
 
 
 
-            var stackVentas = new StackPanel { Spacing = 10 };
-
-            foreach (var venta in ventas)
-            {
-                // Filtrar detalles solo de esta venta
-                var detallesDeVenta = todosDetalles
-                                      .Where(d => d.IdVenta == venta.Id)
-                                      .ToList();
-
-                stackVentas.Children.Add(CrearVentaExpander(venta, detallesDeVenta));
-            }
-            
-            ContentDialog ventasDialog = new ContentDialog
-            {
-                Title = "Ventas Recientes",
-                CloseButtonText = "Cerrar",
-                PrimaryButtonText = "Imprimir Copia",
-                Content = new ScrollViewer
-                {
-                    Content = stackVentas,
-                    Height = 400, 
-                    
-                },
-                XamlRoot = this.XamlRoot
-            };
-
-            await ventasDialog.ShowAsync();
-        }
-
-        private Expander CrearVentaExpander(Venta venta, List<DetalleVentas> detalles)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine("DETALLE DE VENTA:");
-
-            // Agregar cada detalle
-            foreach (var d in detalles)
-            {
-                sb.AppendLine($"{d.Cantidad}x Producto {d.NombreProducto} (${d.Subtotal})");
-            }
-
-            sb.AppendLine($"Total: ${venta.Total} | Pago: {venta.MetodoPago}");
-
-            return new Expander
-            {
-                Header = $"Folio: {venta.Id} | {venta.Fecha:HH:mm} | Total: ${venta.Total}",
-                Content = new TextBlock
-                {
-                    Text = sb.ToString(),
-                    TextWrapping = TextWrapping.Wrap
-                },
-                IsExpanded = false
-            };
-        }
-
-
-
-
+          
 
 
 

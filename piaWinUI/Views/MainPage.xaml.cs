@@ -168,9 +168,27 @@ namespace piaWinUI.Views
             await dialog.ShowAsync();
         }
 
-        private void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
+        private async void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            Application.Current.Exit();
+            
+            ContentDialog confirmDialog = new ContentDialog
+            {
+                Title = "Confirmar salida",
+                Content = "¿Estás seguro de que deseas salir de la aplicación?",
+                PrimaryButtonText = "Sí",
+                CloseButtonText = "No",
+                XamlRoot = this.XamlRoot 
+            };
+
+          
+            var result = await confirmDialog.ShowAsync();
+
+            if (result == ContentDialogResult.Primary)
+            {
+                
+                Application.Current.Exit();
+            }
+         
         }
 
         private async Task<bool> RequireAdminLoginAsync()
