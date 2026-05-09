@@ -108,6 +108,10 @@ namespace piaWinUI.Views
                 await DoLoginAsync();
             }
         }
+        private void Exit_Click(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Exit();
+        }
     }
 }
 

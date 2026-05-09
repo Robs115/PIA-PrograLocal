@@ -227,27 +227,72 @@ namespace piaWinUI.Views
                 if (result != ContentDialogResult.Primary)
                     return false;
 
-                var users = await new piaWinUI.Services.AuthService(_usersFilePath)
-                    .LoadUsersAsync();
+                string username = usernameBox.Text.Trim();
+                string password = passwordBox.Password;
 
-                var user = users.FirstOrDefault(u =>
-                    u.Username == usernameBox.Text &&
-                    u.Password == passwordBox.Password);
+                string errorMessage = "";
 
-                // ✅ login correcto
-                if (user != null)
-                return true;
+                // =========================
+                // VALIDACIONES
+                // =========================
+
+                // ambos vacíos
+                if (string.IsNullOrWhiteSpace(username) &&
+                    string.IsNullOrWhiteSpace(password))
+                {
+                    errorMessage = "Ingrese usuario y contraseña.";
+                }
+                // usuario vacío
+                else if (string.IsNullOrWhiteSpace(username))
+                {
+                    errorMessage = "Ingrese un usuario.";
+                }
+                // contraseña vacía
+                else if (string.IsNullOrWhiteSpace(password))
+                {
+                    errorMessage = "Ingrese una contraseña.";
+                }
+                // seguridad extra
+                else if (password.Any(char.IsWhiteSpace))
+                {
+                    errorMessage = "La contraseña no puede contener espacios.";
+                }
+                else
+                {
+                    var users = await new piaWinUI.Services.AuthService(_usersFilePath)
+                        .LoadUsersAsync();
+
+                    var existingUser = users.FirstOrDefault(u =>
+                        u.Username == username);
+
+                    // usuario incorrecto
+                    if (existingUser == null)
+                    {
+                        errorMessage = "El usuario no existe.";
+                    }
+                    // contraseña incorrecta
+                    else if (existingUser.Password != password)
+                    {
+                        errorMessage = "La contraseña es incorrecta.";
+                    }
+                    // ✅ login correcto
+                    else
+                    {
+                        return true;
+                    }
+                }
 
                 NavView.SelectedItem = null;
                 NavView.Focus(FocusState.Programmatic);
 
-                // 🔴 login incorrecto → mostrar error y repetir loop
+                // 🔴 mostrar error y repetir loop
                 await new ContentDialog
                 {
                     Title = "Error de autenticación",
-                    Content = "Usuario o contraseña incorrectos. Intente nuevamente.",
+                    Content = errorMessage,
                     CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = this.XamlRoot,
+                    DefaultButton = ContentDialogButton.Primary
                 }.ShowAsync();
 
                 NavView.SelectedItem = null;
