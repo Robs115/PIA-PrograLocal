@@ -18,6 +18,13 @@ namespace piaWinUI.Services
             filePath = path;
         }
 
+        protected int GenerarId<K>(List<K> lista,Func<K, int> selector)
+        {
+            return lista.Any()
+                ? lista.Max(selector) + 1
+                : 1;
+        }
+
         public async Task<List<T>> GetAllAsync()
         {
             try
@@ -64,19 +71,5 @@ namespace piaWinUI.Services
 
         }
      
-        private void AbrirCarpetaDatos()
-        {
-            string? folder =
-                Path.GetDirectoryName(filePath);
-
-            if (folder == null)
-                return;
-
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = folder,
-                UseShellExecute = true
-            });
-        }
     }
 }

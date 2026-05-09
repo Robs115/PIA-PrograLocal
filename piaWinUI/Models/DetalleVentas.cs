@@ -9,8 +9,8 @@ namespace piaWinUI.Models
 {
     public class DetalleVentas : INotifyPropertyChanged
     {
-        private Guid idVenta;
-        private Guid idProducto;
+        private int idVenta;
+        private int idProducto;
         private string nombreProducto;
         private decimal precioUnitario;
         private int cantidad;
@@ -19,7 +19,7 @@ namespace piaWinUI.Models
         public bool TieneError { get; private set; }
 
 
-        public Guid IdVenta
+        public int IdVenta
         {
             get => idVenta;
             set
@@ -29,7 +29,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public Guid IdProducto
+        public int IdProducto
         {
             get => idProducto;
             set

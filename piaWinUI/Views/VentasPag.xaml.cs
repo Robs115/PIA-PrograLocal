@@ -300,6 +300,10 @@ namespace piaWinUI.Views
         }
 
 
+        public void HistorialVentas_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
 
  
 

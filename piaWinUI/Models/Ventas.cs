@@ -5,23 +5,23 @@ namespace piaWinUI.Models
 {
     public class Venta : INotifyPropertyChanged
     {
-        private Guid idVenta = Guid.NewGuid();
-        private Guid idUsuario;
+        private int id;
+        private int idUsuario;
         private string metodopago;
         private decimal total;
         private DateTime fecha;
 
-        public Guid IdVenta
+        public int Id
         {
-            get => idVenta;
+            get => id;
             set
             {
-                idVenta = value;
-                OnPropertyChanged(nameof(IdVenta));
+                id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 
-        public Guid IdUsuario
+        public int IdUsuario
         {
             get => idUsuario;
             set
