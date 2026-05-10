@@ -20,43 +20,40 @@ using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.Storage;
 
-
-
 namespace piaWinUI.Views
 {
-        public sealed partial class VentasPag : Page
+    public sealed partial class VentasPag : Page
+    {
+        // 🔥 1. SERVICIOS ACTUALIZADOS (Inyección de dependencias)
+        private ProductService _productoService;
+        private DetalleVentasService _detalleVentasService;
+        private VentasService _ventaService;
+
+        private List<Producto> todosProductos = new List<Producto>();
+        private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
+        private bool _isDialogOpen = false;
+
+        private DispatcherTimer _timer;
+
+        public VentasPag()
         {
-            // --- SERVICIOS ---
-            private ProductService _productoService;
-            private DetalleVentasService _detalleVentasService;
-            private VentasService _ventaService;
+            this.InitializeComponent();
 
-            // --- COLECCIONES Y VARIABLES DE ESTADO ---
-            private List<Producto> todosProductos = new List<Producto>();
-            private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
-            private DispatcherTimer _timer; // 🔥 Soluciona error CS0103 (_timer)
-            private bool _isDialogOpen = false; // 🔥 Soluciona error CS0103 (_isDialogOpen)
+            // 🔥 2. INICIALIZACIÓN DE SERVICIOS
+            _productoService = new ProductService();
+            _detalleVentasService = new DetalleVentasService();
+            _ventaService = new VentasService(_productoService, _detalleVentasService);
 
-            public VentasPag()
-            {
-                this.InitializeComponent();
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(1); // Cada segundo
+            _timer.Tick += Timer_Tick;
+            _timer.Start();
+            ProductosList.ItemsSource = carrito;
+            cargarCatalogo();
+            ResultadosProductosList.ItemsSource = todosProductos;
 
-                // Inicialización de servicios con el nuevo esquema de dependencias
-                _productoService = new ProductService();
-                _detalleVentasService = new DetalleVentasService();
-                _ventaService = new VentasService(_productoService, _detalleVentasService);
-
-                // Configuración del reloj
-                _timer = new DispatcherTimer();
-                _timer.Interval = TimeSpan.FromSeconds(1);
-                _timer.Tick += Timer_Tick;
-                _timer.Start();
-
-                // Carga inicial
-                CargarProductos();
-
-            } // <--- Asegúrate de que esta llave cierre bien el constructor (Soluciona error CS1519)
-            private void Timer_Tick(object sender, object e)
+        }
+        private void Timer_Tick(object sender, object e)
         {
             // Actualiza el TextBlock con la hora actual
             var horaActual = DateTime.Now.ToString("HH:mm:ss"); // Formato 24h
@@ -65,7 +62,7 @@ namespace piaWinUI.Views
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
 
-            var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            var regex = @"^(?!.* )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
@@ -80,10 +77,8 @@ namespace piaWinUI.Views
 
 
 
-
-
         private void AgregarProductoAlCarrito(Producto producto)
-        { 
+        {
             var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
 
             if (existente != null)
@@ -120,7 +115,7 @@ namespace piaWinUI.Views
                 // 🔥 forzar cálculo inicial
                 nuevo.Cantidad = nuevo.Cantidad;
             }
-            
+
             ActualizarTotal();
         }
 
@@ -156,17 +151,18 @@ namespace piaWinUI.Views
 
         // 🔥 TOTAL
         private void ActualizarTotal()
-            {
-                var total = carrito.Sum(p => p.Subtotal);
-                TotalText.Text = $" {total:C}";
-            }
-            private void limpiarbarrabusqueda() {
+        {
+            var total = carrito.Sum(p => p.Subtotal);
+            TotalText.Text = $" {total:C}";
+        }
+        private void limpiarbarrabusqueda()
+        {
             CodigoBox.Text = "";
         }
 
         // Obtiene el id del usuario logueado desde LocalSettings (clave "UserId").
         // Si no existe devuelve 0.
-        
+
 
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
@@ -206,12 +202,12 @@ namespace piaWinUI.Views
 
             // 🔥 SOLO ESTO
             AgregarProductoAlCarrito(producto);
-           
+
             limpiarbarrabusqueda();
         }
         private async void EliminarProducto_Click(object sender, RoutedEventArgs e)
         {
-            
+
             var button = sender as Button;
             var item = button?.Tag as DetalleVentas;
 
@@ -231,16 +227,16 @@ namespace piaWinUI.Views
             {
                 carrito.Remove(item);
                 ActualizarTotal();
-            } 
+            }
         }
 
         private void obtenerproducto_keydown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
             {
-                if (e.Key == Windows.System.VirtualKey.Enter)
-                {
-                    CargarProductos();
-                }
+                CargarProductos();
             }
+        }
         private void BotonEfectivo_Click(object sender, RoutedEventArgs e)
         {
             GuardarVenta_Click("Efectivo");
@@ -349,7 +345,7 @@ namespace piaWinUI.Views
 
                     decimal cambio = efectivoEntregado - total;
 
-                    
+
                 }
                 //aqui termina los dialogs sobre el efectivo
                 var venta = new Venta
@@ -370,11 +366,11 @@ namespace piaWinUI.Views
                 ventas.Add(venta);
                 await _ventaService.SaveAllAsync(ventas);
 
-
-                var detalleService = new DetalleVentasService();
-                var detalles = await detalleService.GetAllAsync() ?? new List<DetalleVentas>();
+                // 🔥 3. USAMOS EL SERVICIO INYECTADO EN LUGAR DE CREAR UNO NUEVO
+                var detalles = await _detalleVentasService.GetAllAsync() ?? new List<DetalleVentas>();
                 detalles.AddRange(carrito);
-                await detalleService.SaveAllAsync(detalles);
+                await _detalleVentasService.SaveAllAsync(detalles);
+
                 var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
                 foreach (var item in carrito)
                 {
@@ -400,7 +396,7 @@ namespace piaWinUI.Views
         }
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
-        { 
+        {
             string texto = BuscarProductoBox.Text.ToLower();
 
             var filtrados = todosProductos
@@ -409,7 +405,7 @@ namespace piaWinUI.Views
                 .Contains(texto))
                 .ToList();
 
-            ResultadosProductosList.ItemsSource = filtrados; 
+            ResultadosProductosList.ItemsSource = filtrados;
         }
         private async void cargarCatalogo()
         {
@@ -418,13 +414,14 @@ namespace piaWinUI.Views
 
 
             //imprimir en consola para verificar que se cargaron los productos
-            foreach (var item in todosProductos) {
+            foreach (var item in todosProductos)
+            {
                 Console.WriteLine($"Producto: {item.Nombre}, Stock: {item.Stock}");
             }
 
             ResultadosProductosList.ItemsSource = todosProductos;
 
-            
+
             ResultadosProductosList.ItemClick += async (sender, e) =>
             {
                 var seleccionado = e.ClickedItem as Producto;
@@ -438,7 +435,7 @@ namespace piaWinUI.Views
                     return;
                 }
 
-               
+
                 AgregarProductoAlCarrito(seleccionado);
             };
 
@@ -454,8 +451,8 @@ namespace piaWinUI.Views
         private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
         {
             var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
-            var detalleService = new DetalleVentasService();
-            var todosDetalles = await detalleService.GetAllAsync(); // Todos los detalles
+            // 🔥 4. USAMOS EL SERVICIO INYECTADO
+            var todosDetalles = await _detalleVentasService.GetAllAsync(); // Todos los detalles
 
             var hoy = DateTime.Today;
             var ventasHoy = ventas
@@ -579,10 +576,5 @@ namespace piaWinUI.Views
                 Margin = new Thickness(0, 0, 0, 10)
             };
         }
-
-
-
-
-
-    } 
+    }
 }

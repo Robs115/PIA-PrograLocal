@@ -15,7 +15,7 @@ namespace piaWinUI.Views
     public sealed partial class InicioPag : Page
     {
         private readonly ProductService _productService = new();
-        private readonly VentasService _ventasService = new();
+        private VentasService _ventaService;
         private readonly DetalleVentasService _detalleService = new();
         private readonly PedidoService _pedidoService = new();
 
@@ -37,7 +37,7 @@ namespace piaWinUI.Views
                 await _productService.GetAllAsync();
 
             var ventas =
-                await _ventasService.GetAllAsync();
+                await _ventaService.GetAllAsync();
 
             var detalles =
                 await _detalleService.GetAllAsync();

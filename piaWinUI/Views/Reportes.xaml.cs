@@ -17,7 +17,7 @@ namespace piaWinUI
         public ISeries[] TendenciaSeries { get; set; }
         public ISeries[] ProductosSeries { get; set; }
 
-        private readonly VentasService _ventaService = new VentasService();
+        private VentasService _ventaService;
         private readonly ProductService _productService = new ProductService();
 
         public Reportes()

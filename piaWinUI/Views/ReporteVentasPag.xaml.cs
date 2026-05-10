@@ -23,7 +23,7 @@ namespace piaWinUI.Views
         public Axis[] XAxesMeses { get; set; }
         public Axis[] YAxes { get; set; }
 
-        private readonly VentasService _ventaService = new VentasService();
+        private VentasService _ventaService;
 
         public ReporteVentasPag()
         {
