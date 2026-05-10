@@ -57,7 +57,11 @@ namespace piaWinUI.Views
         {
             // Actualiza el TextBlock con la hora actual
             var horaActual = DateTime.Now.ToString("HH:mm:ss"); // Formato 24h
-            CajeroHoraTextBlock.Text = $"Cajero: Ana | {horaActual}";
+
+            // Obtenemos el nombre del usuario logueado en la sesión
+            string nombreCajero = SessionService.CurrentUser?.Username ?? "Desconocido";
+
+            CajeroHoraTextBlock.Text = $"Cajero: {nombreCajero} | {horaActual}";
         }
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
