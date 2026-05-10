@@ -89,7 +89,11 @@ namespace piaWinUI.Views
 
                 if (accionesColumn != null)
                     ProductosDataGrid.Columns.Remove(accionesColumn);
+                    CategoriaButton.Visibility = Visibility.Collapsed;
+                    ProductoButton.Visibility = Visibility.Collapsed;
+
             }
+
         }
 
         // =========================
