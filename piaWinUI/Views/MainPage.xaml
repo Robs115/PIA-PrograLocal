@@ -29,8 +29,8 @@
             </NavigationView.MenuItems>
 
             <NavigationView.FooterMenuItems>
-               
-                <NavigationViewItem Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
+
+                <NavigationViewItem x:Name="SettingsNavItem" Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
                 <NavigationViewItem Content="Cerrar sesion" Icon="Back" Tapped="LogOut_Tapped"/>
                 <NavigationViewItem Content="Salir" Icon="Cancel" Tapped="ExitApp_Tapped"/>
             </NavigationView.FooterMenuItems>

@@ -13,6 +13,7 @@
 
     <Page.Resources>
         <converters:PasswordMaskConverter x:Key="PasswordMaskConverter"/>
+        <converters:AdminDisplayConverter x:Key="AdminDisplayConverter"/>
     </Page.Resources>
 
 
@@ -35,6 +36,10 @@
                 <controls:DataGridTextColumn
                 Header="Contraseña"
                 Binding="{Binding Password, Converter={StaticResource PasswordMaskConverter}}" />
+
+                <controls:DataGridTextColumn
+                    Header="Rol"
+                    Binding="{Binding IsAdmin, Converter={StaticResource AdminDisplayConverter}}" />
 
                 <controls:DataGridTemplateColumn Header="Acción">
                     <controls:DataGridTemplateColumn.CellTemplate>

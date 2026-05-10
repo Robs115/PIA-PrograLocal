@@ -16,6 +16,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Windows.Devices.Enumeration;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.System;
@@ -175,6 +176,11 @@ namespace piaWinUI.Views
 
                 confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
+                var adminCheckBox = new CheckBox
+                {
+                    Content = "Administrador",
+                };
+
                 var panel = new StackPanel
                 {
                     Spacing = 12
@@ -183,6 +189,7 @@ namespace piaWinUI.Views
                 panel.Children.Add(usernameBox);
                 panel.Children.Add(passwordBox);
                 panel.Children.Add(confirmPasswordBox);
+                panel.Children.Add(adminCheckBox);
 
                 var dialog = new ContentDialog
                 {
@@ -304,6 +311,7 @@ namespace piaWinUI.Views
                 {
                     Username = username,
                     Password = password,
+                    IsAdmin = adminCheckBox.IsChecked == true,
                     IsDirty = false
                 };
 
@@ -319,21 +327,39 @@ namespace piaWinUI.Views
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
+            var users = Users.ToList();
+
+            bool isOnlyAdmin =
+            SessionService.CurrentUser?.IsAdmin == true &&
+            users.Count(u => u.IsAdmin && u != user) == 0;
+
             // 🔐 AUTH LOOP (must pass before editing)
             while (true)
             {
                 var authBox = new PasswordBox
                 {
-                    PlaceholderText = "Ingrese la contraseña actual",
+                    PlaceholderText = "Contraseña",
                     MaxLength = 15
                 };
 
                 authBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
+                var panel = new StackPanel
+                {
+                    Spacing = 12
+                };
+
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "Ingrese su contraseña para continuar."
+                });
+
+                panel.Children.Add(authBox);
+
                 var authDialog = new ContentDialog
                 {
                     Title = "Verificación de seguridad",
-                    Content = authBox,
+                    Content = panel,
                     PrimaryButtonText = "Continuar",
                     CloseButtonText = "Cancelar",
                     XamlRoot = this.XamlRoot,
@@ -358,7 +384,7 @@ namespace piaWinUI.Views
                     continue;
                 }
 
-                if (authBox.Password != user.Password)
+                if (authBox.Password != SessionService.CurrentUser?.Password)
                 {
                     await new ContentDialog
                     {
@@ -404,6 +430,13 @@ namespace piaWinUI.Views
 
                 confirmPasswordBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
+                var adminCheckBox = new CheckBox
+                {
+                    Content = "Administrador",
+                    IsChecked = user.IsAdmin,
+                    IsEnabled = !isOnlyAdmin
+                };
+
                 var panel = new StackPanel
                 {
                     Spacing = 12
@@ -412,6 +445,7 @@ namespace piaWinUI.Views
                 panel.Children.Add(usernameBox);
                 panel.Children.Add(passwordBox);
                 panel.Children.Add(confirmPasswordBox);
+                panel.Children.Add(adminCheckBox);
 
                 var dialog = new ContentDialog
                 {
@@ -518,6 +552,7 @@ namespace piaWinUI.Views
                 // 💾 SAVE
                 user.Username = username;
                 user.IsDirty = false;
+                user.IsAdmin = adminCheckBox.IsChecked == true;
                 SaveAllUsers();
 
                 break; // ✅ success exit
@@ -542,6 +577,19 @@ namespace piaWinUI.Views
             var button = (Button)sender;
             var user = (User)button.DataContext;
 
+            if (SessionService.CurrentUser?.Username == user.Username)
+            {
+                await new ContentDialog
+                {
+                    Title = "Acción no permitida",
+                    Content = "No puedes eliminar tu propio usuario.",
+                    CloseButtonText = "OK",
+                    XamlRoot = this.XamlRoot
+                }.ShowAsync();
+
+                return;
+            }
+
             // =========================
             // 🔐 AUTH LOOP (retry until correct or cancel)
             // =========================
@@ -549,16 +597,28 @@ namespace piaWinUI.Views
             {
                 var authBox = new PasswordBox
                 {
-                    PlaceholderText = "Ingrese la contraseña actual",
+                    PlaceholderText = "Contraseña",
                     MaxLength = 15
                 };
 
                 authBox.PasswordChanging += Contrasena_BeforeTextChanging;
 
+                var panel = new StackPanel
+                {
+                    Spacing = 12
+                };
+
+                panel.Children.Add(new TextBlock
+                {
+                    Text = "Ingrese su contraseña para confirmar la eliminación."
+                });
+
+                panel.Children.Add(authBox);
+
                 var authDialog = new ContentDialog
                 {
-                    Title = "Verificación de seguridad",
-                    Content = authBox,
+                    Title = "Verificacion de seguridad",
+                    Content = panel,
                     PrimaryButtonText = "Continuar",
                     CloseButtonText = "Cancelar",
                     DefaultButton = ContentDialogButton.Primary,
@@ -585,7 +645,7 @@ namespace piaWinUI.Views
                 }
 
                 // ❌ wrong password → retry
-                if (authBox.Password != user.Password)
+                if (authBox.Password != SessionService.CurrentUser?.Password)
                 {
                     await new ContentDialog
                     {

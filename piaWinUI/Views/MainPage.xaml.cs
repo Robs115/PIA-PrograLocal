@@ -39,6 +39,8 @@ namespace piaWinUI.Views
             _dataFolder = App.DataFolder;
             _usersFilePath = App.UsersFilePath;
 
+            SettingsNavItem.Visibility = IsAdmin() ? Visibility.Visible : Visibility.Collapsed;
+
         }
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
@@ -261,7 +263,7 @@ namespace piaWinUI.Views
                 var result = await dialog.ShowAsync();
 
                 NavView.SelectedItem = null;
-                NavView.IsPaneToggleButtonVisible = true; // optional no-op safety
+                NavView.IsPaneToggleButtonVisible = true;
 
                 ContentFrame.Focus(FocusState.Programmatic);
 
@@ -343,6 +345,11 @@ namespace piaWinUI.Views
 
                 // el while(true) hace que se vuelva a mostrar el login
             }
+        }
+
+        private bool IsAdmin()
+        {
+            return SessionService.CurrentUser?.IsAdmin == true;
         }
 
         private void Username_Login_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
