@@ -41,7 +41,7 @@ namespace piaWinUI.Views
        public VentasPag()
             {
                 this.InitializeComponent();
-            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+           
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(1); // Cada segundo
             _timer.Tick += Timer_Tick;
