@@ -51,7 +51,7 @@ namespace piaWinUI
             {
                 var defaultUsers = new[]
                 {
-                    new User { Username = "admin", Password = "1234" }
+                    new User { Username = "admin", Password = "1234", IsAdmin = true }
                 };
 
                 File.WriteAllText(

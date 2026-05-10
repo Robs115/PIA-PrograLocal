@@ -34,9 +34,12 @@ namespace piaWinUI.Services
                 using var stream = File.OpenRead(filePath);
                 return await JsonSerializer.DeserializeAsync<List<T>>(stream) ?? new List<T>();
             }
-            catch
+            catch (Exception ex)
             {
-                return new List<T>();
+
+                System.Diagnostics.Debug.WriteLine(ex);
+
+                throw;
             }
             finally
             {

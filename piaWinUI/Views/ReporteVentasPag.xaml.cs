@@ -25,11 +25,23 @@ namespace piaWinUI.Views
 
         private VentasService _ventaService;
 
+        private readonly ProductService _productService = new();
+        private readonly DetalleVentasService _detalleService = new();
+
         public ReporteVentasPag()
         {
+
+            _ventaService =
+            new VentasService(
+            _productService,
+            _detalleService);
+
             InitializeComponent();
             DataContext = this;
+
             CargarDatos();
+
+
         }
 
         private async void CargarDatos()

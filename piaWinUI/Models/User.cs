@@ -10,7 +10,9 @@ public class User : INotifyPropertyChanged
 {
     private string username;
     private string password;
+    private bool isAdmin;
     private bool isDirty;
+
     internal bool isLoading;
 
     public string Username
@@ -37,6 +39,23 @@ public class User : INotifyPropertyChanged
             if (password != value)
             {
                 password = value;
+                OnPropertyChanged();
+
+                if (!isLoading)
+                    IsDirty = true;
+            }
+        }
+    }
+
+
+    public bool IsAdmin
+    {
+        get => isAdmin;
+        set
+        {
+            if (isAdmin != value)
+            {
+                isAdmin = value;
                 OnPropertyChanged();
 
                 if (!isLoading)

@@ -23,6 +23,11 @@ namespace piaWinUI.Views
         {
             InitializeComponent();
 
+            _ventaService =
+            new VentasService(
+            _productService,
+            _detalleService);
+
             Loaded += InicioPag_Loaded;
         }
 
