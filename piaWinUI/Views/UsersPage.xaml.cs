@@ -280,6 +280,22 @@ namespace piaWinUI.Views
                     continue;
                 }
 
+                bool usernameExists = Users.Any(u =>
+                    u.Username.Equals(username, StringComparison.OrdinalIgnoreCase));
+
+                if (usernameExists)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Usuario inválido",
+                        Content = "Ese nombre de usuario ya existe.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
+                }
+
                 // =========================
                 // SUCCESS
                 // =========================
@@ -480,6 +496,23 @@ namespace piaWinUI.Views
                     }
 
                     user.Password = password;
+                }
+
+                bool usernameExists = Users.Any(u =>
+                u != user &&
+                u.Username.Equals(username));
+
+                if (usernameExists)
+                {
+                    await new ContentDialog
+                    {
+                        Title = "Usuario inválido",
+                        Content = "Ese nombre de usuario ya existe.",
+                        CloseButtonText = "OK",
+                        XamlRoot = this.XamlRoot
+                    }.ShowAsync();
+
+                    continue;
                 }
 
                 // 💾 SAVE
