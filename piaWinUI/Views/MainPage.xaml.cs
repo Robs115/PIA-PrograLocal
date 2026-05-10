@@ -134,11 +134,13 @@ namespace piaWinUI.Views
 
             btnAbrirCarpeta.Click += (s, args) =>
             {
-                string localFolder = Path.Combine(ApplicationData.Current.LocalCacheFolder.Path,"Local","piaWinUI");
+                string folder = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                            "Data");
 
                 Process.Start(new ProcessStartInfo
                 {
-                    FileName = localFolder,
+                    FileName = folder,
                     UseShellExecute = true
                 });
             };

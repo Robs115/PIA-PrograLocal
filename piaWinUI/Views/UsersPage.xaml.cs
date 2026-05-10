@@ -333,6 +333,9 @@ namespace piaWinUI.Views
             SessionService.CurrentUser?.IsAdmin == true &&
             users.Count(u => u.IsAdmin && u != user) == 0;
 
+            bool isEditingSelf =
+            SessionService.CurrentUser?.Username == user.Username;
+
             // 🔐 AUTH LOOP (must pass before editing)
             while (true)
             {
@@ -434,7 +437,7 @@ namespace piaWinUI.Views
                 {
                     Content = "Administrador",
                     IsChecked = user.IsAdmin,
-                    IsEnabled = !isOnlyAdmin
+                    IsEnabled = !isOnlyAdmin && !isEditingSelf
                 };
 
                 var panel = new StackPanel

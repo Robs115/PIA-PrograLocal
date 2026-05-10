@@ -8,6 +8,8 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
+using piaWinUI.Helpers;
+using piaWinUI.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -19,7 +21,6 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using WinRT.Interop;
-using piaWinUI.Models;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -88,8 +89,7 @@ namespace piaWinUI
         public static string DataFolder { get; } =
             System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "piaWinUI");
 
-        public static string UsersFilePath { get; } =
-            System.IO.Path.Combine(DataFolder, "users.json");
+        public static string UsersFilePath => FilePaths.Users;
 
         public static string ProductsFilePath { get; } =
             System.IO.Path.Combine(DataFolder, "products.json");

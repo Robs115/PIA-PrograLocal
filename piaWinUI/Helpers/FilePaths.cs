@@ -34,5 +34,8 @@ namespace piaWinUI.Helpers
 
         public static readonly string Categorias =
             Path.Combine(DataFolder, "categorias.json");
+
+        public static readonly string Users =
+            Path.Combine(DataFolder, "users.json");
     }
 }
