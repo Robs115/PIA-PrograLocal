@@ -1,3 +1,5 @@
+using CommunityToolkit.WinUI.UI.Controls;
+using LiveChartsCore.Kernel;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -5,9 +7,9 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Helpers;
 using piaWinUI.Models;
 using piaWinUI.Services;
-using piaWinUI.Helpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,7 +18,6 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-using LiveChartsCore.Kernel;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -43,24 +44,101 @@ namespace piaWinUI.Views
         {
             await CargarProveedores();
         }
+
+        private void DataGridProveedores_CellEditEnding(object sender, DataGridCellEditEndingEventArgs e)
+        {
+            // Solo validar si el usuario está intentando guardar cambios
+            if (e.EditAction != DataGridEditAction.Commit) return;
+
+            // Obtener el TextBox que está editando la celda
+            if (e.EditingElement is not TextBox textBox) return;
+
+            string header = e.Column.Header?.ToString() ?? "";
+            string valor = textBox.Text;
+
+            switch (header)
+            {
+                case "Nombre":
+                    // Letras, números, acentos, ' y -, sin dos espacios seguidos, máximo 50
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^(?!.*  )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$")
+                        || valor.Length > 50)
+                    {
+                        e.Cancel = true;
+                        MostrarError("El nombre contiene caracteres no permitidos, dos espacios seguidos o supera 50 caracteres.");
+                    }
+                    break;
+
+                case "Teléfono":
+                    // Solo números, espacios y guiones, máximo 10
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^[0-9\s-]*$")
+                        || valor.Length > 10)
+                    {
+                        e.Cancel = true;
+                        MostrarError("El teléfono solo puede contener números, espacios y guiones, y máximo 10 dígitos.");
+                    }
+                    break;
+
+                case "Email":
+                    // Validación simple de email, máximo 50
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
+                        || valor.Length > 50)
+                    {
+                        e.Cancel = true;
+                        MostrarError("El email no tiene un formato válido o supera 50 caracteres.");
+                    }
+                    break;
+            }
+        }
+
+        // Método auxiliar para mostrar error
+        private async void MostrarError(string mensaje)
+        {
+            var dialog = new ContentDialog
+            {
+                Title = "Valor inválido",
+                Content = mensaje,
+                CloseButtonText = "OK"
+            };
+            await dialog.ShowAsync();
+        }
         private void Buscador_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
+            // Letras, números, acentos, ñ, espacios simples, ' y -
+            var regex = @"^(?!.*  )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
 
-            var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            // Cancelar si no coincide
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
-
         private void Nombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
+            // Letras, números, acentos, ñ, espacios simples, ' y -
+            var regex = @"^(?!.*  )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
 
-            var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            // Cancelar si no coincide
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
+        private void Email_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+            // Regex para validar un email simple (sin espacios, solo caracteres comunes)
+            var regex = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
+            // Si el texto no coincide, cancelar el cambio
+            args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
+        }
         private void Telefono_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
             // Solo permitir números
             args.Cancel = !args.NewText.All(char.IsDigit);
+        }
+
+
+        //keydown
+        private async void registardatos_keydown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
+        {
+            if (e.Key == Windows.System.VirtualKey.Enter)
+            {
+                await CargarProveedores();
+            }
         }
 
         private async Task CargarProveedores()
@@ -147,7 +225,8 @@ namespace piaWinUI.Views
                 proveedoresExistentes.Add(nuevoProveedor);
                 await _service.SaveAllAsync(proveedoresExistentes);
 
-                toast.Text = "El proveedor se registró correctamente";
+               //crear dialog
+
 
                 // Limpiar campos
                 Nombre.Text = string.Empty;

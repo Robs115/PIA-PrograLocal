@@ -50,16 +50,18 @@
 
 
                                 <TextBox x:Name="Email"
-                     Header ="Introduzca el correo electrónico"
+                     Header ="Introduzca el correo electrónico*"
                      PlaceholderText ="emilio@gmail.com"
-                         MaxLength="50"/>
+                         MaxLength="50"
+                                         BeforeTextChanging="Email_BeforeTextChanging"/>
 
                 <TextBlock x:Name="toast"/>
                 <Button x:Name="Submit"  
              Content ="Registrar datos"  
             Click="Guardar_Click"
              Style ="{ StaticResource AccentButtonStyle }"  
-             HorizontalAlignment ="Stretch" />
+             HorizontalAlignment ="Stretch"
+                        KeyDown="registardatos_keydown"/>
 
 
 
@@ -86,72 +88,69 @@
 
 
             <controls:DataGrid
-             x:Name="DataGridProveedores"
-        
-        AutoGenerateColumns="False"
-                IsReadOnly="True"
-                GridLinesVisibility="Vertical"
-                HeadersVisibility="Column"
-                CanUserResizeColumns="False"
-                CanUserReorderColumns="False"
-                Margin="10"
-                SelectionMode="Single"
-                RowHeight="50">
+    x:Name="DataGridProveedores"
+    AutoGenerateColumns="False"
+    IsReadOnly="False"
+    GridLinesVisibility="Vertical"
+    HeadersVisibility="Column"
+    CanUserResizeColumns="False"
+    CanUserReorderColumns="False"
+    Margin="10"
+    SelectionMode="Single"
+    RowHeight="50"
+    CellEditEnding="DataGridProveedores_CellEditEnding">
 
                 <controls:DataGrid.Columns>
 
-                        <controls:DataGridTemplateColumn Header="Nombre"
-                                                         Width="2*">
-                            <controls:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Nombre}"
-                     
-                           TextDecorations="Underline"
-                           VerticalAlignment="Center"
-                           TextAlignment="Center"/>
-                                </DataTemplate>
-                            </controls:DataGridTemplateColumn.CellTemplate>
-                        </controls:DataGridTemplateColumn>
+                    <!-- Nombre -->
+                    <controls:DataGridTemplateColumn Header="Nombre" Width="2*">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Nombre}"
+                               TextDecorations="Underline"
+                               VerticalAlignment="Center"
+                               TextAlignment="Center"/>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
 
-                    <controls:DataGridTextColumn Header="Telefono"
-                                                 Width="2*"
-                                 Binding="{Binding Telefono}" />
+                        <controls:DataGridTemplateColumn.CellEditingTemplate>
+                            <DataTemplate>
+                                <TextBox Text="{Binding Nombre, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellEditingTemplate>
+                    </controls:DataGridTemplateColumn>
 
-                    <controls:DataGridTextColumn  Header="Email"
-                                                  Width="2*"
-                                 Binding="{Binding Email}" />
+                    <!-- Teléfono -->
+                    <controls:DataGridTextColumn Header="Teléfono"
+                                     Width="2*"
+                                     Binding="{Binding Telefono, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 />
 
-                        
+                    <!-- Email -->
+                    <controls:DataGridTextColumn Header="Email"
+                                     Width="2*"
+                                     Binding="{Binding Email, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
-                        <controls:DataGridTemplateColumn Header="Acciones"
-                                                         Width="2*">
-                            
-                            <controls:DataGridTemplateColumn.CellTemplate>
-                                <DataTemplate>
-
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-
-                                        <Button Content="Editar"
+                    <!-- Acciones -->
+                    <controls:DataGridTemplateColumn Header="Acciones" Width="2*">
+                        <controls:DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Content="Editar"
                                 Click="EditarProveedor_Click"
                                 Tag="{Binding}" />
-
-                                        <Button Content="Eliminar"
+                                    <Button Content="Eliminar"
                                 Click="Eliminar_Click"
                                 Tag="{Binding}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </controls:DataGridTemplateColumn.CellTemplate>
+                    </controls:DataGridTemplateColumn>
 
-                                    </StackPanel>
+                </controls:DataGrid.Columns>
+            </controls:DataGrid>
 
-                                </DataTemplate>
-                            </controls:DataGridTemplateColumn.CellTemplate>
-                        </controls:DataGridTemplateColumn>
-
-
-                    </controls:DataGrid.Columns>
-
-
-                </controls:DataGrid>
-
-                <StackPanel Orientation="Horizontal"
+            <StackPanel Orientation="Horizontal"
         HorizontalAlignment="Right"
         VerticalAlignment="Bottom"
         Margin="10">
