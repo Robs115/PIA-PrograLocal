@@ -490,17 +490,20 @@ namespace piaWinUI.Views
         // DIALOG
         // =========================
 
-        private ContentDialog BuildDialog(
-            Producto producto,
-            bool isEdit)
+        private ContentDialog BuildDialog(Producto producto, bool isEdit)
         {
+            // 🚨 EL CHEQUEO DE NULOS DEBE ESTAR EN LA PRIMERA LÍNEA 🚨
+            if (producto == null)
+            {
+                producto = new Producto();
+            }
+
             var nombre = new TextBox
             {
                 Header = "Nombre",
                 Text = producto.Nombre ?? "",
                 MaxLength = 50
             };
-
             ValidarTexto(nombre);
 
             var descripcion = new TextBox
@@ -509,7 +512,6 @@ namespace piaWinUI.Views
                 Text = producto.Descripcion ?? "",
                 MaxLength = 100
             };
-
             ValidarTexto(descripcion);
 
             var imagenPath = new TextBox
@@ -531,136 +533,89 @@ namespace piaWinUI.Views
                 DisplayMemberPath = "Nombre"
             };
 
-            categoria.SelectedItem =
-                _categorias.FirstOrDefault(c =>
-                    c.Nombre == producto.Categoria);
+            categoria.SelectedItem = _categorias.FirstOrDefault(c => c.Nombre == producto.Categoria);
 
+            // Como ya validamos nulos arriba, podemos asignar los valores de forma más limpia
             var precioCompra = new TextBox
             {
                 Header = "Precio compra",
-                Text = producto.PrecioCompra.ToString(),
+                PlaceholderText = "0.00",
+                Text = producto.PrecioCompra == 0 ? string.Empty : producto.PrecioCompra.ToString(),
                 MaxLength = 10
             };
-
             SoloNumeros(precioCompra, true);
 
             var precioVenta = new TextBox
             {
                 Header = "Precio venta",
-                Text = producto.PrecioVenta.ToString(),
+                PlaceholderText = "0.00",
+                Text = producto.PrecioVenta == 0 ? string.Empty : producto.PrecioVenta.ToString(),
                 MaxLength = 10
             };
-
             SoloNumeros(precioVenta, true);
 
             var stock = new TextBox
             {
                 Header = "Stock",
-                Text = producto.Stock.ToString(),
+                PlaceholderText = "0",
+                Text = producto.Stock == 0 ? string.Empty : producto.Stock.ToString(),
                 MaxLength = 6
             };
-
             SoloNumeros(stock);
 
             var proveedor = new ComboBox
             {
                 Header = "Proveedor",
-                ItemsSource =
-                    _proveedores.Select(x =>
-                        new KeyValuePair<int, string>(
-                            x.Key,
-                            x.Value)).ToList(),
-
+                ItemsSource = _proveedores.Select(x => new KeyValuePair<int, string>(x.Key, x.Value)).ToList(),
                 DisplayMemberPath = "Value",
                 SelectedValuePath = "Key"
             };
 
             if (producto.IdProveedor > 0)
             {
-                proveedor.SelectedValue =
-                    producto.IdProveedor;
+                proveedor.SelectedValue = producto.IdProveedor;
             }
 
             var error = new TextBlock
             {
-                Foreground =
-                    new SolidColorBrush(
-                        Microsoft.UI.Colors.Red),
-
-                TextWrapping =
-                    TextWrapping.Wrap
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red),
+                TextWrapping = TextWrapping.Wrap
             };
 
             seleccionarImagen.Click += async (s, e) =>
             {
                 try
                 {
-                    var picker =
-                        new FileOpenPicker();
-
-                    var hwnd =
-                        WindowNative.GetWindowHandle(
-                            App.MainWindow);
-
-                    InitializeWithWindow.Initialize(
-                        picker,
-                        hwnd);
+                    var picker = new FileOpenPicker();
+                    var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
+                    InitializeWithWindow.Initialize(picker, hwnd);
 
                     picker.FileTypeFilter.Add(".png");
                     picker.FileTypeFilter.Add(".jpg");
                     picker.FileTypeFilter.Add(".jpeg");
                     picker.FileTypeFilter.Add(".webp");
 
-                    var file =
-                        await picker.PickSingleFileAsync();
+                    var file = await picker.PickSingleFileAsync();
+                    if (file == null) return;
 
-                    if (file == null)
-                        return;
-
-                    var info =
-                        new FileInfo(file.Path);
-
+                    var info = new FileInfo(file.Path);
                     if (info.Length > 5_000_000)
                     {
-                        error.Text =
-                            "La imagen pesa más de 5MB.";
-
+                        error.Text = "La imagen pesa más de 5MB.";
                         return;
                     }
 
-                    string carpetaImagenes =
-                        Path.Combine(
-                            AppContext.BaseDirectory,
-                            "Data",
-                            "Imagenes");
+                    string carpetaImagenes = Path.Combine(AppContext.BaseDirectory, "Data", "Imagenes");
+                    Directory.CreateDirectory(carpetaImagenes);
 
-                    Directory.CreateDirectory(
-                        carpetaImagenes);
+                    string extension = Path.GetExtension(file.Name);
+                    string nuevoNombre = $"{producto.Id}{extension}";
+                    string destino = Path.Combine(carpetaImagenes, nuevoNombre);
 
-                    string extension =
-                        Path.GetExtension(file.Name);
+                    File.Copy(file.Path, destino, true);
 
-                    string nuevoNombre =
-                        $"{producto.Id}{extension}";
-
-                    string destino =
-                        Path.Combine(
-                            carpetaImagenes,
-                            nuevoNombre);
-
-                    File.Copy(
-                        file.Path,
-                        destino,
-                        true);
-
-                    producto.ImagenPath =
-                        Path.Combine(
-                            "Data",
-                            "Imagenes",
-                            nuevoNombre);
-
-                    imagenPath.Text =
-                        producto.ImagenPath;
+                    producto.ImagenPath = Path.Combine("Data", "Imagenes", nuevoNombre);
+                    imagenPath.Text = producto.ImagenPath;
                 }
                 catch (Exception ex)
                 {
@@ -671,29 +626,16 @@ namespace piaWinUI.Views
             var panel = new StackPanel
             {
                 Spacing = 10,
-
                 Children =
-                {
-                    nombre,
-                    descripcion,
-                    imagenPath,
-                    seleccionarImagen,
-                    categoria,
-                    precioCompra,
-                    precioVenta,
-                    stock,
-                    proveedor,
-                    error
-                }
+        {
+            nombre, descripcion, imagenPath, seleccionarImagen,
+            categoria, precioCompra, precioVenta, stock, proveedor, error
+        }
             };
 
             var dialog = new ContentDialog
             {
-                Title =
-                    isEdit
-                    ? "Editar producto"
-                    : "Nuevo producto",
-
+                Title = isEdit ? "Editar producto" : "Nuevo producto",
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
                 Content = panel,
@@ -704,132 +646,70 @@ namespace piaWinUI.Views
             {
                 error.Text = "";
 
-                if (string.IsNullOrWhiteSpace(
-                    nombre.Text.Trim()))
+                if (string.IsNullOrWhiteSpace(nombre.Text.Trim()))
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Nombre obligatorio.";
-
+                    error.Text = "Nombre obligatorio.";
                     return;
                 }
 
-                if (string.IsNullOrWhiteSpace(
-                    descripcion.Text.Trim()))
+                if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Descripción obligatoria.";
-
+                    error.Text = "Descripción obligatoria.";
                     return;
                 }
 
                 if (categoria.SelectedItem is null)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Selecciona una categoría.";
-
+                    error.Text = "Selecciona una categoría.";
                     return;
                 }
 
-                if (!decimal.TryParse(
-                    precioCompra.Text,
-                    out decimal pc))
+                if (!decimal.TryParse(precioCompra.Text, out decimal pc) || pc <= 0)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Precio compra inválido.";
-
+                    error.Text = "Precio compra inválido.";
                     return;
                 }
 
-                if (!decimal.TryParse(
-                    precioVenta.Text,
-                    out decimal pv))
+                if (!decimal.TryParse(precioVenta.Text, out decimal pv) || pv <= 0)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Precio venta inválido.";
-
+                    error.Text = "Precio venta inválido.";
                     return;
                 }
 
-                if (!int.TryParse(
-                    stock.Text,
-                    out int st))
+                if (!int.TryParse(stock.Text, out int st) || st < 0)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Stock inválido.";
-
-                    return;
-                }
-
-                if (pc <= 0)
-                {
-                    e.Cancel = true;
-                    error.Text =
-                        "Precio compra inválido.";
-
-                    return;
-                }
-
-                if (pv <= 0)
-                {
-                    e.Cancel = true;
-                    error.Text =
-                        "Precio venta inválido.";
-
+                    error.Text = "Stock inválido.";
                     return;
                 }
 
                 if (pc >= pv)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Venta debe ser mayor que compra.";
-
-                    return;
-                }
-
-                if (st < 0)
-                {
-                    e.Cancel = true;
-                    error.Text =
-                        "Stock inválido.";
-
+                    error.Text = "Venta debe ser mayor que compra.";
                     return;
                 }
 
                 if (proveedor.SelectedValue is null)
                 {
                     e.Cancel = true;
-                    error.Text =
-                        "Selecciona proveedor.";
-
+                    error.Text = "Selecciona proveedor.";
                     return;
                 }
 
-                producto.Nombre =
-                    nombre.Text.Trim();
-
-                producto.Descripcion =
-                    descripcion.Text.Trim();
-
-                producto.Categoria =
-                    (categoria.SelectedItem
-                        as Categoria)?.Nombre;
-
+                producto.Nombre = nombre.Text.Trim();
+                producto.Descripcion = descripcion.Text.Trim();
+                producto.Categoria = (categoria.SelectedItem as Categoria)?.Nombre;
                 producto.PrecioCompra = pc;
                 producto.PrecioVenta = pv;
                 producto.Stock = st;
-
-                producto.IdProveedor =
-                    (int)proveedor.SelectedValue;
-
-                producto.ImagenPath =
-                    imagenPath.Text;
+                producto.IdProveedor = (int)proveedor.SelectedValue;
+                producto.ImagenPath = imagenPath.Text;
             };
 
             return dialog;

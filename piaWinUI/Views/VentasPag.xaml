@@ -275,10 +275,16 @@ MaxHeight="50"/>
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"
                                                    Width="80"
+                                                   Minimum="1"
+                                                   Maximum="999"
                                                    AcceptsExpression="False"
                                                    PlaceholderText="0"
-                                                   Maximum="999"
-                                                   Minimum="1"/>
+                                                   PreviewKeyDown="NumberBoxCantidad_PreviewKeyDown"
+                                                   Loaded="NumberBoxCantidad_Loaded"
+                                                   ValidationMode="InvalidInputOverwritten">
+
+                                        </NumberBox>
+                                                   
 
                                     </DataTemplate>
 

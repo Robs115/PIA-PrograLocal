@@ -53,6 +53,114 @@ namespace piaWinUI.Views
             ResultadosProductosList.ItemsSource = todosProductos;
 
         }
+
+        private void SoloNumeros(
+            TextBox tb,
+            bool allowDecimal = false)
+        {
+            tb.BeforeTextChanging += (s, e) =>
+            {
+                if (e.NewText.Contains(" "))
+                {
+                    e.Cancel = true;
+                    return;
+                }
+
+                if (string.IsNullOrEmpty(e.NewText))
+                    return;
+
+                if (allowDecimal)
+                {
+                    e.Cancel =
+                        !decimal.TryParse(
+                            e.NewText,
+                            out _);
+                }
+                else
+                {
+                    e.Cancel =
+                        !int.TryParse(
+                            e.NewText,
+                            out _);
+                }
+            };
+        }
+
+        private void NumberBoxCantidad_PreviewKeyDown(object sender, KeyRoutedEventArgs e)
+        {
+            // 1. Teclas permitidas para navegar y borrar
+            bool esTeclaControl = e.Key == Windows.System.VirtualKey.Back ||
+                                  e.Key == Windows.System.VirtualKey.Tab ||
+                                  e.Key == Windows.System.VirtualKey.Left ||
+                                  e.Key == Windows.System.VirtualKey.Right ||
+                                  e.Key == Windows.System.VirtualKey.Delete;
+
+            // 2. Teclas numéricas (Teclado superior y Numpad)
+            bool esNumeroNormal = e.Key >= Windows.System.VirtualKey.Number0 && e.Key <= Windows.System.VirtualKey.Number9;
+            bool esNumeroNumpad = e.Key >= Windows.System.VirtualKey.NumberPad0 && e.Key <= Windows.System.VirtualKey.NumberPad9;
+
+            // Si NO es número y NO es tecla de control -> Bloquear de inmediato
+            if (!esTeclaControl && !esNumeroNormal && !esNumeroNumpad)
+            {
+                e.Handled = true;
+                return;
+            }
+
+            // 3. BLOQUEO ESTRICTO DE 4 CARACTERES
+            if (sender is NumberBox numberBox && !esTeclaControl)
+            {
+                string textoActual = numberBox.Text ?? ""; // Evita errores si el texto está vacío
+
+                // Si ya hay 4 caracteres, ignoramos cualquier tecla que no sea borrar
+                if (textoActual.Length >= 4)
+                {
+                    e.Handled = true;
+                }
+            }
+        }
+
+        // Asegúrate de tener este using en la parte superior de tu archivo:
+        // using Microsoft.UI.Xaml.Media; (Si usas WinUI 3) 
+        // o using Windows.UI.Xaml.Media; (Si usas UWP/WinUI 2)
+
+        private void NumberBoxCantidad_Loaded(object sender, RoutedEventArgs e)
+        {
+            if (sender is NumberBox numberBox)
+            {
+                // Buscamos el TextBox oculto dentro del NumberBox
+                TextBox textBoxInterno = FindVisualChild<TextBox>(numberBox);
+
+                if (textBoxInterno != null)
+                {
+                    // Le aplicamos el límite nativo. ¡De aquí no pasará!
+                    textBoxInterno.MaxLength = 4;
+                }
+            }
+        }
+
+        // Método auxiliar obligatorio para buscar elementos ocultos en la interfaz
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is T typedChild)
+                {
+                    return typedChild;
+                }
+
+                var result = FindVisualChild<T>(child);
+                if (result != null)
+                {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+
+
+
         private void Timer_Tick(object sender, object e)
         {
             // Actualiza el TextBlock con la hora actual
