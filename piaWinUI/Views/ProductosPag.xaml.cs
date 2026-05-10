@@ -25,6 +25,8 @@ namespace piaWinUI.Views
         }
 
         public string Nombre => Model.Nombre;
+
+        public string CodigoBarras => Model.CodigoBarras;
         public string Descripcion => Model.Descripcion;
         public decimal PrecioCompra => Model.PrecioCompra;
         public decimal PrecioVenta => Model.PrecioVenta;
@@ -506,6 +508,14 @@ namespace piaWinUI.Views
             };
             ValidarTexto(nombre);
 
+            var codigoBarras = new TextBox
+            {
+                Header = "Código de barras",
+                Text = producto.CodigoBarras,
+                MaxLength = 13
+            };
+            SoloNumeros(codigoBarras);
+
             var descripcion = new TextBox
             {
                 Header = "Descripción",
@@ -628,7 +638,7 @@ namespace piaWinUI.Views
                 Spacing = 10,
                 Children =
         {
-            nombre, descripcion, imagenPath, seleccionarImagen,
+            nombre, descripcion, imagenPath, seleccionarImagen, codigoBarras,
             categoria, precioCompra, precioVenta, stock, proveedor, error
         }
             };
@@ -650,6 +660,13 @@ namespace piaWinUI.Views
                 {
                     e.Cancel = true;
                     error.Text = "Nombre obligatorio.";
+                    return;
+                }
+
+                if (string.IsNullOrWhiteSpace(codigoBarras.Text.Trim()))
+                {
+                    e.Cancel = true;
+                    error.Text = "Código de barras obligatorio.";
                     return;
                 }
 
@@ -704,6 +721,7 @@ namespace piaWinUI.Views
 
                 producto.Nombre = nombre.Text.Trim();
                 producto.Descripcion = descripcion.Text.Trim();
+                producto.CodigoBarras = codigoBarras.Text.Trim();
                 producto.Categoria = (categoria.SelectedItem as Categoria)?.Nombre;
                 producto.PrecioCompra = pc;
                 producto.PrecioVenta = pv;
@@ -717,6 +735,7 @@ namespace piaWinUI.Views
         private async Task<ContentDialog> OpenProductoDialog(Producto producto)
         {
             var nombre = new TextBox { Header = "Nombre", Text = producto.Nombre ?? "" };
+            var codigoBarras = new TextBox { Header = "Código de barras", Text = producto.CodigoBarras ?? ""};
             var descripcion = new TextBox { Header = "Descripción", Text = producto.Descripcion ?? "", AcceptsReturn = true };
             var precioCompra = new NumberBox { Header = "Precio Compra", Value = (double)producto.PrecioCompra, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
             var precioVenta = new NumberBox { Header = "Precio Venta", Value = (double)producto.PrecioVenta, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
@@ -736,7 +755,7 @@ namespace piaWinUI.Views
 
             var error = new TextBlock { Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red), Margin = new Thickness(0, 10, 0, 0) };
 
-            var panel = new StackPanel { Spacing = 10, Children = { nombre, descripcion, precioCompra, precioVenta, stock, proveedor, error } };
+            var panel = new StackPanel { Spacing = 10, Children = { nombre, descripcion, precioCompra, codigoBarras, precioVenta, stock, proveedor, error } };
 
             var dialog = new ContentDialog
             {
@@ -753,6 +772,7 @@ namespace piaWinUI.Views
                 decimal pc = (decimal)precioCompra.Value;
                 decimal pv = (decimal)precioVenta.Value;
                 int st = (int)stock.Value;
+                
 
                 if (string.IsNullOrWhiteSpace(nombre.Text))
                 {
@@ -770,6 +790,7 @@ namespace piaWinUI.Views
 
                 // Asignamos los valores de los controles al objeto producto
                 producto.Nombre = nombre.Text.Trim();
+                producto.CodigoBarras = codigoBarras.Text.Trim();
                 producto.Descripcion = descripcion.Text.Trim();
                 producto.PrecioCompra = pc;
                 producto.PrecioVenta = pv;

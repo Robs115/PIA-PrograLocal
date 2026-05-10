@@ -7,6 +7,7 @@ namespace piaWinUI.Models
     public class Producto : INotifyPropertyChanged
     {
         private int id;
+        private string codigobarras;
         private string nombre;
         private string descripcion;
         private decimal precioCompra;
@@ -27,6 +28,15 @@ namespace piaWinUI.Models
             }
         }
 
+        public string CodigoBarras
+        {
+            get => codigobarras;
+            set
+            {
+                codigobarras = value;
+                OnPropertyChanged(nameof(CodigoBarras));
+            }
+        }
         public string Nombre
         {
             get => nombre;
