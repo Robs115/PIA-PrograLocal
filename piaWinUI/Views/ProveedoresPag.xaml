@@ -90,7 +90,7 @@
             <controls:DataGrid
     x:Name="DataGridProveedores"
     AutoGenerateColumns="False"
-    IsReadOnly="False"
+    IsReadOnly="True"
     GridLinesVisibility="Vertical"
     HeadersVisibility="Column"
     CanUserResizeColumns="False"
