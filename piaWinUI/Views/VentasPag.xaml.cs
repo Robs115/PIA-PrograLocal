@@ -300,6 +300,8 @@ namespace piaWinUI.Views
                     XamlRoot = this.Content.XamlRoot
                 };
 
+               
+                
                 if (await efectivoDialog.ShowAsync() != ContentDialogResult.Primary)
                     return;
 
