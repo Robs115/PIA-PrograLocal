@@ -41,7 +41,7 @@ namespace piaWinUI.Views
        public VentasPag()
             {
                 this.InitializeComponent();
-            this.NavigationCacheMode = NavigationCacheMode.Enabled;
+           
             _timer = new DispatcherTimer();
             _timer.Interval = TimeSpan.FromSeconds(1); // Cada segundo
             _timer.Tick += Timer_Tick;
@@ -268,85 +268,71 @@ namespace piaWinUI.Views
             if (metododepago == "Efectivo")
             {
                 // Dialogo de confirmación inicial
-                var confirm = new ContentDialog
-                {
-                    Title = "Confirmar Pago",
-                    Content = $"Total a pagar: {TotalText.Text}\n¿Confirmar pago?",
-                    PrimaryButtonText = "Sí",
-                    CloseButtonText = "No",
-                    XamlRoot = this.Content.XamlRoot
-                };
 
-                if (await confirm.ShowAsync() != ContentDialogResult.Primary)
-                    return;
 
-                // Crear dialogo para ingresar efectivo
-                var inputBox = new TextBox
+                if (metododepago == "Efectivo")
                 {
-                    Header = "Ingrese cantidad de efectivo",
-                    PlaceholderText = "0",
-                    InputScope = new InputScope
+                    decimal total = carrito.Sum(p => p.Subtotal);
+
+                    var inputBox = new TextBox
                     {
-                        Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } }
+                        Header = "Ingrese cantidad de efectivo",
+                        PlaceholderText = total.ToString(),
+                        InputScope = new InputScope
+                        {
+                            Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } }
+                        }
+                    };
+
+                    var efectivoDialog = new ContentDialog
+                    {
+                        Title = $"Total a pagar: ${total}",
+                        Content = inputBox,
+                        PrimaryButtonText = "Aceptar",
+                        CloseButtonText = "Cancelar",
+                        XamlRoot = this.Content.XamlRoot
+                    };
+
+                    if (await efectivoDialog.ShowAsync() != ContentDialogResult.Primary)
+                        return;
+
+                    // Validar número
+                    if (!decimal.TryParse(inputBox.Text, out decimal efectivoEntregado))
+                    {
+                        await new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = "Cantidad inválida",
+                            CloseButtonText = "Aceptar",
+                            XamlRoot = this.Content.XamlRoot
+                        }.ShowAsync();
+                        return;
                     }
-                };
 
-                var efectivoDialog = new ContentDialog
-                {
-                    Title = "Pago en Efectivo",
-                    Content = inputBox,
-                    PrimaryButtonText = "Aceptar",
-                    CloseButtonText = "Cancelar",
-                    XamlRoot = this.Content.XamlRoot
-                };
-
-               
-                
-                if (await efectivoDialog.ShowAsync() != ContentDialogResult.Primary)
-                    return;
-
-                // Validar cantidad ingresada
-                if (!decimal.TryParse(inputBox.Text, out decimal efectivoEntregado))
-                {
-                    await new ContentDialog
+                    // Validar que sea suficiente
+                    if (efectivoEntregado < total)
                     {
-                        Title = "Error",
-                        Content = "Cantidad inválida",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.Content.XamlRoot
-                    }.ShowAsync();
-                    return;
+                        await new ContentDialog
+                        {
+                            Title = "Error",
+                            Content = "El efectivo entregado es menor que el total",
+                            CloseButtonText = "Aceptar",
+                            XamlRoot = this.Content.XamlRoot
+                        }.ShowAsync();
+                        return;
+                    }
+
+                    decimal cambio = efectivoEntregado - total;
+
+                    
                 }
-
-                decimal total = carrito.Sum(p => p.Subtotal); // asumiendo que TotalText.Text tiene solo el número
-                if (efectivoEntregado < total)
-                {
-                    await new ContentDialog
-                    {
-                        Title = "Error",
-                        Content = "El efectivo entregado es menor que el total",
-                        CloseButtonText = "Aceptar",
-                        XamlRoot = this.Content.XamlRoot
-                    }.ShowAsync();
-                    return;
-                }
-
-                decimal cambio = efectivoEntregado - total;
-
-                await new ContentDialog
-                {
-                    Title = "Pago recibido",
-                    Content = $"Efectivo entregado: ${efectivoEntregado}\nCambio: ${cambio}",
-                    CloseButtonText = "Aceptar",
-                    XamlRoot = this.Content.XamlRoot
-                }.ShowAsync();
-            }
-            var venta = new Venta
+                //aqui termina los dialogs sobre el efectivo
+                var venta = new Venta
                 {
                     Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
                     IdUsuario = 1, // se agrega automáticamente el id del usuario logueado
                     MetodoPago = metododepago, // por ahora fijo, se puede mejorar con un selector
-                Fecha = DateTime.Now,
+                    Fecha = DateTime.Now,
                     Total = carrito.Sum(p => p.Subtotal)
                 };
 
@@ -355,37 +341,38 @@ namespace piaWinUI.Views
                     item.IdVenta = venta.Id;
                 }
 
-                
+
                 ventas.Add(venta);
                 await _ventaService.SaveAllAsync(ventas);
-                
 
-            var detalleService = new DetalleVentasService();
+
+                var detalleService = new DetalleVentasService();
                 var detalles = await detalleService.GetAllAsync() ?? new List<DetalleVentas>();
                 detalles.AddRange(carrito);
                 await detalleService.SaveAllAsync(detalles);
-            var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
-            foreach (var item in carrito)
-            {
-                var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
-
-                if (producto != null)
+                var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
+                foreach (var item in carrito)
                 {
-                    producto.Stock -= item.Cantidad;
+                    var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
 
-                    if (producto.Stock < 0)
-                        producto.Stock = 0;
+                    if (producto != null)
+                    {
+                        producto.Stock -= item.Cantidad;
+
+                        if (producto.Stock < 0)
+                            producto.Stock = 0;
+                    }
                 }
-            }
 
-            await _productoService.SaveAllAsync(productos);
-            carrito.Clear();
-            CodigoBox.Text = "";
+                await _productoService.SaveAllAsync(productos);
+                carrito.Clear();
+                CodigoBox.Text = "";
 
                 ActualizarTotal();
 
-                await ShowDialogAsync("Éxito", "Venta registrada correctamente"); 
+                await ShowDialogAsync("Éxito", "Venta registrada correctamente");
             }
+        }
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
         { 
