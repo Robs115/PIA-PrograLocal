@@ -69,10 +69,8 @@ namespace piaWinUI.Models
                 {
                     cantidad = 1;
                     TieneError = false;
-
                     OnPropertyChanged(nameof(Cantidad));
                     OnPropertyChanged(nameof(Subtotal));
-
                     return;
                 }
 
@@ -80,13 +78,21 @@ namespace piaWinUI.Models
                 {
                     TieneError = true;
 
+                    // 1. Corregimos internamente regresando al stock máximo que sí es válido
+                    cantidad = StockDisponible;
+
+                    // 2. ¡MUY IMPORTANTE! Le avisamos a la interfaz que el valor cambió
+                    // para que limpie el TextBox y no intente re-enviar el error al perder el foco
+                    OnPropertyChanged(nameof(Cantidad));
+                    OnPropertyChanged(nameof(Subtotal));
+
+                    // 3. Disparamos la alerta de error
                     OnError?.Invoke($"Stock insuficiente. Disponible: {StockDisponible}");
 
                     return;
                 }
 
                 TieneError = false;
-
                 cantidad = value;
 
                 OnPropertyChanged(nameof(Cantidad));
@@ -94,7 +100,7 @@ namespace piaWinUI.Models
             }
         }
 
-        
+
 
         // 🔥 Calculado automáticamente
         public decimal Subtotal => PrecioUnitario * Cantidad;

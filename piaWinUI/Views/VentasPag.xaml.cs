@@ -28,11 +28,12 @@ namespace piaWinUI.Views
         {
             private ProductService _productoService = new ProductService();
             private VentasService _ventaService = new VentasService();
-        private List<Producto> todosProductos = new List<Producto>();
-        private List<DetalleVentas> _detalleService = new List<DetalleVentas>();
-        private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
+            private List<Producto> todosProductos = new List<Producto>();
+            private List<DetalleVentas> _detalleService = new List<DetalleVentas>();
+            private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
+            private bool _isDialogOpen = false;
 
-        private DispatcherTimer _timer;
+            private DispatcherTimer _timer;
 
         
         
@@ -72,6 +73,8 @@ namespace piaWinUI.Views
             // Si el nuevo texto NO coincide con la expresión, cancelar el cambio
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
+
+
 
         private void AgregarProductoAlCarrito(Producto producto)
         { 
@@ -116,6 +119,13 @@ namespace piaWinUI.Views
         }
 
         private async Task ShowDialogAsync(string title, string content)
+        {
+            // Si ya hay un diálogo abierto, cancelamos la nueva petición para evitar el crash
+            if (_isDialogOpen) return;
+
+            _isDialogOpen = true; // Cerramos el candado
+
+            try
             {
                 var dialog = new ContentDialog
                 {
@@ -126,11 +136,20 @@ namespace piaWinUI.Views
                 };
 
                 await dialog.ShowAsync();
-
             }
+            catch
+            {
+                // Si ocurre un error de dibujado, lo ignoramos para que no afecte la ejecución
+            }
+            finally
+            {
+                // Al cerrar el diálogo, liberamos el candado para futuros mensajes
+                _isDialogOpen = false;
+            }
+        }
 
-            // 🔥 TOTAL
-            private void ActualizarTotal()
+        // 🔥 TOTAL
+        private void ActualizarTotal()
             {
                 var total = carrito.Sum(p => p.Subtotal);
                 TotalText.Text = $" {total:C}";
