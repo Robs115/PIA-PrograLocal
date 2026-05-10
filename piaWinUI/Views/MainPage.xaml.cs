@@ -5,10 +5,12 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Models;
 using piaWinUI.Services;
 using piaWinUI.Views;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -31,6 +33,11 @@ namespace piaWinUI.Views
     {
         public readonly string _dataFolder;
         public readonly string _usersFilePath;
+        //traer servicio de´productos, ventas, pedidos, proveedores
+        private ProductService _productoService;
+        private DetalleVentasService _detalleVentasService;
+        private VentasService _ventaService;
+        private ProveedorService _proveedorService;
 
         public MainPage()
         {
@@ -44,8 +51,19 @@ namespace piaWinUI.Views
                 ? Visibility.Visible
                 : Visibility.Collapsed;
 
+            // IMPORTANTE: Asegúrate de inicializar tu servicio antes de usarlo.
+            _productoService = new ProductService();
+            _detalleVentasService = new DetalleVentasService();
+            _proveedorService = new ProveedorService();
+
+            // 2. Ahora inicializamos VentasService pasando los servicios que creamos arriba
+            // Esto cumple con el constructor: public VentasService(ProductService pService, DetalleVentasService dService)
+            _ventaService = new VentasService(_productoService, _detalleVentasService);
         }
-        private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
+        
+
+        // 1. Agregamos 'async' al método para poder usar 'await'
+        private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
             var item = args.InvokedItemContainer as NavigationViewItem;
             if (item == null) return;
@@ -55,22 +73,86 @@ namespace piaWinUI.Views
                 case "Inicio":
                     ContentFrame.Navigate(typeof(InicioPag));
                     break;
+
                 case "Reportes":
-                    ContentFrame.Navigate(typeof(Reportes));
+                    // 2. Recuperamos las ventas de forma asíncrona
+                    var ventas = await _ventaService.GetAllAsync();
+
+                    // 3. Validamos que la lista no sea nula y contenga al menos un elemento
+                    if (ventas != null && ventas.Any())
+                    {
+                        ContentFrame.Navigate(typeof(Reportes));
+                    }
+                    else
+                    {
+                        // Opcional pero recomendado: Mostrar un mensaje al usuario
+                        ContentDialog noVentasDialog = new ContentDialog
+                        {
+                            Title = "Acceso denegado",
+                            Content = "No hay ventas registradas actualmente. Realiza al menos una venta para ver los reportes.",
+                            CloseButtonText = "Entendido",
+                            XamlRoot = this.XamlRoot // Necesario en WinUI 3
+                        };
+
+                        await noVentasDialog.ShowAsync();
+                    }
                     break;
 
                 case "Productos":
-                    ContentFrame.Navigate(typeof(ProductosPag));
+                    var proveedores = await _proveedorService.GetAllAsync();
+                    if (proveedores != null && proveedores.Any())
+                    {
+                        ContentFrame.Navigate(typeof(ProductosPag));
+                    }
+                    else
+                    {
+                        ContentDialog noProveedoresDialog = new ContentDialog
+                        {
+                            Title = "Acceso denegado",
+                            Content = "No hay proveedores registrados actualmente. Agrega al menos un proveedor para gestionar productos.",
+                            CloseButtonText = "Entendido",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await noProveedoresDialog.ShowAsync();
+                    }
                     break;
 
-                case "Ventas":
-                    ContentFrame.Navigate(typeof(VentasPag));
+                case "Ventas": 
+                    var productosParaVenta = await _productoService.GetAllAsync();
+                    if (productosParaVenta != null && productosParaVenta.Any())
+                    {
+                        ContentFrame.Navigate(typeof(VentasPag));
+                    }
+                    else
+                    {
+                        ContentDialog noProductosDialog = new ContentDialog
+                        {
+                            Title = "Acceso denegado",
+                            Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar ventas.",
+                            CloseButtonText = "Entendido",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await noProductosDialog.ShowAsync();
+                    }
+                    
                     break;
-
-               
 
                 case "Pedidos":
-                    ContentFrame.Navigate(typeof(PedidosPag));
+                    var productos = await _productoService.GetAllAsync();
+                    if (productos != null && productos.Any())
+                    {
+                        ContentFrame.Navigate(typeof(PedidosPag));
+                    } else
+                    {
+                        ContentDialog noProductosDialog = new ContentDialog
+                        {
+                            Title = "Acceso denegado",
+                            Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar pedidos.",
+                            CloseButtonText = "Entendido",
+                            XamlRoot = this.XamlRoot
+                        };
+                        await noProductosDialog.ShowAsync();
+                    }
                     break;
 
                 case "Proveedores":
@@ -78,7 +160,6 @@ namespace piaWinUI.Views
                     break;
             }
         }
-
         private ContentDialog currentDialog;
 
         private async void Settings_Click(object sender, RoutedEventArgs e)
