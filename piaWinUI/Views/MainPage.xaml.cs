@@ -21,8 +21,6 @@ using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.ApplicationSettings;
 using static SkiaSharp.HarfBuzz.SKShaper;
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
 
 namespace piaWinUI.Views
 {
@@ -38,6 +36,11 @@ namespace piaWinUI.Views
         private DetalleVentasService _detalleVentasService;
         private VentasService _ventaService;
         private ProveedorService _proveedorService;
+
+        private ContentDialog currentDialog;
+
+        // Bandera global para prevenir múltiples diálogos simultáneos
+        private bool _isDialogOpen = false;
 
         public MainPage()
         {
@@ -60,249 +63,279 @@ namespace piaWinUI.Views
             // Esto cumple con el constructor: public VentasService(ProductService pService, DetalleVentasService dService)
             _ventaService = new VentasService(_productoService, _detalleVentasService);
         }
-        
 
         // 1. Agregamos 'async' al método para poder usar 'await'
         private async void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
         {
-            var item = args.InvokedItemContainer as NavigationViewItem;
-            if (item == null) return;
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-            switch (item.Tag?.ToString())
+            try
             {
-                case "Inicio":
-                    ContentFrame.Navigate(typeof(InicioPag));
-                    break;
+                var item = args.InvokedItemContainer as NavigationViewItem;
+                if (item == null) return;
 
-                case "Reportes":
-                    // 2. Recuperamos las ventas de forma asíncrona
-                    var ventas = await _ventaService.GetAllAsync();
+                switch (item.Tag?.ToString())
+                {
+                    case "Inicio":
+                        ContentFrame.Navigate(typeof(InicioPag));
+                        break;
 
-                    // 3. Validamos que la lista no sea nula y contenga al menos un elemento
-                    if (ventas != null && ventas.Any())
-                    {
-                        ContentFrame.Navigate(typeof(Reportes));
-                    }
-                    else
-                    {
-                        // Opcional pero recomendado: Mostrar un mensaje al usuario
-                        ContentDialog noVentasDialog = new ContentDialog
+                    case "Reportes":
+                        // 2. Recuperamos las ventas de forma asíncrona
+                        var ventas = await _ventaService.GetAllAsync();
+
+                        // 3. Validamos que la lista no sea nula y contenga al menos un elemento
+                        if (ventas != null && ventas.Any())
                         {
-                            Title = "Acceso denegado",
-                            Content = "No hay ventas registradas actualmente. Realiza al menos una venta para ver los reportes.",
-                            CloseButtonText = "Entendido",
-                            XamlRoot = this.XamlRoot // Necesario en WinUI 3
-                        };
-
-                        await noVentasDialog.ShowAsync();
-                    }
-                    break;
-
-                case "Productos":
-                    var proveedores = await _proveedorService.GetAllAsync();
-                    if (proveedores != null && proveedores.Any())
-                    {
-                        ContentFrame.Navigate(typeof(ProductosPag));
-                    }
-                    else
-                    {
-                        ContentDialog noProveedoresDialog = new ContentDialog
+                            ContentFrame.Navigate(typeof(Reportes));
+                        }
+                        else
                         {
-                            Title = "Acceso denegado",
-                            Content = "No hay proveedores registrados actualmente. Agrega al menos un proveedor para gestionar productos.",
-                            CloseButtonText = "Entendido",
-                            XamlRoot = this.XamlRoot
-                        };
-                        await noProveedoresDialog.ShowAsync();
-                    }
-                    break;
+                            // Opcional pero recomendado: Mostrar un mensaje al usuario
+                            ContentDialog noVentasDialog = new ContentDialog
+                            {
+                                Title = "Acceso denegado",
+                                Content = "No hay ventas registradas actualmente. Realiza al menos una venta para ver los reportes.",
+                                CloseButtonText = "Entendido",
+                                XamlRoot = this.XamlRoot // Necesario en WinUI 3
+                            };
 
-                case "Ventas": 
-                    var productosParaVenta = await _productoService.GetAllAsync();
-                    if (productosParaVenta != null && productosParaVenta.Any())
-                    {
-                        ContentFrame.Navigate(typeof(VentasPag));
-                    }
-                    else
-                    {
-                        ContentDialog noProductosDialog = new ContentDialog
+                            await noVentasDialog.ShowAsync();
+                        }
+                        break;
+
+                    case "Productos":
+                        var proveedores = await _proveedorService.GetAllAsync();
+                        if (proveedores != null && proveedores.Any())
                         {
-                            Title = "Acceso denegado",
-                            Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar ventas.",
-                            CloseButtonText = "Entendido",
-                            XamlRoot = this.XamlRoot
-                        };
-                        await noProductosDialog.ShowAsync();
-                    }
-                    
-                    break;
-
-                case "Pedidos":
-                    var productos = await _productoService.GetAllAsync();
-                    if (productos != null && productos.Any())
-                    {
-                        ContentFrame.Navigate(typeof(PedidosPag));
-                    } else
-                    {
-                        ContentDialog noProductosDialog = new ContentDialog
+                            ContentFrame.Navigate(typeof(ProductosPag));
+                        }
+                        else
                         {
-                            Title = "Acceso denegado",
-                            Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar pedidos.",
-                            CloseButtonText = "Entendido",
-                            XamlRoot = this.XamlRoot
-                        };
-                        await noProductosDialog.ShowAsync();
-                    }
-                    break;
+                            ContentDialog noProveedoresDialog = new ContentDialog
+                            {
+                                Title = "Acceso denegado",
+                                Content = "No hay proveedores registrados actualmente. Agrega al menos un proveedor para gestionar productos.",
+                                CloseButtonText = "Entendido",
+                                XamlRoot = this.XamlRoot
+                            };
+                            await noProveedoresDialog.ShowAsync();
+                        }
+                        break;
 
-                case "Proveedores":
-                    ContentFrame.Navigate(typeof(ProveedoresPag));
-                    break;
+                    case "Ventas":
+                        var productosParaVenta = await _productoService.GetAllAsync();
+                        if (productosParaVenta != null && productosParaVenta.Any())
+                        {
+                            ContentFrame.Navigate(typeof(VentasPag));
+                        }
+                        else
+                        {
+                            ContentDialog noProductosDialog = new ContentDialog
+                            {
+                                Title = "Acceso denegado",
+                                Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar ventas.",
+                                CloseButtonText = "Entendido",
+                                XamlRoot = this.XamlRoot
+                            };
+                            await noProductosDialog.ShowAsync();
+                        }
+                        break;
+
+                    case "Pedidos":
+                        var productos = await _productoService.GetAllAsync();
+                        if (productos != null && productos.Any())
+                        {
+                            ContentFrame.Navigate(typeof(PedidosPag));
+                        }
+                        else
+                        {
+                            ContentDialog noProductosDialog = new ContentDialog
+                            {
+                                Title = "Acceso denegado",
+                                Content = "No hay productos registrados actualmente. Agrega al menos un producto para gestionar pedidos.",
+                                CloseButtonText = "Entendido",
+                                XamlRoot = this.XamlRoot
+                            };
+                            await noProductosDialog.ShowAsync();
+                        }
+                        break;
+
+                    case "Proveedores":
+                        ContentFrame.Navigate(typeof(ProveedoresPag));
+                        break;
+                }
+            }
+            finally
+            {
+                _isDialogOpen = false;
             }
         }
-        private ContentDialog currentDialog;
 
         private async void Settings_Click(object sender, RoutedEventArgs e)
         {
-            NavView.SelectedItem = null;
-            NavView.Focus(FocusState.Programmatic);
-            bool ok = await RequireAdminLoginAsync();
-            NavView.SelectedItem = null;
-            NavView.IsPaneToggleButtonVisible = true; // optional no-op safety
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-            ContentFrame.Focus(FocusState.Programmatic);
-
-            if (!ok)
-                return;
-
-            var stack = new StackPanel
+            try
             {
-                Spacing = 12,
-                Width = 280,
-                Padding = new Thickness(10)
-            };
+                NavView.SelectedItem = null;
+                NavView.Focus(FocusState.Programmatic);
+                bool ok = await RequireAdminLoginAsync();
+                NavView.SelectedItem = null;
+                NavView.IsPaneToggleButtonVisible = true; // optional no-op safety
 
-            var title = new TextBlock
-            {
-                Text = "Opciones",
-                FontSize = 26,
-                FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
-                HorizontalAlignment = HorizontalAlignment.Center,
-                Margin = new Thickness(0, 0, 0, 30)
-            };
+                ContentFrame.Focus(FocusState.Programmatic);
 
-            var btnUsuarios = new Button
-            {
-                Content = "Usuarios",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                FontSize = 16,
-                Padding = new Thickness(12, 10, 12, 10)
-            };
+                if (!ok)
+                    return;
 
-            btnUsuarios.Click += (s, args) =>
-            {
-                ContentFrame.Navigate(typeof(UsersPage));
-                currentDialog?.Hide();
-            };
-
-            var btnAbrirCarpeta = new Button
-            {
-                Content = "Abrir carpeta de datos",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                FontSize = 16,
-                Padding = new Thickness(12, 10, 12, 10)
-            };
-
-            btnAbrirCarpeta.Click += (s, args) =>
-            {
-                string folder = Path.Combine(
-                        AppDomain.CurrentDomain.BaseDirectory,
-                            "Data");
-
-                Process.Start(new ProcessStartInfo
+                var stack = new StackPanel
                 {
-                    FileName = folder,
-                    UseShellExecute = true
-                });
-            };
+                    Spacing = 12,
+                    Width = 280,
+                    Padding = new Thickness(10)
+                };
 
-            var btnCerrar = new Button
+                var title = new TextBlock
+                {
+                    Text = "Opciones",
+                    FontSize = 26,
+                    FontWeight = Microsoft.UI.Text.FontWeights.SemiBold,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    Margin = new Thickness(0, 0, 0, 30)
+                };
+
+                var btnUsuarios = new Button
+                {
+                    Content = "Usuarios",
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    FontSize = 16,
+                    Padding = new Thickness(12, 10, 12, 10)
+                };
+
+                btnUsuarios.Click += (s, args) =>
+                {
+                    ContentFrame.Navigate(typeof(UsersPage));
+                    currentDialog?.Hide();
+                };
+
+                var btnAbrirCarpeta = new Button
+                {
+                    Content = "Abrir carpeta de datos",
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    FontSize = 16,
+                    Padding = new Thickness(12, 10, 12, 10)
+                };
+
+                btnAbrirCarpeta.Click += (s, args) =>
+                {
+                    string folder = Path.Combine(
+                            AppDomain.CurrentDomain.BaseDirectory,
+                                "Data");
+
+                    Process.Start(new ProcessStartInfo
+                    {
+                        FileName = folder,
+                        UseShellExecute = true
+                    });
+                };
+
+                var btnCerrar = new Button
+                {
+                    Content = "Regresar",
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
+                    FontSize = 16,
+                    Padding = new Thickness(12, 10, 12, 10)
+                };
+
+                btnCerrar.Click += (s, args) =>
+                {
+                    // cerrar dialog
+                    currentDialog?.Hide();
+                };
+
+                stack.Children.Add(title);
+                stack.Children.Add(btnUsuarios);
+                stack.Children.Add(btnAbrirCarpeta);
+                stack.Children.Add(btnCerrar);
+
+                var dialog = new ContentDialog
+                {
+                    Content = stack,
+                    XamlRoot = this.XamlRoot,
+                    CloseButtonText = null,
+                    MinWidth = 320
+                };
+
+                currentDialog = dialog;
+                await dialog.ShowAsync();
+            }
+            finally
             {
-                Content = "Regresar",
-                HorizontalAlignment = HorizontalAlignment.Stretch,
-                FontSize = 16,
-                Padding = new Thickness(12, 10, 12, 10)
-            };
-
-            btnCerrar.Click += (s, args) =>
-            {
-                // cerrar dialog
-                currentDialog?.Hide();
-            };
-
-            stack.Children.Add(title);
-            stack.Children.Add(btnUsuarios);
-            stack.Children.Add(btnAbrirCarpeta);
-            stack.Children.Add(btnCerrar);
-
-            var dialog = new ContentDialog
-            {
-                Content = stack,
-                XamlRoot = this.XamlRoot,
-                CloseButtonText = null,
-                MinWidth = 320
-            };
-
-            currentDialog = dialog;
-            await dialog.ShowAsync();
+                _isDialogOpen = false;
+            }
         }
 
         private async void LogOut_Tapped(object sender, TappedRoutedEventArgs e)
         {
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-            ContentDialog confirmDialog = new ContentDialog
+            try
             {
-                Title = "Confirmar salida",
-                Content = "¿Estás seguro de que deseas cerrar sesion?",
-                PrimaryButtonText = "Sí",
-                CloseButtonText = "No",
-                XamlRoot = this.XamlRoot
-            };
+                ContentDialog confirmDialog = new ContentDialog
+                {
+                    Title = "Confirmar salida",
+                    Content = "¿Estás seguro de que deseas cerrar sesion?",
+                    PrimaryButtonText = "Sí",
+                    CloseButtonText = "No",
+                    XamlRoot = this.XamlRoot
+                };
 
-            var result = await confirmDialog.ShowAsync();
+                var result = await confirmDialog.ShowAsync();
 
-            if (result == ContentDialogResult.Primary)
-            {
-                SessionService.Logout();
-
-                Frame.BackStack.Clear();
-
-                Frame.Navigate(typeof(Login));
+                if (result == ContentDialogResult.Primary)
+                {
+                    SessionService.Logout();
+                    Frame.BackStack.Clear();
+                    Frame.Navigate(typeof(Login));
+                }
             }
-
+            finally
+            {
+                _isDialogOpen = false;
+            }
         }
 
         private async void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
         {
-            
-            ContentDialog confirmDialog = new ContentDialog
-            {
-                Title = "Confirmar salida",
-                Content = "¿Estás seguro de que deseas salir de la aplicación?",
-                PrimaryButtonText = "Sí",
-                CloseButtonText = "No",
-                XamlRoot = this.XamlRoot 
-            };
+            if (_isDialogOpen) return;
+            _isDialogOpen = true;
 
-          
-            var result = await confirmDialog.ShowAsync();
-
-            if (result == ContentDialogResult.Primary)
+            try
             {
-                
-                Application.Current.Exit();
+                ContentDialog confirmDialog = new ContentDialog
+                {
+                    Title = "Confirmar salida",
+                    Content = "¿Estás seguro de que deseas salir de la aplicación?",
+                    PrimaryButtonText = "Sí",
+                    CloseButtonText = "No",
+                    XamlRoot = this.XamlRoot
+                };
+
+                var result = await confirmDialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    Application.Current.Exit();
+                }
             }
-         
+            finally
+            {
+                _isDialogOpen = false;
+            }
         }
 
         private async Task<bool> RequireAdminLoginAsync()
@@ -428,11 +461,9 @@ namespace piaWinUI.Views
                 NavView.SelectedItem = null;
                 NavView.IsPaneToggleButtonVisible = true;
 
-
                 // el while(true) hace que se vuelva a mostrar el login
             }
         }
-
 
         private void Username_Login_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
@@ -455,18 +486,12 @@ namespace piaWinUI.Views
 
         private void Contrasena_BeforeTextChanging(PasswordBox sender, PasswordBoxPasswordChangingEventArgs args)
         {
-
             var password = sender.Password;
 
             if (password.Contains(" "))
             {
-
                 sender.Password = password.Replace(" ", "");
             }
         }
-
-
     }
 }
-
-
