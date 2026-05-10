@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
+using piaWinUI.Services;
 using piaWinUI.Views;
 using System;
 using System.Collections.Generic;
@@ -167,6 +168,19 @@ namespace piaWinUI.Views
             currentDialog = dialog;
             await dialog.ShowAsync();
         }
+
+        private async void LogOut_Tapped(object sender, TappedRoutedEventArgs e)
+        {
+
+            SessionService.Logout();
+
+            Frame.BackStack.Clear();
+
+            Frame.Navigate(typeof(Login));
+
+        }
+
+
 
         private async void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
         {
