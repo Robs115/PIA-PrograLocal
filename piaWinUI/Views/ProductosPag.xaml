@@ -101,7 +101,8 @@
 
                 <controls:DataGrid.Columns>
                     <controls:DataGridTextColumn Header="Nombre" Binding="{Binding Nombre}" Width="2*"/>
-                    <controls:DataGridTextColumn Header="Categoría" Binding="{Binding Categoria}" Width="*"/>
+                <controls:DataGridTextColumn Header="CodigoBarras" Binding="{Binding CodigoBarras}" Width="*"/>
+                <controls:DataGridTextColumn Header="Categoría" Binding="{Binding Categoria}" Width="*"/>
                     <controls:DataGridTextColumn Header="Compra" Binding="{Binding PrecioCompra}" Width="*"/>
                     <controls:DataGridTextColumn Header="Venta" Binding="{Binding PrecioVenta}" Width="*"/>
                     <controls:DataGridTextColumn Header="Stock" Binding="{Binding Stock}" Width="*"/>

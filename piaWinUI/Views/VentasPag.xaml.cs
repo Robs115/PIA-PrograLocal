@@ -289,14 +289,9 @@ namespace piaWinUI.Views
                 return;
             }
 
-            if (!int.TryParse(codigo, out int intBuscado))
-            {
-                await ShowDialogAsync("Error", "Código inválido");
-                limpiarbarrabusqueda();
-                return;
-            }
+         
 
-            var producto = productos.FirstOrDefault(p => p.Id == intBuscado);
+            var producto = productos.FirstOrDefault(p => p.CodigoBarras == codigo);
 
             if (producto == null)
             {
@@ -342,6 +337,10 @@ namespace piaWinUI.Views
             }
         }
 
+        private void EscanearButton_Click (object sender, RoutedEventArgs e)
+        {
+            CargarProductos();
+        }
         private void obtenerproducto_keydown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
         {
             if (e.Key == Windows.System.VirtualKey.Enter)
