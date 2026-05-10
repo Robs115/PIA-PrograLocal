@@ -1,157 +1,60 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls;
-using LiveChartsCore;
-using LiveChartsCore.SkiaSharpView;
+using piaWinUI.Models;
 using piaWinUI.Services;
-using Microsoft.UI.Xaml;
-
+using System.Collections.ObjectModel;
+using System.Linq;
 
 namespace piaWinUI.Views
 {
     public sealed partial class ReporteVentasPag : Page
     {
-        public ISeries[] VentasSeries { get; set; }
-        public ISeries[] TendenciaSeries { get; set; }
-        public ISeries[] VentasMesSeries { get; set; }
-
-        public Axis[] XAxesDias { get; set; }
-        public Axis[] XAxesMeses { get; set; }
-        public Axis[] YAxes { get; set; }
-
         private VentasService _ventaService;
 
         private readonly ProductService _productService = new();
         private readonly DetalleVentasService _detalleService = new();
 
+        // 🔥 THIS IS WHAT THE GRID BINDS TO
+        public ObservableCollection<Venta> Ventas { get; set; } = new();
+
         public ReporteVentasPag()
         {
-
-            _ventaService =
-            new VentasService(
-            _productService,
-            _detalleService);
+            _ventaService = new VentasService(
+                _productService,
+                _detalleService);
 
             InitializeComponent();
+
             DataContext = this;
 
             CargarDatos();
-
-
         }
 
         private async void CargarDatos()
         {
             var ventas = await _ventaService.GetAllAsync();
 
+            Ventas.Clear();
 
-            var ventasPorDia = ventas
-                .GroupBy(v => v.Fecha.Date)
-                .Select(g => new { Fecha = g.Key, Total = g.Sum(v => v.Total) })
-                .OrderBy(x => x.Fecha)
-                .ToList();
-
-            // 🔥 VALORES Y LABELS (SIEMPRE SINCRONIZADOS)
-            var valores = ventasPorDia.Select(x => (double)x.Total).ToList();
-            var labelsDias = ventasPorDia.Select(x => x.Fecha.ToString("dd/MM")).ToList();
-
-            // SERIES
-            VentasSeries = new ISeries[]
+            foreach (var venta in ventas.OrderByDescending(v => v.Fecha))
             {
-                new ColumnSeries<double>
-                {
-                    Values = valores,
-                    Name = "Ventas ($)"
-                }
-            };
-
-            TendenciaSeries = new ISeries[]
-            {
-                new LineSeries<double>
-                {
-                    Values = valores,
-                    Name = "Tendencia",
-                    GeometrySize = 10
-                }
-            };
-
-            // 🔥 POR MES
-            var ventasPorMes = ventas
-                .GroupBy(v => new { v.Fecha.Year, v.Fecha.Month })
-                .Select(g => new
-                {
-                    Label = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
-                    Total = g.Sum(v => v.Total)
-                })
-                .ToList();
-
-            var valoresMes = ventasPorMes.Select(x => (double)x.Total).ToList();
-            var labelsMes = ventasPorMes.Select(x => x.Label).ToList();
-
-            VentasMesSeries = new ISeries[]
-            {
-                new ColumnSeries<double>
-                {
-                    Values = valoresMes,
-                    Name = "Ventas mensuales"
-                }
-            };
-
-            // 🔥 EJES CORRECTOS
-            XAxesDias = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = labelsDias,
-                    LabelsRotation = 25,
-                    Name = "Fecha"
-                }
-            };
-
-            XAxesMeses = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = labelsMes,
-                    Name = "Mes"
-                }
-            };
-
-            YAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Name = "Ingresos ($)",
-                    Labeler = value => $"${value:N0}"
-                }
-            };
-
-            // KPIs
-            var mejorDia = ventasPorDia
-                .OrderByDescending(x => x.Total)
-                .FirstOrDefault();
-
-            TotalVentasText.Text = $"${ventas.Sum(v => v.Total):F2}";
-            PromedioVentasText.Text = ventas.Any()
-                    ? $"${ventas.Average(v => v.Total):F2}"
-                    : "$0.00";
-            MejorDiaText.Text = mejorDia != null
-                        ? $"{mejorDia.Fecha:dd/MM}"
-                        : "Sin datos";
-
-            // 🔁 REFRESCAR UI
-            DataContext = null;
-            DataContext = this;
+                Ventas.Add(venta);
+            }
         }
-
 
         private void Volver_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(Reportes));
+        }
+
+        private void VerDetalle_Click(object sender, RoutedEventArgs e)
+        {
+            var button = (Button)sender;
+
+            var venta = (Venta)button.Tag;
+
+            // navegar a detalle
+            //Frame.Navigate(typeof(DetalleVentaPag), venta);
         }
     }
 }

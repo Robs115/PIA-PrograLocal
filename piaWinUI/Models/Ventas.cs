@@ -7,7 +7,7 @@ namespace piaWinUI.Models
     public class Venta : INotifyPropertyChanged
     {
         private int id;
-        private int idUsuario;
+        private string userName;
         private string metodopago;
         private decimal total;
         private DateTime fecha;
@@ -22,13 +22,13 @@ namespace piaWinUI.Models
             }
         }
 
-        public int IdUsuario
+        public string UserName
         {
-            get => idUsuario;
+            get => userName;
             set
             {
-                idUsuario = value;
-                OnPropertyChanged(nameof(IdUsuario));
+                userName = value;
+                OnPropertyChanged(nameof(userName));
             }
         }
 

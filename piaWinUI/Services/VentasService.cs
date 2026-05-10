@@ -60,6 +60,7 @@ namespace piaWinUI.Services
             venta.Fecha = DateTime.Now;
             venta.MetodoPago = "Efectivo";
             venta.Total = detalles.Sum(d => d.Subtotal);
+            venta.UserName = SessionService.CurrentUser.Username;
 
             ventas.Add(venta);
 

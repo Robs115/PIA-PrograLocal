@@ -439,7 +439,7 @@ namespace piaWinUI.Views
             var venta = new Venta
             {
                 Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
-                IdUsuario = 1, // Si tienes el ID en sesión, cámbialo aquí
+                UserName = SessionService.CurrentUser.Username,
                 MetodoPago = metododepago,
                 Fecha = DateTime.Now,
                 Total = carrito.Sum(p => p.Subtotal)
@@ -729,7 +729,7 @@ namespace piaWinUI.Views
             grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var txtTotal = new TextBlock
             {
-                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago} | Usuario: {venta.IdUsuario}",
+                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago} | Usuario: {venta.UserName}",
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 5, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Right
@@ -741,7 +741,7 @@ namespace piaWinUI.Views
             // Expander con scroll interno si hay muchas filas
             return new Expander
             {
-                Header = $"Folio: {venta.Id} | {venta.Fecha:HH:mm} | Total: ${venta.Total} | Usuario: {venta.IdUsuario}",
+                Header = $"Folio: {venta.Id} | {venta.Fecha:HH:mm} | Total: ${venta.Total} | Usuario: {venta.UserName}",
                 Content = new ScrollViewer
                 {
                     Content = grid,
