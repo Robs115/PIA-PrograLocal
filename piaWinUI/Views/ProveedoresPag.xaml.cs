@@ -38,6 +38,20 @@ namespace piaWinUI.Views
             InitializeComponent();
             this.NavigationCacheMode = NavigationCacheMode.Enabled;
             Loaded += ProveedoresPag_Loaded;
+
+            if (SessionService.CurrentUser?.IsAdmin != true)
+            {
+                var accionesColumn = DataGridProveedores.Columns
+                    .FirstOrDefault(c => c.Header?.ToString() == "Acciones");
+
+                if (accionesColumn != null)
+                    DataGridProveedores.Columns.Remove(accionesColumn);
+                    //CategoriaButton.Visibility = Visibility.Collapsed;
+                    //ProductoButton.Visibility = Visibility.Collapsed;
+
+            }
+
+
         }
 
         private async void ProveedoresPag_Loaded(object sender, RoutedEventArgs e)
