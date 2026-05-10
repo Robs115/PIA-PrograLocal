@@ -119,12 +119,13 @@ namespace piaWinUI.Views
         }
         private void Email_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
-            // Regex para validar un email simple (sin espacios, solo caracteres comunes)
-            var regex = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
+            // Permite solo caracteres válidos en un email: letras, números y . _ % + - @
+            var regex = @"^[a-zA-Z0-9._%+-@]*$";
 
-            // Si el texto no coincide, cancelar el cambio
+            // Cancelar si hay caracteres no permitidos
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
+
         private void Telefono_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
             // Solo permitir números
@@ -229,6 +230,15 @@ namespace piaWinUI.Views
 
                 // Refrescar lista
                 await CargarProveedores();
+                ContentDialog dialog = new ContentDialog
+                {
+                    Title = "Registro exitoso",
+                    Content = "El proveedor se ha registrado correctamente.",
+                    CloseButtonText = "Aceptar",
+                    XamlRoot = this.Content.XamlRoot  // necesario en WinUI 3
+                };
+
+                await dialog.ShowAsync();
             }
             catch (Exception ex)
             {
@@ -356,9 +366,9 @@ namespace piaWinUI.Views
         {
             if (sender is not Button button || button.Tag is not Proveedor proveedorSeleccionado)
                 return;
-
+            
             var productos = await _productService.GetAllAsync();
-            if (productos.Any(p => p.Id == proveedorSeleccionado.Id))
+            if (productos.Any(p => p.IdProveedor == proveedorSeleccionado.Id))
             {
                 await MostrarDialog("No se puede eliminar", "Este proveedor tiene productos asociados.");
                 return;
@@ -382,6 +392,9 @@ namespace piaWinUI.Views
 
             await CargarProveedores();
         }
+        // Se ejecuta cada vez que una celda entra en edición
+        
+        
     }
 }
 
