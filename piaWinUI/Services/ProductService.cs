@@ -75,5 +75,20 @@ namespace piaWinUI.Services
                         StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+        public async Task UpdateProductoAsync(Producto productoModificado)
+        {
+            var productos = await GetAllAsync();
+            var index = productos.FindIndex(p => p.Id == productoModificado.Id);
+
+            if (index != -1)
+            {
+                productos[index] = productoModificado;
+                await SaveAllAsync(productos);
+            }
+            else
+            {
+                throw new Exception("Producto no encontrado para actualizar");
+            }
+        }
     }
 }

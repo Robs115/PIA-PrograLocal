@@ -26,33 +26,37 @@ namespace piaWinUI.Views
 {
         public sealed partial class VentasPag : Page
         {
-            private ProductService _productoService = new ProductService();
-            private VentasService _ventaService = new VentasService();
+            // --- SERVICIOS ---
+            private ProductService _productoService;
+            private DetalleVentasService _detalleVentasService;
+            private VentasService _ventaService;
+
+            // --- COLECCIONES Y VARIABLES DE ESTADO ---
             private List<Producto> todosProductos = new List<Producto>();
-            private List<DetalleVentas> _detalleService = new List<DetalleVentas>();
             private ObservableCollection<DetalleVentas> carrito = new ObservableCollection<DetalleVentas>();
-            private bool _isDialogOpen = false;
+            private DispatcherTimer _timer; // 🔥 Soluciona error CS0103 (_timer)
+            private bool _isDialogOpen = false; // 🔥 Soluciona error CS0103 (_isDialogOpen)
 
-            private DispatcherTimer _timer;
-
-        
-        
-
-
-       public VentasPag()
+            public VentasPag()
             {
                 this.InitializeComponent();
-           
-            _timer = new DispatcherTimer();
-            _timer.Interval = TimeSpan.FromSeconds(1); // Cada segundo
-            _timer.Tick += Timer_Tick;
-            _timer.Start();
-            ProductosList.ItemsSource = carrito;
-            cargarCatalogo();
-            ResultadosProductosList.ItemsSource = todosProductos;
 
-        }
-        private void Timer_Tick(object sender, object e)
+                // Inicialización de servicios con el nuevo esquema de dependencias
+                _productoService = new ProductService();
+                _detalleVentasService = new DetalleVentasService();
+                _ventaService = new VentasService(_productoService, _detalleVentasService);
+
+                // Configuración del reloj
+                _timer = new DispatcherTimer();
+                _timer.Interval = TimeSpan.FromSeconds(1);
+                _timer.Tick += Timer_Tick;
+                _timer.Start();
+
+                // Carga inicial
+                CargarProductos();
+
+            } // <--- Asegúrate de que esta llave cierre bien el constructor (Soluciona error CS1519)
+            private void Timer_Tick(object sender, object e)
         {
             // Actualiza el TextBlock con la hora actual
             var horaActual = DateTime.Now.ToString("HH:mm:ss"); // Formato 24h
@@ -73,6 +77,8 @@ namespace piaWinUI.Views
             // Si el nuevo texto NO coincide con la expresión, cancelar el cambio
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
+
+
 
 
 

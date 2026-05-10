@@ -141,7 +141,7 @@ namespace piaWinUI.Views
 
         private void ValidarTexto(
             TextBox tb,
-            bool permitirNumeros = false,
+            bool permitirNumeros = true,
             bool permitirEspacios = true)
         {
             tb.BeforeTextChanging += (s, e) =>
@@ -267,74 +267,83 @@ namespace piaWinUI.Views
         // CATEGORÍAS
         // =========================
 
-        private async void OpenCategoriaDialog(
-            object sender,
-            RoutedEventArgs e)
+        // 1. Modifica tu método de agregar categoría
+        private async void OpenCategoriaDialog(object sender, RoutedEventArgs e)
         {
-            var input = new TextBox
-            {
-                Header = "Nueva categoría",
-                PlaceholderText = "Ej. Bebidas",
-                MaxLength = 30
-            };
-
-            ValidarTexto(input);
+            var nombre = new TextBox { Header = "Nombre de la Categoría", PlaceholderText = "Ej. Lácteos" };
+            var error = new TextBlock { Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red), Margin = new Thickness(0, 10, 0, 0) };
+            var panel = new StackPanel { Spacing = 10, Children = { nombre, error } };
 
             var dialog = new ContentDialog
             {
-                Title = "Categoría",
-                Content = input,
+                Title = "Nueva Categoría",
+                Content = panel,
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
-                XamlRoot = this.XamlRoot
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.Content.XamlRoot
             };
 
-            var result =
-                await dialog.ShowAsync();
-
-            if (result != ContentDialogResult.Primary)
-                return;
-
-            string nombreCategoria =
-                input.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(
-                nombreCategoria))
+            dialog.PrimaryButtonClick += async (s, args) =>
             {
-                return;
-            }
+                var deferral = args.GetDeferral(); // Necesario para procesos async dentro del click
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(nombre.Text))
+                    {
+                        args.Cancel = true;
+                        error.Text = "El nombre es obligatorio.";
+                        return;
+                    }
 
-            bool existe = _categorias.Any(c =>
-                c.Nombre.Trim().Equals(
-                    nombreCategoria,
-                    StringComparison.OrdinalIgnoreCase));
+                    var nueva = new Categoria { Nombre = nombre.Text.Trim() };
+                    await _categoriaService.AddCategoriaAsync(nueva);
+                }
+                catch (Exception ex)
+                {
+                    args.Cancel = true;
+                    error.Text = ex.Message;
+                }
+                finally
+                {
+                    deferral.Complete();
+                }
+            };
 
-            if (existe)
+            var result = await dialog.ShowAsync();
+
+            // 🔥 LA CLAVE: Si se guardó, refrescamos el filtro de la interfaz
+            if (result == ContentDialogResult.Primary)
             {
-                await new ContentDialog
-                {
-                    Title = "Duplicado",
-                    Content = "La categoría ya existe.",
-                    CloseButtonText = "OK",
-                    XamlRoot = this.XamlRoot
-                }.ShowAsync();
-
-                return;
+                await ActualizarFiltroCategorias();
             }
-
-            nombreCategoria =
-                char.ToUpper(nombreCategoria[0]) +
-                nombreCategoria.Substring(1).ToLower();
-
-            await _categoriaService.AddCategoriaAsync(
-                new Categoria
-                {
-                    Nombre = nombreCategoria
-                });
-
-            await CargarCategorias();
         }
 
+        // 2. Agrega este nuevo método para refrescar el ComboBox del filtro
+        private async Task ActualizarFiltroCategorias()
+        {
+            var listaCategorias = await _categoriaService.GetAllAsync();
+
+            // Agregamos la opción "Todos" en la primera posición (índice 0)
+            // El Id = 0 nos ayudará a identificar que no es una categoría real
+            listaCategorias.Insert(0, new Categoria { Nombre = "Todos" });
+
+            // Asumimos que tu ComboBox se llama CategoriaFiltro
+            ComboFiltroCategoria.ItemsSource = null;
+            ComboFiltroCategoria.ItemsSource = listaCategorias;
+
+            // Seleccionamos "Todos" por defecto al cargar
+            ComboFiltroCategoria.SelectedIndex = 0;
+        }
+
+        private void LimpiarFiltro_Click(object sender, RoutedEventArgs e)
+        {
+            // Esto seleccionará automáticamente "Todos"
+            ComboFiltroCategoria.SelectedIndex = 0;
+
+            // Y luego vuelves a cargar tu lista de productos original sin filtros
+            // CargarProductos(); 
+        }
         // =========================
         // ADD
         // =========================
@@ -812,5 +821,72 @@ namespace piaWinUI.Views
 
             return dialog;
         }
+        private async Task<ContentDialog> OpenProductoDialog(Producto producto)
+        {
+            var nombre = new TextBox { Header = "Nombre", Text = producto.Nombre ?? "" };
+            var descripcion = new TextBox { Header = "Descripción", Text = producto.Descripcion ?? "", AcceptsReturn = true };
+            var precioCompra = new NumberBox { Header = "Precio Compra", Value = (double)producto.PrecioCompra, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
+            var precioVenta = new NumberBox { Header = "Precio Venta", Value = (double)producto.PrecioVenta, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
+            var stock = new NumberBox { Header = "Stock", Value = producto.Stock, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
+
+            // ComboBox para Proveedor
+            var proveedores = await _proveedorService.GetAllAsync();
+            var proveedor = new ComboBox
+            {
+                Header = "Proveedor",
+                ItemsSource = proveedores,
+                DisplayMemberPath = "Nombre",
+                SelectedValuePath = "Id",
+                SelectedValue = producto.IdProveedor == 0 ? null : (object)producto.IdProveedor,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+
+            var error = new TextBlock { Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red), Margin = new Thickness(0, 10, 0, 0) };
+
+            var panel = new StackPanel { Spacing = 10, Children = { nombre, descripcion, precioCompra, precioVenta, stock, proveedor, error } };
+
+            var dialog = new ContentDialog
+            {
+                Title = producto.Id == 0 ? "Nuevo Producto" : "Editar Producto",
+                Content = panel,
+                PrimaryButtonText = "Guardar",
+                CloseButtonText = "Cancelar",
+                DefaultButton = ContentDialogButton.Primary,
+                XamlRoot = this.Content.XamlRoot // CRÍTICO: Sin esto el programa no sabe dónde mostrar el diálogo
+            };
+
+            dialog.PrimaryButtonClick += (s, e) =>
+            {
+                decimal pc = (decimal)precioCompra.Value;
+                decimal pv = (decimal)precioVenta.Value;
+                int st = (int)stock.Value;
+
+                if (string.IsNullOrWhiteSpace(nombre.Text))
+                {
+                    e.Cancel = true;
+                    error.Text = "El nombre es obligatorio.";
+                    return;
+                }
+
+                if (pc >= pv)
+                {
+                    e.Cancel = true;
+                    error.Text = "El precio de venta debe ser mayor al de compra.";
+                    return;
+                }
+
+                // Asignamos los valores de los controles al objeto producto
+                producto.Nombre = nombre.Text.Trim();
+                producto.Descripcion = descripcion.Text.Trim();
+                producto.PrecioCompra = pc;
+                producto.PrecioVenta = pv;
+                producto.Stock = st;
+                producto.IdProveedor = (int)(proveedor.SelectedValue ?? 0);
+            };
+
+            return dialog;
+        }
+
+
     }
 }

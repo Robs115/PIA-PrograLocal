@@ -10,18 +10,18 @@ using System.Threading.Tasks;
 
 namespace piaWinUI.Services
 {
-    public class VentasService
-        : BaseJsonService<Venta>
+    public class VentasService : BaseJsonService<Venta>
     {
         private readonly ProductService productoService;
         private readonly DetalleVentasService detalleService;
 
-
-        public VentasService()
+        // Ahora el constructor exige recibir los otros servicios
+        public VentasService(ProductService pService, DetalleVentasService dService)
             : base(FilePaths.Ventas)
         {
-            productoService = new ProductService();
-            detalleService = new DetalleVentasService();
+            // Usamos las instancias que nos pasen desde afuera
+            productoService = pService;
+            detalleService = dService;
         }
 
         public async Task RegistrarVentaAsync(
