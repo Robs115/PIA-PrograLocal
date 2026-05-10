@@ -9,18 +9,19 @@ namespace piaWinUI.Models
 {
     public class Proveedor : INotifyPropertyChanged
     {
-        private Guid idProveedor;
+        public int id;
         private string nombre = "";
         private string telefono = "";
         private string email = "";
 
-        public Guid IdProveedor
+
+        public int Id
         {
-            get => idProveedor;
+            get => id;
             set
             {
-                idProveedor = value;
-                OnPropertyChanged(nameof(IdProveedor));
+                id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 

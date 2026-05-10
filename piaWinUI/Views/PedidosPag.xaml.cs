@@ -24,8 +24,8 @@ namespace piaWinUI.Views
         private bool _actualizandoCombos = false;
 
         // 🔥 GUARDAR ESTADO ENTRE PAGINAS
-        private Guid? _productoSeleccionadoId;
-        private Guid? _proveedorSeleccionadoId;
+        private int? _productoSeleccionadoId;
+        private int? _proveedorSeleccionadoId;
 
         private string _cantidadTemporal = "";
         private string _busquedaTemporal = "";
@@ -192,7 +192,7 @@ namespace piaWinUI.Views
                 {
                     var proveedor = _proveedores
                         .FirstOrDefault(p =>
-                            p.IdProveedor == _proveedorSeleccionadoId.Value);
+                            p.Id == _proveedorSeleccionadoId.Value);
 
                     if (proveedor != null)
                     {
@@ -353,7 +353,7 @@ namespace piaWinUI.Views
                 // 🔥 BUSCAR PROVEEDOR
                 var proveedor = _proveedores
                     .FirstOrDefault(p =>
-                        p.IdProveedor == producto.IdProveedor);
+                        p.Id == producto.IdProveedor);
 
                 if (proveedor != null)
                 {
@@ -382,7 +382,7 @@ namespace piaWinUI.Views
                 if (cmbProveedorPedido.SelectedItem is Proveedor proveedorSeleccionado)
                 {
                     _proveedorSeleccionadoId =
-                        proveedorSeleccionado.IdProveedor;
+                        proveedorSeleccionado.Id;
                 }
                 else
                 {
@@ -405,7 +405,7 @@ namespace piaWinUI.Views
                 // 🔥 FILTRAR PRODUCTOS
                 var productosFiltrados = _productos
                     .Where(p =>
-                        p.IdProveedor == proveedor.IdProveedor)
+                        p.IdProveedor == proveedor.Id)
                     .ToList();
 
                 cmbProductoPedido.ItemsSource = productosFiltrados;
@@ -466,7 +466,7 @@ namespace piaWinUI.Views
                     return;
                 }
 
-                if (producto.IdProveedor != proveedor.IdProveedor)
+                if (producto.IdProveedor != proveedor.Id)
                 {
                     await MostrarDialogo("Error",
                         "El producto no pertenece al proveedor.");
@@ -478,10 +478,10 @@ namespace piaWinUI.Views
 
                 var nuevo = new Pedidos
                 {
-                    Id = Guid.NewGuid(),
+                    Id = pedidosModel.Any() ? pedidosModel.Max(p => p.Id) + 1 : 1,
 
                     IdProducto = producto.Id,
-                    IdProveedor = proveedor.IdProveedor,
+                    IdProveedor = proveedor.Id,
 
                     NombreProducto = producto.Nombre,
                     NombreProveedor = proveedor.Nombre,

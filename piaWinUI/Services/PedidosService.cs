@@ -24,7 +24,7 @@ namespace piaWinUI.Services
         {
             var pedidos = await GetAllAsync();
 
-            pedido.Id = Guid.NewGuid();
+            pedido.Id = GenerarId(pedidos, p => p.Id);
 
             pedidos.Add(pedido);
 

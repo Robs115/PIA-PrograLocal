@@ -138,7 +138,7 @@ namespace piaWinUI.Views
             {
                 var nuevoProveedor = new Proveedor
                 {
-                    IdProveedor = Guid.NewGuid(),
+                    Id = proveedoresExistentes.Any() ? proveedoresExistentes.Max(p => p.Id) + 1 : 1,
                     Nombre = nombre,
                     Telefono = telefono,
                     Email = email
@@ -238,7 +238,7 @@ namespace piaWinUI.Views
             var proveedoresExistentes = await _service.GetAllAsync();
 
             //chekear nombre 
-            if (proveedoresExistentes.Any(p => p.Nombre.ToUpper() == nombreDialog.Text.ToUpper() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            if (proveedoresExistentes.Any(p => p.Nombre.ToUpper() == nombreDialog.Text.ToUpper() && p.Id != proveedorSeleccionado.Id))
             {
                 await MostrarDialog("Error", "El nombre ya está registrado.");
                 return;
@@ -247,19 +247,19 @@ namespace piaWinUI.Views
 
 
 
-            if (proveedoresExistentes.Any(p => p.Telefono == telefonoDialog.Text.Trim() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            if (proveedoresExistentes.Any(p => p.Telefono == telefonoDialog.Text.Trim() && p.Id != proveedorSeleccionado.Id))
             {
                 await MostrarDialog("Error", "El teléfono ya está registrado.");
                 return;
             }
 
-            if (proveedoresExistentes.Any(p => p.Email.ToUpper() == emailDialog.Text.Trim().ToUpper() && p.IdProveedor != proveedorSeleccionado.IdProveedor))
+            if (proveedoresExistentes.Any(p => p.Email.ToUpper() == emailDialog.Text.Trim().ToUpper() && p.Id != proveedorSeleccionado.Id))
             {
                 await MostrarDialog("Error", "El email ya está registrado.");
                 return;
             }
             // Revisar duplicado
-            var index = proveedoresExistentes.FindIndex(p => p.IdProveedor == proveedorSeleccionado.IdProveedor);
+            var index = proveedoresExistentes.FindIndex(p => p.Id == proveedorSeleccionado.Id);
             if (index == -1)
             {
                 await MostrarDialog("Error", "No se encontró el proveedor para actualizar.");
@@ -285,7 +285,7 @@ namespace piaWinUI.Views
                 return;
 
             var productos = await _productService.GetAllAsync();
-            if (productos.Any(p => p.IdProveedor == proveedorSeleccionado.IdProveedor))
+            if (productos.Any(p => p.Id == proveedorSeleccionado.Id))
             {
                 await MostrarDialog("No se puede eliminar", "Este proveedor tiene productos asociados.");
                 return;
@@ -304,7 +304,7 @@ namespace piaWinUI.Views
             if (result != ContentDialogResult.Primary) return;
 
             var proveedoresExistentes = await _service.GetAllAsync();
-            proveedoresExistentes.RemoveAll(p => p.IdProveedor == proveedorSeleccionado.IdProveedor);
+            proveedoresExistentes.RemoveAll(p => p.Id == proveedorSeleccionado.Id);
             await _service.SaveAllAsync(proveedoresExistentes);
 
             await CargarProveedores();
@@ -450,7 +450,7 @@ namespace piaWinUI.Views
                 var nuevo = new Proveedor
                 {
 
-                    IdProveedor = Guid.NewGuid(),
+                    Id = int.Newint(),
                     Nombre = nombre,
                     Telefono = telefono,
                     Email = email
@@ -505,13 +505,13 @@ namespace piaWinUI.Views
         {
           /*  var button = sender as Button;
 
-            if (button?.Tag is not Guid idProveedor)
+            if (button?.Tag is not int Id)
                 return;
 
             // Obtener proveedores
             var proveedores = await _service.GetAllAsync();
             // Buscar proveedor
-            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor == idProveedor);
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.Id == Id);
 
             if (proveedorSeleccionado == null)
                 return;
@@ -587,14 +587,14 @@ namespace piaWinUI.Views
 
         private async void Eliminar_Click(object sender, RoutedEventArgs e)
         {
-            // 🔥 convertir correctamente a Guid
+            // 🔥 convertir correctamente a int
             var button = sender as Button;
 
             if (button?.Tag == null)
                 return;
 
-            // 🔥 convertir correctamente a Guid
-            Guid idProveedor = (Guid)button.Tag;
+            // 🔥 convertir correctamente a int
+            int Id = (int)button.Tag;
 
             // Obtener datos
             var proveedores = await _service.GetAllAsync();
@@ -602,13 +602,13 @@ namespace piaWinUI.Views
 
 
             // Buscar proveedor
-            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.IdProveedor == idProveedor);
+            var proveedorSeleccionado = proveedores.FirstOrDefault(c => c.Id == Id);
 
             if (proveedorSeleccionado == null)
                 return;
 
             // 🔥 VALIDACIÓN
-            bool tieneProductos = productos.Any(p => p.IdProveedor == idProveedor);
+            bool tieneProductos = productos.Any(p => p.Id == Id);
             if (tieneProductos)
             {
                 var errorDialog = new ContentDialog
@@ -637,7 +637,7 @@ namespace piaWinUI.Views
                 return;
 
             // Eliminar
-            proveedores.RemoveAll(c => c.IdProveedor == idProveedor);
+            proveedores.RemoveAll(c => c.Id == Id);
 
             // Guardar cambios
             await _service.SaveAllAsync(proveedores);

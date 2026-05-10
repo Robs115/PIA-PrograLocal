@@ -11,9 +11,9 @@ namespace piaWinUI.Models
 {
     public class Pedidos : INotifyPropertyChanged
     {
-        private Guid id;
-        private Guid idProducto;
-        private Guid idProveedor;
+        private int id;
+        private int idProducto;
+        private int idProveedor;
 
         private string nombreProducto = "";
         private string nombreProveedor = "";
@@ -22,7 +22,7 @@ namespace piaWinUI.Models
         private DateTime fecha;
 
         // 🔑 ID único del pedido
-        public Guid Id
+        public int Id
         {
             get => id;
             set
@@ -33,12 +33,12 @@ namespace piaWinUI.Models
         }
 
         // 🔗 Relación real con producto
-        public Guid IdProducto
+        public int IdProducto
         {
             get => idProducto;
             set
             {
-                if (value == Guid.Empty)
+                if (value == 0)
                     throw new Exception("Producto inválido");
 
                 idProducto = value;
@@ -47,12 +47,12 @@ namespace piaWinUI.Models
         }
 
         // 🔗 Relación real con proveedor
-        public Guid IdProveedor
+        public int IdProveedor
         {
             get => idProveedor;
             set
             {
-                if (value == Guid.Empty)
+                if (value == 0)
                     throw new Exception("Proveedor inválido");
 
                 idProveedor = value;

@@ -42,14 +42,14 @@ namespace piaWinUI.Services
                 throw new Exception(
                     "Stock inválido");
 
-            producto.Id = Guid.NewGuid();
+            producto.Id = GenerarId(productos, p => p.Id);
 
             productos.Add(producto);
 
             await SaveAllAsync(productos);
         }
 
-        public async Task DeleteProductoAsync(Guid id)
+        public async Task DeleteProductoAsync(int id)
         {
             var productos = await GetAllAsync();
 

@@ -1,30 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.IO;
 
 namespace piaWinUI.Models
 {
     public class Producto : INotifyPropertyChanged
     {
-        private Guid id;
-        private string nombre { get; set; }
+        private int id;
+        private string nombre;
         private string descripcion;
         private decimal precioCompra;
-        private decimal precioVenta {  get; set; }
-        private Guid idProveedor;
+        private decimal precioVenta;
+        private int idProveedor;
         private string categoria;
         private int stock;
+        private string imagenPath;
 
-        public Guid Id
+        public int Id
         {
             get => id;
             set
             {
                 id = value;
                 OnPropertyChanged(nameof(Id));
+                OnPropertyChanged(nameof(ImagenCompleta));
             }
         }
 
@@ -69,7 +68,7 @@ namespace piaWinUI.Models
             }
         }
 
-        public Guid IdProveedor
+        public int IdProveedor
         {
             get => idProveedor;
             set
@@ -100,15 +99,57 @@ namespace piaWinUI.Models
             }
         }
 
-        // Computed property (updates automatically in UI)
+        public string ImagenPath
+        {
+            get => imagenPath;
+            set
+            {
+                imagenPath = value;
+                OnPropertyChanged(nameof(ImagenPath));
+                OnPropertyChanged(nameof(ImagenCompleta));
+            }
+        }
+
+        // 🔥 ESTA ES LA CLAVE
+        public string ImagenCompleta
+        {
+            get
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(ImagenPath))
+                        return "ms-appx:///Assets/StoreLogo.png";
+
+                    string rutaCompleta = Path.Combine(
+                        AppDomain.CurrentDomain.BaseDirectory,
+                        ImagenPath);
+
+                    if (!File.Exists(rutaCompleta))
+                        return "ms-appx:///Assets/StoreLogo.png";
+
+                    return new Uri(rutaCompleta).AbsoluteUri;
+                }
+                catch
+                {
+                    return "ms-appx:///Assets/StoreLogo.png";
+                }
+            }
+        }
+        public bool TieneImagen
+        {
+            get
+            {
+                return ImagenCompleta != "ms-appx:///Assets/StoreLogo.png";
+            }
+        }
         public decimal ValorInventario => PrecioCompra * Stock;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged(string nombrePropiedad)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombrePropiedad));
+            PropertyChanged?.Invoke(this,
+                new PropertyChangedEventArgs(nombrePropiedad));
         }
     }
 }
-

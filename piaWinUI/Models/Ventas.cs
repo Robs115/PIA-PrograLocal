@@ -1,27 +1,28 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace piaWinUI.Models
 {
     public class Venta : INotifyPropertyChanged
     {
-        private Guid idVenta = Guid.NewGuid();
-        private Guid idUsuario;
+        private int id;
+        private int idUsuario;
         private string metodopago;
         private decimal total;
         private DateTime fecha;
 
-        public Guid IdVenta
+        public int Id
         {
-            get => idVenta;
+            get => id;
             set
             {
-                idVenta = value;
-                OnPropertyChanged(nameof(IdVenta));
+                id = value;
+                OnPropertyChanged(nameof(Id));
             }
         }
 
-        public Guid IdUsuario
+        public int IdUsuario
         {
             get => idUsuario;
             set
@@ -62,7 +63,7 @@ namespace piaWinUI.Models
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
-
+        public List<DetalleVentas> Detalles { get; set; } = new List<DetalleVentas>();
         protected void OnPropertyChanged(string nombrePropiedad)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nombrePropiedad));

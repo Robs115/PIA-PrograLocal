@@ -22,7 +22,9 @@
         ItemsSource="{x:Bind Users}"
         AutoGenerateColumns="False"
         IsReadOnly="True"
-        Margin="10">
+        Margin="10"
+        CanUserResizeColumns="False"
+        CanUserReorderColumns="False">
 
             <controls:DataGrid.Columns>
 

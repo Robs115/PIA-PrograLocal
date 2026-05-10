@@ -16,6 +16,7 @@ namespace piaWinUI.Services
         private readonly ProductService productoService;
         private readonly DetalleVentasService detalleService;
 
+
         public VentasService()
             : base(FilePaths.Ventas)
         {
@@ -54,13 +55,11 @@ namespace piaWinUI.Services
 
                 producto.Stock -= detalle.Cantidad;
             }
-
-            venta.IdVenta = Guid.NewGuid();
+            var ventas = await GetAllAsync();
+            venta.Id =GenerarId(ventas, v => v.Id);
             venta.Fecha = DateTime.Now;
             venta.MetodoPago = "Efectivo";
             venta.Total = detalles.Sum(d => d.Subtotal);
-
-            var ventas = await GetAllAsync();
 
             ventas.Add(venta);
 
@@ -68,7 +67,7 @@ namespace piaWinUI.Services
 
             foreach (var detalle in detalles)
             {
-                detalle.IdVenta = venta.IdVenta;
+                detalle.IdVenta = venta.Id;
             }
 
             var todosDetalles =
