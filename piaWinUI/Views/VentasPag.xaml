@@ -32,8 +32,14 @@
                         RelativePanel.AlignLeftWithPanel="True"
                         RelativePanel.AlignVerticalCenterWithPanel="True">
 
-                <SymbolIcon Symbol="Shop"
-                            Margin="0,0,8,0"/>
+                <Image x:Name="ImagenProducto"
+Source="https://static.vecteezy.com/system/resources/previews/015/664/900/non_2x/marketing-sales-icon-outline-style-vector.jpg"
+
+Stretch="Uniform"
+MaxWidth="50"
+MaxHeight="50"/>
+
+
 
                 <TextBlock Text="Ventas"
                            FontSize="32"
@@ -386,7 +392,7 @@
                                 HorizontalAlignment="Stretch"
                                 Background="{ThemeResource SystemAccentColor}"
                                 Foreground="White"
-                                Click="GuardarVenta_Click">
+                                Click="BotonEfectivo_Click">
 
                             <StackPanel Spacing="8">
 
@@ -406,8 +412,11 @@
                         <!-- TARJETA -->
                         <Button Grid.Column="1"
                                 Height="90"
-                                HorizontalAlignment="Stretch">
-
+                                HorizontalAlignment="Stretch"
+                            
+                            Click="BotonTarjeta_Click"
+                             Background="{ThemeResource SystemAccentColor}"
+                                Foreground="White">
                             <StackPanel Spacing="8">
 
                                 <FontIcon Glyph="&#xE7E1;"
