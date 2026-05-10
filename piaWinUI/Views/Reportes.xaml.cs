@@ -33,10 +33,6 @@ namespace piaWinUI
 
             CargarDatos();
         }
-        private void GoClientesReport(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(ReporteClientesPag));
-        }
 
         private void GoProductosReport(object sender, RoutedEventArgs e)
         {

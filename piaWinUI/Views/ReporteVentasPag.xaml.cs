@@ -131,11 +131,17 @@ namespace piaWinUI.Views
             };
 
             // KPIs
-            var mejorDia = ventasPorDia.OrderByDescending(x => x.Total).First();
+            var mejorDia = ventasPorDia
+                .OrderByDescending(x => x.Total)
+                .FirstOrDefault();
 
             TotalVentasText.Text = $"${ventas.Sum(v => v.Total):F2}";
-            PromedioVentasText.Text = $"${ventas.Average(v => v.Total):F2}";
-            MejorDiaText.Text = $"{mejorDia.Fecha:dd/MM}";
+            PromedioVentasText.Text = ventas.Any()
+                    ? $"${ventas.Average(v => v.Total):F2}"
+                    : "$0.00";
+            MejorDiaText.Text = mejorDia != null
+                        ? $"{mejorDia.Fecha:dd/MM}"
+                        : "Sin datos";
 
             // 🔁 REFRESCAR UI
             DataContext = null;

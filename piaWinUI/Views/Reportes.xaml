@@ -11,12 +11,8 @@
             <TextBlock Text="Dashboard de Reportes"
                        FontSize="28"
                        FontWeight="Bold"/>
-            
-            <StackPanel Orientation="Horizontal" Spacing="10">
 
-                <Button Content="Clientes"
-            Click="GoClientesReport"
-            Style="{StaticResource AccentButtonStyle}"/>
+            <StackPanel Orientation="Horizontal" Spacing="10">
 
                 <Button Content="Productos"
             Click="GoProductosReport"
