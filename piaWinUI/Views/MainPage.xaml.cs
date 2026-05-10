@@ -172,15 +172,27 @@ namespace piaWinUI.Views
         private async void LogOut_Tapped(object sender, TappedRoutedEventArgs e)
         {
 
-            SessionService.Logout();
+            ContentDialog confirmDialog = new ContentDialog
+            {
+                Title = "Confirmar salida",
+                Content = "¿Estás seguro de que deseas cerrar sesion?",
+                PrimaryButtonText = "Sí",
+                CloseButtonText = "No",
+                XamlRoot = this.XamlRoot
+            };
 
-            Frame.BackStack.Clear();
+            var result = await confirmDialog.ShowAsync();
 
-            Frame.Navigate(typeof(Login));
+            if (result == ContentDialogResult.Primary)
+            {
+                SessionService.Logout();
+
+                Frame.BackStack.Clear();
+
+                Frame.Navigate(typeof(Login));
+            }
 
         }
-
-
 
         private async void ExitApp_Tapped(object sender, TappedRoutedEventArgs e)
         {
