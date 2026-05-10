@@ -96,14 +96,15 @@ MaxHeight="50"/>
                              BeforeTextChanging="BuscadorNombre_BeforeTextChanging"/>
 
                     <TextBox x:Name="CodigoBox"
-                             PlaceholderText="Introduce codigo de barras: Ej: 1234567899000"
+                             PlaceholderText="Introduce codigo de barras: Ej: 121413188"
                              Grid.Column="1"
                              VerticalAlignment="Center"
                              KeyDown="obtenerproducto_keydown"
-                             MaxLength="42"
+                             MaxLength="9"
                              BeforeTextChanging="BuscadorCodigo_BeforeTextChanging"/>
 
                     <Button x:Name="BtnEscanear"
+                            Click="EscanearButton_Click" 
                             Style="{StaticResource AccentButtonStyle}"
                             Grid.Column="2"
                             VerticalAlignment="Center">

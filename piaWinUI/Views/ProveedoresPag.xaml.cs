@@ -71,7 +71,7 @@ namespace piaWinUI.Views
             {
                 case "Nombre":
                     // Letras, números, acentos, ' y -, sin dos espacios seguidos, máximo 50
-                    if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^(?!.*  )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$")
+                    if (!System.Text.RegularExpressions.Regex.IsMatch(valor, @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]{0,50}$")
                         || valor.Length > 50)
                     {
                         e.Cancel = true;
