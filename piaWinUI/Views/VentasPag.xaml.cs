@@ -253,10 +253,8 @@ namespace piaWinUI.Views
         // GUARDR VENTA
         private async void GuardarVenta_Click(string metododepago)
         {
-            //en caso de que por algun motivo el metodo de pago sea nulo o vacio un returnsillo
-
-
             var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
+
             if (carrito.Count == 0)
             {
                 await ShowDialogAsync("Error", "No hay productos en la venta");
@@ -270,17 +268,16 @@ namespace piaWinUI.Views
                 return;
             }
 
-
-
             if (string.IsNullOrWhiteSpace(metododepago))
                 return;
 
+            // --- 1. PROCESO DE PAGO SEGÚN EL MÉTODO ---
             if (metododepago == "Tarjeta")
             {
                 var confirm = new ContentDialog
                 {
                     Title = "Confirmar Pago",
-                    Content = $"Total a pagar: {TotalText.Text}\n¿Confirmar pago?",
+                    Content = $"Total a pagar: {TotalText.Text}\n¿Confirmar pago con tarjeta?",
                     PrimaryButtonText = "Sí",
                     CloseButtonText = "No",
                     XamlRoot = this.Content.XamlRoot
@@ -288,116 +285,182 @@ namespace piaWinUI.Views
                 if (await confirm.ShowAsync() != ContentDialogResult.Primary)
                     return;
             }
-
-
-            if (metododepago == "Efectivo")
+            else if (metododepago == "Efectivo")
             {
-                // Dialogo de confirmación inicial
+                decimal total = carrito.Sum(p => p.Subtotal);
 
-
-                if (metododepago == "Efectivo")
+                var inputBox = new TextBox
                 {
-                    decimal total = carrito.Sum(p => p.Subtotal);
-
-                    var inputBox = new TextBox
+                    Header = "Ingrese cantidad de efectivo recibida",
+                    PlaceholderText = total.ToString(),
+                    InputScope = new InputScope
                     {
-                        Header = "Ingrese cantidad de efectivo",
-                        PlaceholderText = total.ToString(),
-                        InputScope = new InputScope
-                        {
-                            Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } }
-                        }
-                    };
-
-                    var efectivoDialog = new ContentDialog
-                    {
-                        Title = $"Total a pagar: ${total}",
-                        Content = inputBox,
-                        PrimaryButtonText = "Aceptar",
-                        CloseButtonText = "Cancelar",
-                        XamlRoot = this.Content.XamlRoot
-                    };
-
-                    if (await efectivoDialog.ShowAsync() != ContentDialogResult.Primary)
-                        return;
-
-                    // Validar número
-                    if (!decimal.TryParse(inputBox.Text, out decimal efectivoEntregado))
-                    {
-                        await new ContentDialog
-                        {
-                            Title = "Error",
-                            Content = "Cantidad inválida",
-                            CloseButtonText = "Aceptar",
-                            XamlRoot = this.Content.XamlRoot
-                        }.ShowAsync();
-                        return;
+                        Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } }
                     }
-
-                    // Validar que sea suficiente
-                    if (efectivoEntregado < total)
-                    {
-                        await new ContentDialog
-                        {
-                            Title = "Error",
-                            Content = "El efectivo entregado es menor que el total",
-                            CloseButtonText = "Aceptar",
-                            XamlRoot = this.Content.XamlRoot
-                        }.ShowAsync();
-                        return;
-                    }
-
-                    decimal cambio = efectivoEntregado - total;
-
-
-                }
-                //aqui termina los dialogs sobre el efectivo
-                var venta = new Venta
-                {
-                    Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
-                    IdUsuario = 1, // se agrega automáticamente el id del usuario logueado
-                    MetodoPago = metododepago, // por ahora fijo, se puede mejorar con un selector
-                    Fecha = DateTime.Now,
-                    Total = carrito.Sum(p => p.Subtotal)
                 };
 
-                foreach (var item in carrito)
+                var efectivoDialog = new ContentDialog
                 {
-                    item.IdVenta = venta.Id;
+                    Title = $"Total a pagar: ${total}",
+                    Content = inputBox,
+                    PrimaryButtonText = "Cobrar",
+                    CloseButtonText = "Cancelar",
+                    XamlRoot = this.Content.XamlRoot
+                };
+
+                if (await efectivoDialog.ShowAsync() != ContentDialogResult.Primary)
+                    return;
+
+                if (!decimal.TryParse(inputBox.Text, out decimal efectivoEntregado))
+                {
+                    await ShowDialogAsync("Error", "Cantidad inválida");
+                    return;
                 }
 
-
-                ventas.Add(venta);
-                await _ventaService.SaveAllAsync(ventas);
-
-                // 🔥 3. USAMOS EL SERVICIO INYECTADO EN LUGAR DE CREAR UNO NUEVO
-                var detalles = await _detalleVentasService.GetAllAsync() ?? new List<DetalleVentas>();
-                detalles.AddRange(carrito);
-                await _detalleVentasService.SaveAllAsync(detalles);
-
-                var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
-                foreach (var item in carrito)
+                if (efectivoEntregado < total)
                 {
-                    var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
+                    await ShowDialogAsync("Error", "El efectivo entregado es menor que el total");
+                    return;
+                }
 
-                    if (producto != null)
+                // Si necesitas hacer algo con el cambio, la variable está aquí
+                decimal cambio = efectivoEntregado - total;
+            }
+
+            // --- 2. GUARDAR LA VENTA EN LA BASE DE DATOS (Aplica para ambos pagos) ---
+            var venta = new Venta
+            {
+                Id = ventas.Any() ? ventas.Max(v => v.Id) + 1 : 1,
+                IdUsuario = 1, // Si tienes el ID en sesión, cámbialo aquí
+                MetodoPago = metododepago,
+                Fecha = DateTime.Now,
+                Total = carrito.Sum(p => p.Subtotal)
+            };
+
+            foreach (var item in carrito)
+            {
+                item.IdVenta = venta.Id;
+            }
+
+            ventas.Add(venta);
+            await _ventaService.SaveAllAsync(ventas);
+
+            var detalles = await _detalleVentasService.GetAllAsync() ?? new List<DetalleVentas>();
+            detalles.AddRange(carrito);
+            await _detalleVentasService.SaveAllAsync(detalles);
+
+            var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
+            foreach (var item in carrito)
+            {
+                var producto = productos.FirstOrDefault(p => p.Id == item.IdProducto);
+                if (producto != null)
+                {
+                    producto.Stock -= item.Cantidad;
+                    if (producto.Stock < 0)
+                        producto.Stock = 0;
+                }
+            }
+
+            await _productoService.SaveAllAsync(productos);
+
+            // --- 3. CONSTRUIR EL TICKET ANTES DE LIMPIAR EL CARRITO ---
+            string nombreCajero = SessionService.CurrentUser?.Username ?? "Desconocido";
+
+            var gridTicket = new Grid
+            {
+                ColumnDefinitions =
+        {
+            new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Producto
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Cantidad
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }  // Subtotal
+        },
+                RowSpacing = 4,
+                Margin = new Thickness(0, 10, 0, 10)
+            };
+
+            // Encabezados del ticket
+            gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var headerProducto = new TextBlock { Text = "Producto", FontWeight = FontWeights.Bold };
+            var headerCant = new TextBlock { Text = "Cant.", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
+            var headerSubtotal = new TextBlock { Text = "Subtotal", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
+
+            Grid.SetRow(headerProducto, 0); Grid.SetColumn(headerProducto, 0);
+            Grid.SetRow(headerCant, 0); Grid.SetColumn(headerCant, 1);
+            Grid.SetRow(headerSubtotal, 0); Grid.SetColumn(headerSubtotal, 2);
+
+            gridTicket.Children.Add(headerProducto);
+            gridTicket.Children.Add(headerCant);
+            gridTicket.Children.Add(headerSubtotal);
+
+            // Filas de productos en el ticket
+            int row = 1;
+            foreach (var d in carrito)
+            {
+                gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+
+                var txtProducto = new TextBlock { Text = d.NombreProducto, TextWrapping = TextWrapping.NoWrap, TextTrimming = TextTrimming.CharacterEllipsis };
+                var txtCantidad = new TextBlock { Text = d.Cantidad.ToString(), HorizontalAlignment = HorizontalAlignment.Right };
+                var txtSubtotal = new TextBlock { Text = $"${d.Subtotal}", HorizontalAlignment = HorizontalAlignment.Right };
+
+                Grid.SetRow(txtProducto, row); Grid.SetColumn(txtProducto, 0);
+                Grid.SetRow(txtCantidad, row); Grid.SetColumn(txtCantidad, 1);
+                Grid.SetRow(txtSubtotal, row); Grid.SetColumn(txtSubtotal, 2);
+
+                gridTicket.Children.Add(txtProducto);
+                gridTicket.Children.Add(txtCantidad);
+                gridTicket.Children.Add(txtSubtotal);
+
+                row++;
+            }
+
+            // Fila del total en el ticket
+            gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            var txtTotal = new TextBlock
+            {
+                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}",
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(0, 10, 0, 0),
+                HorizontalAlignment = HorizontalAlignment.Right
+            };
+            Grid.SetRow(txtTotal, row);
+            Grid.SetColumnSpan(txtTotal, 3);
+            gridTicket.Children.Add(txtTotal);
+
+            // Contenedor principal del ticket
+            var panelTicket = new StackPanel { Spacing = 5 };
+            panelTicket.Children.Add(new TextBlock { Text = "¡Venta registrada correctamente!", FontWeight = FontWeights.Bold, FontSize = 16, Margin = new Thickness(0, 0, 0, 10), Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green) });
+            panelTicket.Children.Add(new TextBlock { Text = $"Folio: {venta.Id} | Fecha: {venta.Fecha:dd/MM/yyyy HH:mm}" });
+            panelTicket.Children.Add(new TextBlock { Text = $"Cajero: {nombreCajero}" });
+            panelTicket.Children.Add(new MenuFlyoutSeparator { Margin = new Thickness(0, 5, 0, 5) });
+            panelTicket.Children.Add(gridTicket);
+
+            // --- 4. LIMPIAR LA INTERFAZ ---
+            carrito.Clear();
+            CodigoBox.Text = "";
+            ActualizarTotal();
+
+            // --- 5. MOSTRAR EL TICKET ---
+            if (!_isDialogOpen)
+            {
+                _isDialogOpen = true;
+                try
+                {
+                    var ticketDialog = new ContentDialog
                     {
-                        producto.Stock -= item.Cantidad;
-
-                        if (producto.Stock < 0)
-                            producto.Stock = 0;
-                    }
+                        Title = "Ticket de Venta",
+                        Content = new ScrollViewer { Content = panelTicket, MaxHeight = 400, VerticalScrollBarVisibility = ScrollBarVisibility.Auto },
+                        CloseButtonText = "Cerrar",
+                        DefaultButton = ContentDialogButton.Close,
+                        XamlRoot = this.Content.XamlRoot
+                    };
+                    await ticketDialog.ShowAsync();
                 }
-
-                await _productoService.SaveAllAsync(productos);
-                carrito.Clear();
-                CodigoBox.Text = "";
-
-                ActualizarTotal();
-
-                await ShowDialogAsync("Éxito", "Venta registrada correctamente");
+                catch { }
+                finally { _isDialogOpen = false; }
             }
         }
+
+
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -450,19 +513,19 @@ namespace piaWinUI.Views
 
 
 
-
-
         private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
         {
-            var ventas = await _ventaService.GetAllAsync(); // Todas las ventas
-            // 🔥 4. USAMOS EL SERVICIO INYECTADO
-            var todosDetalles = await _detalleVentasService.GetAllAsync(); // Todos los detalles
+            var ventas = await _ventaService.GetAllAsync();
+            var todosDetalles = await _detalleVentasService.GetAllAsync();
 
             var hoy = DateTime.Today;
             var ventasHoy = ventas
                 .Where(v => v.Fecha.Date == hoy)
                 .OrderByDescending(v => v.Fecha)
                 .ToList();
+
+            // 1. Aseguramos que el XamlRoot sea el de esta página
+            var root = this.Content.XamlRoot;
 
             if (!ventasHoy.Any())
             {
@@ -471,7 +534,7 @@ namespace piaWinUI.Views
                     Title = "Ventas de Hoy",
                     Content = "No se han registrado ventas hoy.",
                     CloseButtonText = "Cerrar",
-                    XamlRoot = this.XamlRoot
+                    XamlRoot = root // Usamos la variable segura
                 }.ShowAsync();
                 return;
             }
@@ -487,6 +550,7 @@ namespace piaWinUI.Views
                 stackVentas.Children.Add(CrearVentaExpanderUI(venta, detallesDeVenta));
             }
 
+            // 2. Aplicamos el mismo XamlRoot al diálogo principal
             var ventasDialog = new ContentDialog
             {
                 Title = "Ventas de Hoy",
@@ -495,11 +559,11 @@ namespace piaWinUI.Views
                 Content = new ScrollViewer
                 {
                     Content = stackVentas,
-                    Height = 600,
-                    Width = 900,
+                    Height = 400, // Reducido un poco para evitar que se salga de la pantalla en laptops
+                    Width = 600, // Ajuste de ancho más estándar
                     HorizontalScrollBarVisibility = ScrollBarVisibility.Auto
                 },
-                XamlRoot = this.XamlRoot
+                XamlRoot = root // CRÍTICO: Referencia al XamlRoot de la página
             };
 
             await ventasDialog.ShowAsync();
