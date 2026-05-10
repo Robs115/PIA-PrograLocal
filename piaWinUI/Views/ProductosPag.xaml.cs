@@ -1,3 +1,4 @@
+using CommunityToolkit.WinUI.UI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
@@ -6,9 +7,9 @@ using piaWinUI.Services;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using System.IO;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
@@ -69,6 +70,11 @@ namespace piaWinUI.Views
 
         private List<Categoria> _categorias =
             new();
+
+        private List<ProductoView> _productosFuente = new();
+
+        private string _ultimaColumnaOrdenada = "";
+        private bool _ordenAscendente = true;
 
         public ProductosPag()
         {
@@ -180,33 +186,82 @@ namespace piaWinUI.Views
 
         private async Task CargarDatos()
         {
-            var productos =
-                await _service.GetAllAsync();
+            var productos = await _service.GetAllAsync();
+            var proveedores = await _proveedorService.GetAllAsync();
 
-            var proveedores =
-                await _proveedorService.GetAllAsync();
+            _proveedores = proveedores.ToDictionary(p => p.Id, p => p.Nombre);
 
-            _proveedores =
-                proveedores.ToDictionary(
-                    p => p.Id,
-                    p => p.Nombre);
-
-            Productos.Clear();
-
-            foreach (var p in productos)
+            // Guardamos en la lista maestra
+            _productosFuente = productos.Select(p => new ProductoView(p)
             {
-                Productos.Add(
-                    new ProductoView(p)
-                    {
-                        ProveedorNombre =
-                            _proveedores.TryGetValue(
-                                p.IdProveedor,
-                                out var nombre)
-                            ? nombre
-                            : "Desconocido"
-                    });
+                ProveedorNombre = _proveedores.TryGetValue(p.IdProveedor, out var nombre) ? nombre : "Desconocido"
+            }).ToList();
+
+            // Llenar el ComboBox de filtros (si no se ha hecho)
+            ActualizarComboFiltro();
+
+            // Aplicar el filtro inicial (que mostrará todos)
+            AplicarFiltros();
+        }
+
+        private void ActualizarComboFiltro()
+        {
+            var listaConTodas = new List<Categoria> { new Categoria { Nombre = "Todas" } };
+            listaConTodas.AddRange(_categorias);
+            ComboFiltroCategoria.ItemsSource = listaConTodas;
+            ComboFiltroCategoria.SelectedIndex = 0;
+        }
+        private void OnFilterChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            AplicarFiltros();
+        }
+
+        private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // Solo aplicamos el filtro si el evento no se disparó 
+            // mientras el combo se estaba llenando inicialmente
+            if (ComboFiltroCategoria?.ItemsSource != null)
+            {
+                AplicarFiltros();
             }
         }
+
+        private void AplicarFiltros()
+        {
+            string busqueda = SearchBox.Text.ToLower().Trim();
+            var categoriaSeleccionada = ComboFiltroCategoria.SelectedItem as Categoria;
+
+            // Realizar el filtrado sobre la lista maestra usando LINQ
+            var filtrados = _productosFuente.Where(p =>
+            {
+                // Filtro de texto
+                bool coincideNombre = string.IsNullOrEmpty(busqueda) ||
+                                      p.Nombre.ToLower().Contains(busqueda);
+
+                // Filtro de categoría
+                bool coincideCategoria = categoriaSeleccionada == null ||
+                                         categoriaSeleccionada.Nombre == "Todas" ||
+                                         p.Categoria == categoriaSeleccionada.Nombre;
+
+                return coincideNombre && coincideCategoria;
+            }).ToList();
+
+            // Actualizar la colección observable de la UI
+            Productos.Clear();
+            foreach (var p in filtrados)
+            {
+                Productos.Add(p);
+            }
+        }
+
+        private void LimpiarFiltros_Click(object sender, RoutedEventArgs e)
+        {
+            SearchBox.Text = "";
+            ComboFiltroCategoria.SelectedIndex = 0;
+            AplicarFiltros();
+        }
+
+
 
         // =========================
         // CATEGORÍAS
