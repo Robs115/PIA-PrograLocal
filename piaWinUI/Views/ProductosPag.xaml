@@ -87,6 +87,7 @@
                 Padding="16">
 
             <controls:DataGrid
+                x:Name="ProductosDataGrid"
                 ItemsSource="{x:Bind Productos}"
                 AutoGenerateColumns="False"
                 IsReadOnly="True"

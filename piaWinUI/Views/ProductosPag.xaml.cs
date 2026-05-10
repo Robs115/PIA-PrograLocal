@@ -81,6 +81,15 @@ namespace piaWinUI.Views
             InitializeComponent();
 
             Loaded += OnLoaded;
+
+            if (SessionService.CurrentUser?.IsAdmin != true)
+            {
+                var accionesColumn = ProductosDataGrid.Columns
+                    .FirstOrDefault(c => c.Header?.ToString() == "Acciones");
+
+                if (accionesColumn != null)
+                    ProductosDataGrid.Columns.Remove(accionesColumn);
+            }
         }
 
         // =========================

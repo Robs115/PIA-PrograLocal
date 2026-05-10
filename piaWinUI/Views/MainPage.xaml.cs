@@ -39,7 +39,10 @@ namespace piaWinUI.Views
             _dataFolder = App.DataFolder;
             _usersFilePath = App.UsersFilePath;
 
-            SettingsNavItem.Visibility = IsAdmin() ? Visibility.Visible : Visibility.Collapsed;
+            SettingsNavItem.Visibility =
+                SessionService.CurrentUser?.IsAdmin == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
 
         }
         private void NavView_ItemInvoked(NavigationView sender, NavigationViewItemInvokedEventArgs args)
@@ -347,10 +350,6 @@ namespace piaWinUI.Views
             }
         }
 
-        private bool IsAdmin()
-        {
-            return SessionService.CurrentUser?.IsAdmin == true;
-        }
 
         private void Username_Login_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
