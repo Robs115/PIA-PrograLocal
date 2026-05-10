@@ -78,12 +78,12 @@ namespace piaWinUI.Views
             }
 
 
-            var result = await _authService.ValidateLoginAsync(username, password);
+            var (result, user) = await _authService.ValidateLoginAsync(username,password);
 
             switch (result)
             {
                 case LoginResult.Success:
-                    // Continuar login
+                    SessionService.Login(user!);
                     break;
                 case LoginResult.UserNotFound:
                     SetStatus("Usuario no existe.");

@@ -33,16 +33,20 @@ namespace piaWinUI.Services
             UserNotFound,
             WrongPassword
         }
-        public async Task<LoginResult> ValidateLoginAsync(string username, string password)
+        public async Task<(LoginResult Result, User? User)>ValidateLoginAsync(string username, string password)
         {
             var users = await LoadUsersAsync();
 
-            var user = users.FirstOrDefault(u => u.Username.Equals(username));
+            var user = users.FirstOrDefault(u =>
+                u.Username == username);
 
-            if (user == null) return LoginResult.UserNotFound;
-            if (user.Password != password) return LoginResult.WrongPassword;
+            if (user == null)
+                return (LoginResult.UserNotFound, null);
 
-            return LoginResult.Success;
+            if (user.Password != password)
+                return (LoginResult.WrongPassword, null);
+
+            return (LoginResult.Success, user);
         }
     }
 }
