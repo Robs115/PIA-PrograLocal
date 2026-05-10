@@ -61,7 +61,7 @@
             Click="Guardar_Click"
              Style ="{ StaticResource AccentButtonStyle }"  
              HorizontalAlignment ="Stretch"
-                        KeyDown="registardatos_keydown"/>
+                      />
 
 
 
@@ -135,13 +135,18 @@
                     <controls:DataGridTemplateColumn Header="Acciones" Width="2*">
                         <controls:DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
-                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                <StackPanel Orientation="Horizontal" Spacing="8"  HorizontalAlignment="Center"
+ VerticalAlignment="Center">
                                     <Button Content="Editar"
                                 Click="EditarProveedor_Click"
-                                Tag="{Binding}" />
+                                Tag="{Binding}" 
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"/>
                                     <Button Content="Eliminar"
                                 Click="Eliminar_Click"
-                                Tag="{Binding}" />
+                                Tag="{Binding}" 
+                                            HorizontalAlignment="Center"
+VerticalAlignment="Center"/>
                                 </StackPanel>
                             </DataTemplate>
                         </controls:DataGridTemplateColumn.CellTemplate>

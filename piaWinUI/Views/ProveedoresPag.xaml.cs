@@ -133,13 +133,7 @@ namespace piaWinUI.Views
 
 
         //keydown
-        private async void registardatos_keydown(object sender, Microsoft.UI.Xaml.Input.KeyRoutedEventArgs e)
-        {
-            if (e.Key == Windows.System.VirtualKey.Enter)
-            {
-                await CargarProveedores();
-            }
-        }
+        
 
         private async Task CargarProveedores()
         {
@@ -159,7 +153,7 @@ namespace piaWinUI.Views
 
             await dialog.ShowAsync();
         }
-
+        
         // Guardar nuevo proveedor
         private async void Guardar_Click(object sender, RoutedEventArgs e)
         {
