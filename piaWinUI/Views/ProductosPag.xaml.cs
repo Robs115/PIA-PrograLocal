@@ -540,6 +540,7 @@ namespace piaWinUI.Views
 
                 if (string.IsNullOrWhiteSpace(nombre.Text.Trim()))
                     mensajeError = "Nombre obligatorio.";
+
                 else if (string.IsNullOrWhiteSpace(codigoBarras.Text.Trim()))
                     mensajeError = "Código de barras obligatorio.";
                 else if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
@@ -572,8 +573,8 @@ namespace piaWinUI.Views
                         XamlRoot = dialog.XamlRoot
                     };
                     await errorDialog.ShowAsync();
-
-                    await dialog.ShowAsync();
+                    //se vuelve a abrir pero como que sin los datos o idk, o a medio proceso y pues si le das guardar no guarda
+                   // await dialog.ShowAsync();
                     return;
                 }
 
