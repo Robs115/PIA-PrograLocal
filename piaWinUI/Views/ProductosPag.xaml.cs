@@ -101,9 +101,9 @@ namespace piaWinUI.Views
         {
             var productos = await _service.GetAllAsync();
             var proveedores = await _proveedorService.GetAllAsync();
-            
+
             _proveedores = proveedores.ToDictionary(p => p.Id, p => p.Nombre);
-           
+
             _productosFuente = productos.Select(p => new ProductoView(p)
             {
                 ProveedorNombre = _proveedores.TryGetValue(p.IdProveedor, out var nombre) ? nombre : "Desconocido"
@@ -529,70 +529,51 @@ namespace piaWinUI.Views
                 XamlRoot = this.XamlRoot
             };
 
-            dialog.PrimaryButtonClick += (s, e) =>
+            // ✨ LÓGICA DE VALIDACIÓN CON POPUP INCORPORADA AQUÍ ✨
+            dialog.PrimaryButtonClick += async (s, args) =>
             {
-                error.Text = "";
+                var deferral = args.GetDeferral();
+                string mensajeError = null;
+                decimal pc = 0;
+                decimal pv = 0;
+                int st = 0;
 
                 if (string.IsNullOrWhiteSpace(nombre.Text.Trim()))
-                {
-                    e.Cancel = true;
-                    error.Text = "Nombre obligatorio.";
-                    return;
-                }
+                    mensajeError = "Nombre obligatorio.";
+                else if (string.IsNullOrWhiteSpace(codigoBarras.Text.Trim()))
+                    mensajeError = "Código de barras obligatorio.";
+                else if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
+                    mensajeError = "Descripción obligatoria.";
+                else if (categoria.SelectedItem is null)
+                    mensajeError = "Selecciona una categoría.";
+                else if (!decimal.TryParse(precioCompra.Text, out pc) || pc <= 0)
+                    mensajeError = "Precio compra inválido.";
+                else if (!decimal.TryParse(precioVenta.Text, out pv) || pv <= 0)
+                    mensajeError = "Precio venta inválido.";
+                else if (!int.TryParse(stock.Text, out st) || st < 0)
+                    mensajeError = "Stock inválido.";
+                else if (pc >= pv)
+                    mensajeError = "Venta debe ser mayor que compra.";
+                else if (proveedor.SelectedValue is null)
+                    mensajeError = "Selecciona proveedor.";
 
-                if (string.IsNullOrWhiteSpace(codigoBarras.Text.Trim()))
+                if (mensajeError != null)
                 {
-                    e.Cancel = true;
-                    error.Text = "Código de barras obligatorio.";
-                    return;
-                }
+                    args.Cancel = true;
+                    deferral.Complete();
 
-                if (string.IsNullOrWhiteSpace(descripcion.Text.Trim()))
-                {
-                    e.Cancel = true;
-                    error.Text = "Descripción obligatoria.";
-                    return;
-                }
+                    dialog.Hide();
 
-                if (categoria.SelectedItem is null)
-                {
-                    e.Cancel = true;
-                    error.Text = "Selecciona una categoría.";
-                    return;
-                }
+                    var errorDialog = new ContentDialog
+                    {
+                        Title = "Error de Validación",
+                        Content = mensajeError,
+                        CloseButtonText = "Aceptar",
+                        XamlRoot = dialog.XamlRoot
+                    };
+                    await errorDialog.ShowAsync();
 
-                if (!decimal.TryParse(precioCompra.Text, out decimal pc) || pc <= 0)
-                {
-                    e.Cancel = true;
-                    error.Text = "Precio compra inválido.";
-                    return;
-                }
-
-                if (!decimal.TryParse(precioVenta.Text, out decimal pv) || pv <= 0)
-                {
-                    e.Cancel = true;
-                    error.Text = "Precio venta inválido.";
-                    return;
-                }
-
-                if (!int.TryParse(stock.Text, out int st) || st < 0)
-                {
-                    e.Cancel = true;
-                    error.Text = "Stock inválido.";
-                    return;
-                }
-
-                if (pc >= pv)
-                {
-                    e.Cancel = true;
-                    error.Text = "Venta debe ser mayor que compra.";
-                    return;
-                }
-
-                if (proveedor.SelectedValue is null)
-                {
-                    e.Cancel = true;
-                    error.Text = "Selecciona proveedor.";
+                    await dialog.ShowAsync();
                     return;
                 }
 
@@ -605,6 +586,8 @@ namespace piaWinUI.Views
                 producto.Stock = st;
                 producto.IdProveedor = (int)proveedor.SelectedValue;
                 producto.ImagenPath = imagenPath.Text;
+
+                deferral.Complete();
             };
 
             return dialog;
