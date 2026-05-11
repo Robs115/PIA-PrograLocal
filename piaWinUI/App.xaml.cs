@@ -44,11 +44,11 @@ namespace piaWinUI
         {
             this.InitializeComponent();
 
-            Directory.CreateDirectory(DataFolder);
+            Directory.CreateDirectory(FilePaths.DataFolder);
 
 
 
-            if (!File.Exists(UsersFilePath))
+            if (!File.Exists(FilePaths.Users))
             {
                 var defaultUsers = new[]
                 {
@@ -60,8 +60,6 @@ namespace piaWinUI
                     JsonSerializer.Serialize(defaultUsers, new JsonSerializerOptions { })
                 );
             }
-
-
 
         }
         public static string CajaFilePath => System.IO.Path.Combine(DataFolder, "caja.json");
