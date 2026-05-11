@@ -20,6 +20,18 @@
                            FontWeight="Bold"
                            Margin="20,0,0,0"
                            VerticalAlignment="Center"/>
+
+                <Button Content="Exportar a Excel"
+                    Click="ExportarExcel_Click"
+                    Grid.Column="2"
+                        Margin="20 0 0 0"
+                    Padding="12,6"/>
+
+                <Button Content="Exportar a Excel (Detallado)"
+                    Click="ExportarExcelFullDetalle_Click"
+                    Margin="10,0,0,0"/>
+
+
             </StackPanel>
 
             <!-- TABLA -->

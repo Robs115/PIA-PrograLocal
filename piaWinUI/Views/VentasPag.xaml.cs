@@ -189,7 +189,7 @@ namespace piaWinUI.Views
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
 
-            var regex = @"^(?!.* )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            var regex = @"^(?!.* )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
@@ -375,7 +375,7 @@ namespace piaWinUI.Views
             }
 
             var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
-
+            decimal cambio = 0;
             if (carrito.Count == 0)
             {
                 await ShowDialogAsync("Error", "No hay productos en la venta");
@@ -447,7 +447,7 @@ namespace piaWinUI.Views
                 }
 
                 // Si necesitas hacer algo con el cambio, la variable está aquí
-                decimal cambio = efectivoEntregado - total;
+                 cambio = efectivoEntregado - total;
             }
 
             // --- 2. GUARDAR LA VENTA EN LA BASE DE DATOS (Aplica para ambos pagos) ---
@@ -511,9 +511,10 @@ namespace piaWinUI.Views
             {
                 ColumnDefinitions =
         {
-            new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Producto
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Producto
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Cantidad
-            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }  // Subtotal
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },  // Subtotal
+          // Columna oculta para evitar que el texto se estire demasiado
         },
                 RowSpacing = 4,
                 Margin = new Thickness(0, 10, 0, 10)
@@ -524,6 +525,7 @@ namespace piaWinUI.Views
             var headerProducto = new TextBlock { Text = "Producto", FontWeight = FontWeights.Bold };
             var headerCant = new TextBlock { Text = "Cant.", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
             var headerSubtotal = new TextBlock { Text = "Subtotal", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
+            
 
             Grid.SetRow(headerProducto, 0); Grid.SetColumn(headerProducto, 0);
             Grid.SetRow(headerCant, 0); Grid.SetColumn(headerCant, 1);
@@ -556,13 +558,24 @@ namespace piaWinUI.Views
 
             // Fila del total en el ticket
             gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            // 1. Creamos el control con sus propiedades base
             var txtTotal = new TextBlock
             {
-                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}",
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 10, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Right
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}"
             };
+
+            // 2. Si necesitas lógica específica por método en el futuro, 
+            // puedes modificar solo la propiedad necesaria aquí:
+            if (metododepago == "Efectivo")
+            {
+                
+                txtTotal.Text += $" | Cambio: {cambio}";
+            }
+
+            // 3. Configuración del Grid
             Grid.SetRow(txtTotal, row);
             Grid.SetColumnSpan(txtTotal, 3);
             gridTicket.Children.Add(txtTotal);
@@ -729,7 +742,7 @@ namespace piaWinUI.Views
             {
                 Title = "Ventas de Hoy",
                 CloseButtonText = "Cerrar",
-                PrimaryButtonText = "Imprimir Copia",
+                
                 Content = new ScrollViewer
                 {
                     Content = stackVentas,

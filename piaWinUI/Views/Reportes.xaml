@@ -22,6 +22,9 @@
             Click="GoVentasReport"
             Style="{StaticResource AccentButtonStyle}"/>
 
+                <Button Content="Exportar a PDF"
+                Click="ExportarPDF_Click" Margin="30 0 0 0"/>
+
             </StackPanel>
 
             <!-- 🔥 KPIs REALES -->
@@ -77,6 +80,7 @@
 
                     <lvc:CartesianChart 
                         Series="{Binding VentasSeries}" 
+                        XAxes="{Binding VentasXAxes}" 
                         Height="250"/>
 
                 </StackPanel>
@@ -96,7 +100,9 @@
                                Foreground="LightGray"/>
 
                     <lvc:CartesianChart 
+                        x:Name="TendenciaChart"
                         Series="{Binding TendenciaSeries}" 
+                        XAxes="{Binding TendenciaXAxes}"
                         Height="250"/>
 
                 </StackPanel>

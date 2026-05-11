@@ -10,6 +10,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
 using piaWinUI.Helpers;
 using piaWinUI.Models;
+using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,6 +47,7 @@ namespace piaWinUI
 
             Directory.CreateDirectory(FilePaths.DataFolder);
 
+            QuestPDF.Settings.License = LicenseType.Community;
 
 
             if (!File.Exists(FilePaths.Users))
