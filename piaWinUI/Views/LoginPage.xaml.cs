@@ -34,6 +34,12 @@ namespace piaWinUI.Views
         {
             InitializeComponent();
             _authService = new AuthService(App.UsersFilePath);
+            this.Loaded += Login_Loaded;
+        }
+
+        private void Login_Loaded(object sender, RoutedEventArgs e)
+        {
+            UsernameTextBox.Focus(FocusState.Programmatic);
         }
 
         private void SetStatus(string text, bool isError = true)
