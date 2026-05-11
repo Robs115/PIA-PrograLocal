@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
 using LiveChartsCore;
 using LiveChartsCore.SkiaSharpView;
+using LiveChartsCore.SkiaSharpView.Painting;
+using SkiaSharp;
 using piaWinUI.Services;
 using Microsoft.UI.Xaml;
 using QuestPDF.Fluent;
@@ -15,8 +16,6 @@ using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
 
-
-
 namespace piaWinUI.Views
 {
     public sealed partial class ReporteProductosPag : Page
@@ -24,9 +23,9 @@ namespace piaWinUI.Views
         public ISeries[] CategoriaSeries { get; set; }
         public ISeries[] StockSeries { get; set; }
         public Axis[] XAxes { get; set; }
+        public Axis[] YAxes { get; set; }
 
         private readonly ProductService _service = new ProductService();
-
         private bool _uiBusy = false;
 
         public ReporteProductosPag()
@@ -38,226 +37,89 @@ namespace piaWinUI.Views
 
         private async void CargarDatos()
         {
-            var productos = await _service.GetAllAsync();
+            var productos = await _service.GetAllAsync() ?? new List<Models.Producto>();
 
-            // PIE
             CategoriaSeries = productos
                 .GroupBy(p => p.Categoria)
                 .Select(g => new PieSeries<double>
                 {
                     Values = new double[] { g.Count() },
-                    Name = g.Key
+                    Name = g.Key,
+                    InnerRadius = 60,
+                    HoverPushout = 15,
+                    Stroke = new SolidColorPaint(SKColor.Parse("#2C2C2C")) { StrokeThickness = 3 },
+                    DataLabelsPaint = new SolidColorPaint(SKColors.White),
+                    DataLabelsPosition = LiveChartsCore.Measure.PolarLabelsPosition.Outer,
+                    // ✨ CORRECCIÓN: Usar .Model en lugar de .PrimaryValue
+                    DataLabelsFormatter = point => $"{point.Context.Series.Name} ({point.Model})"
                 }).ToArray();
 
-            // STOCK
             StockSeries = new ISeries[]
             {
                 new ColumnSeries<double>
                 {
                     Values = productos.Select(p => (double)p.Stock).ToArray(),
-                    Name = "Stock"
+                    Name = "Stock",
+                    Fill = new LinearGradientPaint(new[] { SKColor.Parse("#81C784"), SKColor.Parse("#2E7D32") }, new SKPoint(0.5f, 0), new SKPoint(0.5f, 1)),
+                    MaxBarWidth = 40,
+                    Rx = 10,
+                    Ry = 10,
+                    DataLabelsPaint = new SolidColorPaint(SKColors.White),
+                    DataLabelsPosition = LiveChartsCore.Measure.DataLabelsPosition.Top,
+                    // ✨ CORRECCIÓN: Usar .Model
+                    DataLabelsFormatter = point => $"{point.Model}"
                 }
             };
 
-            XAxes = new Axis[]
-            {
-                new Axis
-                {
-                    Labels = productos.Select(p => p.Nombre).ToArray(),
-                    LabelsRotation = 20
-                }
-            };
+            XAxes = new Axis[] { new Axis { Labels = productos.Select(p => p.Nombre).ToArray(), LabelsPaint = new SolidColorPaint(SKColor.Parse("#B0B0B0")) } };
+            YAxes = new Axis[] { new Axis { LabelsPaint = new SolidColorPaint(SKColor.Parse("#B0B0B0")), SeparatorsPaint = new SolidColorPaint(SKColor.Parse("#404040")) { StrokeThickness = 1 } } };
 
-            // KPI
-            var total = productos.Sum(p => p.ValorInventario);
-            InventarioText.Text = $"${total:F2}";
-
-            DataContext = null;
-            DataContext = this;
+            var valorTotal = productos.Sum(p => p.Stock * p.PrecioCompra);
+            InventarioText.Text = valorTotal.ToString("C");
         }
 
-        private void Volver_Click(object sender, RoutedEventArgs e)
-        {
-            Frame.Navigate(typeof(Reportes));
-        }
+        private void Volver_Click(object sender, RoutedEventArgs e) => Frame.GoBack();
 
         private async void ExportarPDF_Click(object sender, RoutedEventArgs e)
         {
             if (_uiBusy) return;
-
             _uiBusy = true;
-
-            var btn = (Button)sender;
-            btn.IsEnabled = false;
 
             try
             {
-                _uiBusy = true;
-
-
-                var productos = await _service.GetAllAsync();
-                var totalInventario = productos.Sum(p => p.ValorInventario);
-
-                var porCategoria = productos
-                    .GroupBy(p => p.Categoria)
-                    .Select(g => new
-                    {
-                        Categoria = g.Key,
-                        Cantidad = g.Count()
-                    })
-                    .OrderByDescending(x => x.Cantidad)
-                    .ToList();
-
-                var picker = new FileSavePicker();
-                var hwnd = WindowNative.GetWindowHandle(App.MainWindow);
-                InitializeWithWindow.Initialize(picker, hwnd);
-
-                picker.SuggestedFileName = "ReporteProductos";
-                picker.FileTypeChoices.Add("PDF", new List<string> { ".pdf" });
+                var picker = new FileSavePicker { SuggestedFileName = $"Reporte_Productos_{DateTime.Now:yyyyMMdd}" };
+                picker.FileTypeChoices.Add("PDF", new List<string>() { ".pdf" });
+                InitializeWithWindow.Initialize(picker, WindowNative.GetWindowHandle(App.MainWindow));
 
                 StorageFile file = await picker.PickSaveFileAsync();
                 if (file == null) return;
 
-                string path = file.Path;
+                var productos = await _service.GetAllAsync();
+                QuestPDF.Settings.License = LicenseType.Community;
 
                 Document.Create(container =>
                 {
                     container.Page(page =>
                     {
-                        page.Margin(30);
-
-                        page.Header()
-                            .Text("Reporte de Productos")
-                            .FontSize(20)
-                            .Bold();
-
-                        page.Content().Column(col =>
+                        page.Margin(50);
+                        page.Header().Column(col =>
                         {
-                            col.Spacing(12);
-
-                            // =====================
-                            // KPI
-                            // =====================
-                            col.Item().Text($"Valor total inventario: ${totalInventario:F2}")
-                                .FontSize(14)
-                                .Bold();
-
-                            // =====================
-                            // RESUMEN CATEGORÍAS
-                            // =====================
-                            col.Item().Text("Resumen por categoría")
-                                .FontSize(16)
-                                .Bold();
-
-                            col.Item().Table(table =>
-                            {
-                                table.ColumnsDefinition(columns =>
-                                {
-                                    columns.RelativeColumn();
-                                    columns.ConstantColumn(120);
-                                });
-
-                                // HEADER
-                                table.Header(header =>
-                                {
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5)
-                                        .Text("Categoría").Bold();
-
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5).AlignCenter()
-                                        .Text("Cantidad").Bold();
-                                });
-
-                                // ROWS
-                                foreach (var c in porCategoria)
-                                {
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2).Padding(5)
-                                        .Text(c.Categoria ?? "Sin categoría");
-
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                                        .AlignCenter().Padding(5)
-                                        .Text(c.Cantidad.ToString());
-                                }
-                            });
-
-                            // =====================
-                            // PRODUCTOS
-                            // =====================
-                            col.Item().Text("Detalle de productos")
-                                .FontSize(16)
-                                .Bold();
-
-                            col.Item().Table(table =>
-                            {
-                                table.ColumnsDefinition(columns =>
-                                {
-                                    columns.RelativeColumn(2);
-                                    columns.RelativeColumn();
-                                    columns.ConstantColumn(80);
-                                    columns.ConstantColumn(100);
-                                });
-
-                                // HEADER
-                                table.Header(header =>
-                                {
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5)
-                                        .Text("Nombre").Bold();
-
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5)
-                                        .Text("Categoría").Bold();
-
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5)
-                                        .AlignCenter()
-                                        .Text("Stock").Bold();
-
-                                    header.Cell().Background(Colors.Grey.Lighten3)
-                                        .Border(1).Padding(5)
-                                        .AlignCenter()
-                                        .Text("Valor").Bold();
-                                });
-
-                                // ROWS
-                                foreach (var p in productos)
-                                {
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                                        .Padding(5)
-                                        .Text(p.Nombre);
-
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                                        .Padding(5)
-                                        .Text(p.Categoria);
-
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                                        .AlignCenter()
-                                        .Padding(5)
-                                        .Text(p.Stock.ToString());
-
-                                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                                        .AlignRight()
-                                        .Padding(5)
-                                        .Text(p.ValorInventario.ToString("F2"));
-                                }
-                            });
+                            col.Item().Text("Reporte de Productos").FontSize(24).SemiBold();
+                            // ✨ CORRECCIÓN: El Padding va ANTES del Text
+                            col.Item().PaddingBottom(10).Text($"Valor Total: {productos.Sum(p => p.Stock * p.PrecioCompra):C}");
                         });
-
-                        page.Footer()
-                            .AlignCenter()
-                            .Text($"Generado: {DateTime.Now:g}");
+                        page.Content().Table(table => {
+                            table.ColumnsDefinition(c => { c.RelativeColumn(3); c.RelativeColumn(1); });
+                            foreach (var p in productos)
+                            {
+                                table.Cell().Text(p.Nombre);
+                                table.Cell().AlignRight().Text(p.Stock.ToString());
+                            }
+                        });
                     });
-                })
-              .GeneratePdf(path);
+                }).GeneratePdf(file.Path);
             }
-
-            finally
-            {
-                _uiBusy = false;
-                btn.IsEnabled = true;
-            }
+            finally { _uiBusy = false; }
         }
-
     }
 }
