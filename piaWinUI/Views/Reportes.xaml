@@ -6,42 +6,108 @@
 
     <ScrollViewer>
         <StackPanel Padding="20" Spacing="20">
-            <TextBlock Text="Dashboard de Reportes" FontSize="28" FontWeight="Bold"/>
+
+            <!-- 🔹 TÍTULO -->
+            <TextBlock Text="Dashboard de Reportes"
+                       FontSize="28"
+                       FontWeight="Bold"/>
 
             <StackPanel Orientation="Horizontal" Spacing="10">
-                <Button Content="Productos" Click="GoProductosReport" Style="{StaticResource AccentButtonStyle}"/>
-                <Button Content="Ventas" Click="GoVentasReport" Style="{StaticResource AccentButtonStyle}"/>
-                <Button Content="Exportar a PDF" Click="ExportarPDF_Click" Margin="20,0,0,0"/>
+
+                <Button Content="Productos"
+            Click="GoProductosReport"
+            Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Ventas"
+            Click="GoVentasReport"
+            Style="{StaticResource AccentButtonStyle}"/>
+
+                <Button Content="Exportar a PDF"
+                Click="ExportarPDF_Click" Margin="30 0 0 0"/>
+
             </StackPanel>
 
+            <!-- 🔥 KPIs REALES -->
             <Grid ColumnDefinitions="*,*,*">
+
+                <!-- TOTAL VENTAS -->
                 <Border Background="#1E88E5" CornerRadius="10" Padding="15" Margin="5">
                     <StackPanel>
                         <TextBlock Text="Total ventas" Foreground="White" FontSize="12"/>
-                        <TextBlock x:Name="TotalVentasText" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock x:Name="TotalVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
                     </StackPanel>
                 </Border>
-                <Border Background="#43A047" CornerRadius="10" Padding="15" Margin="5" Grid.Column="1">
+
+                <!-- PROMEDIO -->
+                <Border Background="#43A047" CornerRadius="10" Padding="15" Margin="5">
                     <StackPanel>
-                        <TextBlock Text="Ingresos totales" Foreground="White" FontSize="12"/>
-                        <TextBlock x:Name="IngresosText" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock Text="Promedio por venta" Foreground="White" FontSize="12"/>
+                        <TextBlock x:Name="PromedioVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
                     </StackPanel>
                 </Border>
-                <Border Background="#F4511E" CornerRadius="10" Padding="15" Margin="5" Grid.Column="2">
+
+                <!-- CANTIDAD -->
+                <Border Background="#E53935" CornerRadius="10" Padding="15" Margin="5">
                     <StackPanel>
-                        <TextBlock Text="Productos vendidos" Foreground="White" FontSize="12"/>
-                        <TextBlock x:Name="ProdVendidosText" Foreground="White" FontSize="24" FontWeight="Bold"/>
+                        <TextBlock Text="Número de ventas" Foreground="White" FontSize="12"/>
+                        <TextBlock x:Name="CantidadVentasText"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="White"/>
                     </StackPanel>
                 </Border>
+
             </Grid>
 
+            <!-- 📊 BARRAS -->
             <Border Padding="15" CornerRadius="12" Background="#2C2C2C">
-                <lvc:CartesianChart Series="{Binding TendenciaSeries}" XAxes="{Binding TendenciaXAxes}" YAxes="{Binding TendenciaYAxes}" Height="300"/>
+                <StackPanel Spacing="8">
+
+                    <TextBlock Text="Ventas por día"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+                    <TextBlock Text="Total de ventas agrupadas por fecha"
+                               FontSize="12"
+                               Foreground="LightGray"/>
+
+                    <lvc:CartesianChart 
+                        Series="{Binding VentasSeries}" 
+                        XAxes="{Binding VentasXAxes}" 
+                        Height="250"/>
+
+                </StackPanel>
             </Border>
 
+            <!-- 📈 LÍNEA -->
             <Border Padding="15" CornerRadius="12" Background="#2C2C2C">
-                <lvc:PieChart Series="{Binding ProductosSeries}" Height="300" LegendPosition="Bottom"/>
+                <StackPanel Spacing="8">
+
+                    <TextBlock Text="Tendencia de ingresos"
+                               FontSize="18"
+                               FontWeight="SemiBold"
+                               Foreground="White"/>
+
+                    <TextBlock Text="Comportamiento de ingresos en el tiempo"
+                               FontSize="12"
+                               Foreground="LightGray"/>
+
+                    <lvc:CartesianChart 
+                        x:Name="TendenciaChart"
+                        Series="{Binding TendenciaSeries}" 
+                        XAxes="{Binding TendenciaXAxes}"
+                        Height="250"/>
+
+                </StackPanel>
             </Border>
+
         </StackPanel>
     </ScrollViewer>
 </Page>
