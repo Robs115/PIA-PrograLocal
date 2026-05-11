@@ -391,6 +391,8 @@ namespace piaWinUI.Views
                 };
                 if (await confirm.ShowAsync() != ContentDialogResult.Primary)
                     return;
+
+                await ProcesarPagoAnimacion();
             }
             else if (metododepago == "Efectivo")
             {
@@ -567,6 +569,45 @@ namespace piaWinUI.Views
             }
         }
 
+        private async Task ProcesarPagoAnimacion()
+        {
+            var procesandoStack = new StackPanel { Spacing = 20, Padding = new Thickness(20) };
+
+            var progressRing = new ProgressRing
+            {
+                IsActive = true,
+                Width = 60,
+                Height = 60,
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            var mensajeText = new TextBlock
+            {
+                Text = "Comunicando con terminal bancaria...",
+                HorizontalAlignment = HorizontalAlignment.Center
+            };
+
+            procesandoStack.Children.Add(progressRing);
+            procesandoStack.Children.Add(mensajeText);
+
+            var dialogProcesando = new ContentDialog
+            {
+                Title = "Procesando Pago",
+                Content = procesandoStack,
+                XamlRoot = this.Content.XamlRoot
+                // No ponemos botones para que el usuario no pueda cancelarlo a mitad del proceso
+            };
+
+            // Mostramos el diálogo
+            var mostrarTask = dialogProcesando.ShowAsync();
+
+            // Esperamos los 5 segundos
+            await Task.Delay(5000);
+
+            // Cerramos el diálogo de carga manualmente para que el código siga
+            dialogProcesando.Hide();
+        }
+
 
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -675,6 +716,8 @@ namespace piaWinUI.Views
 
             await ventasDialog.ShowAsync();
         }
+
+
 
         private Expander CrearVentaExpanderUI(Venta venta, List<DetalleVentas> detalles)
         {

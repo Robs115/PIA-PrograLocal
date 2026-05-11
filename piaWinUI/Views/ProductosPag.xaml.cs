@@ -545,7 +545,6 @@ namespace piaWinUI.Views
 
             categoria.SelectedItem = _categorias.FirstOrDefault(c => c.Nombre == producto.Categoria);
 
-            // Como ya validamos nulos arriba, podemos asignar los valores de forma más limpia
             var precioCompra = new TextBox
             {
                 Header = "Precio compra",
@@ -637,10 +636,20 @@ namespace piaWinUI.Views
             {
                 Spacing = 10,
                 Children =
-        {
-            nombre, descripcion, imagenPath, seleccionarImagen, codigoBarras,
-            categoria, precioCompra, precioVenta, stock, proveedor, error
-        }
+                {
+                    nombre, descripcion, imagenPath, seleccionarImagen, codigoBarras,
+                    categoria, precioCompra, precioVenta, stock, proveedor, error
+                }
+            };
+
+            // 🔥 NUEVO: Envolver el StackPanel en un ScrollViewer
+            var scrollViewer = new ScrollViewer
+            {
+                Content = panel,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                // Ajustamos los márgenes para que la barra de desplazamiento no se encime en el contenido
+                Margin = new Thickness(0, 0, -20, 0),
+                Padding = new Thickness(0, 0, 20, 0)
             };
 
             var dialog = new ContentDialog
@@ -648,7 +657,7 @@ namespace piaWinUI.Views
                 Title = isEdit ? "Editar producto" : "Nuevo producto",
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
-                Content = panel,
+                Content = scrollViewer, // 🔥 Asignar el ScrollViewer en lugar del panel
                 XamlRoot = this.XamlRoot
             };
 
@@ -732,10 +741,12 @@ namespace piaWinUI.Views
 
             return dialog;
         }
+
+
         private async Task<ContentDialog> OpenProductoDialog(Producto producto)
         {
             var nombre = new TextBox { Header = "Nombre", Text = producto.Nombre ?? "" };
-            var codigoBarras = new TextBox { Header = "Código de barras", Text = producto.CodigoBarras ?? ""};
+            var codigoBarras = new TextBox { Header = "Código de barras", Text = producto.CodigoBarras ?? "" };
             var descripcion = new TextBox { Header = "Descripción", Text = producto.Descripcion ?? "", AcceptsReturn = true };
             var precioCompra = new NumberBox { Header = "Precio Compra", Value = (double)producto.PrecioCompra, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
             var precioVenta = new NumberBox { Header = "Precio Venta", Value = (double)producto.PrecioVenta, SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline };
@@ -751,16 +762,25 @@ namespace piaWinUI.Views
                 SelectedValuePath = "Id",
                 SelectedValue = producto.IdProveedor == 0 ? null : (object)producto.IdProveedor,
                 HorizontalAlignment = HorizontalAlignment.Stretch
-            };
+            }; 
 
             var error = new TextBlock { Foreground = new SolidColorBrush(Microsoft.UI.Colors.Red), Margin = new Thickness(0, 10, 0, 0) };
 
             var panel = new StackPanel { Spacing = 10, Children = { nombre, descripcion, precioCompra, codigoBarras, precioVenta, stock, proveedor, error } };
 
+            // 🔥 NUEVO: Envolver el StackPanel en un ScrollViewer
+            var scrollViewer = new ScrollViewer
+            {
+                Content = panel,
+                VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
+                Margin = new Thickness(0, 0, -20, 0),
+                Padding = new Thickness(0, 0, 20, 0)
+            };
+
             var dialog = new ContentDialog
             {
                 Title = producto.Id == 0 ? "Nuevo Producto" : "Editar Producto",
-                Content = panel,
+                Content = scrollViewer, // 🔥 Asignar el ScrollViewer en lugar del panel
                 PrimaryButtonText = "Guardar",
                 CloseButtonText = "Cancelar",
                 DefaultButton = ContentDialogButton.Primary,
@@ -772,7 +792,7 @@ namespace piaWinUI.Views
                 decimal pc = (decimal)precioCompra.Value;
                 decimal pv = (decimal)precioVenta.Value;
                 int st = (int)stock.Value;
-                
+
 
                 if (string.IsNullOrWhiteSpace(nombre.Text))
                 {
