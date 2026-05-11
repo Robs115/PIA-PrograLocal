@@ -22,6 +22,26 @@ using Windows.Storage;
 
 namespace piaWinUI.Views
 {
+    // ✨ ESTRUCTURA PARA GUARDAR CADA MOVIMIENTO
+    public class MovimientoCaja
+    {
+        public DateTime Fecha { get; set; }
+        public string Tipo { get; set; }
+        public string Concepto { get; set; }
+        public decimal Monto { get; set; }
+    }
+
+    // ✨ ESTADO GLOBAL DE LA CAJA AÑADIDO AQUÍ ✨
+    public static class CajaState
+    {
+        public static bool IsCajaAbierta { get; set; } = false;
+        public static DateTime? HoraApertura { get; set; }
+        public static decimal FondoInicial { get; set; } = 0;
+
+        // Aquí se guardará el detalle de cada egreso/pedido y ahora también ingresos
+        public static List<MovimientoCaja> Movimientos { get; set; } = new List<MovimientoCaja>();
+    }
+
     public sealed partial class VentasPag : Page
     {
         // 🔥 1. SERVICIOS ACTUALIZADOS (Inyección de dependencias)
@@ -52,6 +72,8 @@ namespace piaWinUI.Views
             cargarCatalogo();
             ResultadosProductosList.ItemsSource = todosProductos;
 
+            // ✨ ACTUALIZAR BOTÓN DE CAJA AL CARGAR LA PÁGINA
+            ActualizarUIBotonCaja();
         }
 
         private void SoloNumeros(
@@ -119,10 +141,6 @@ namespace piaWinUI.Views
             }
         }
 
-        // Asegúrate de tener este using en la parte superior de tu archivo:
-        // using Microsoft.UI.Xaml.Media; (Si usas WinUI 3) 
-        // o using Windows.UI.Xaml.Media; (Si usas UWP/WinUI 2)
-
         private void NumberBoxCantidad_Loaded(object sender, RoutedEventArgs e)
         {
             if (sender is NumberBox numberBox)
@@ -158,9 +176,6 @@ namespace piaWinUI.Views
             return null;
         }
 
-
-
-
         private void Timer_Tick(object sender, object e)
         {
             // Actualiza el TextBlock con la hora actual
@@ -186,8 +201,6 @@ namespace piaWinUI.Views
             // Si el nuevo texto NO coincide con la expresión, cancelar el cambio
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
-
-
 
         private void AgregarProductoAlCarrito(Producto producto)
         {
@@ -272,10 +285,6 @@ namespace piaWinUI.Views
             CodigoBox.Text = "";
         }
 
-        // Obtiene el id del usuario logueado desde LocalSettings (clave "UserId").
-        // Si no existe devuelve 0.
-
-
         // 🔥 AGREGAR PRODUCTO
         private async void CargarProductos()
         {
@@ -288,8 +297,6 @@ namespace piaWinUI.Views
                 await ShowDialogAsync("Error", "No hay código.");
                 return;
             }
-
-         
 
             var producto = productos.FirstOrDefault(p => p.CodigoBarras == codigo);
 
@@ -337,7 +344,7 @@ namespace piaWinUI.Views
             }
         }
 
-        private void EscanearButton_Click (object sender, RoutedEventArgs e)
+        private void EscanearButton_Click(object sender, RoutedEventArgs e)
         {
             CargarProductos();
         }
@@ -360,6 +367,13 @@ namespace piaWinUI.Views
         // GUARDR VENTA
         private async void GuardarVenta_Click(string metododepago)
         {
+            // ✨ VALIDACIÓN: VERIFICAR SI LA CAJA ESTÁ ABIERTA
+            if (!CajaState.IsCajaAbierta)
+            {
+                await ShowDialogAsync("Caja Cerrada", "Debes abrir la caja antes de registrar una venta.");
+                return;
+            }
+
             var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
 
             if (carrito.Count == 0)
@@ -471,6 +485,24 @@ namespace piaWinUI.Views
             }
 
             await _productoService.SaveAllAsync(productos);
+
+            // ✨ REGISTRAR EL INGRESO EN LOS MOVIMIENTOS DE CAJA ✨
+            // Creamos un resumen de lo que se vendió (Ej: "2x Coca Cola, 1x Sabritas")
+            string articulosResumen = string.Join(", ", carrito.Select(c => $"{c.Cantidad}x {c.NombreProducto}"));
+
+            // Si el resumen es muy largo, lo cortamos para que no desborde la interfaz
+            if (articulosResumen.Length > 45)
+            {
+                articulosResumen = articulosResumen.Substring(0, 42) + "...";
+            }
+
+            CajaState.Movimientos.Add(new MovimientoCaja
+            {
+                Fecha = DateTime.Now,
+                Tipo = "Ingreso",
+                Concepto = $"Venta #{venta.Id} ({metododepago}): {articulosResumen}",
+                Monto = venta.Total
+            });
 
             // --- 3. CONSTRUIR EL TICKET ANTES DE LIMPIAR EL CARRITO ---
             string nombreCajero = SessionService.CurrentUser?.Username ?? "Desconocido";
@@ -606,9 +638,7 @@ namespace piaWinUI.Views
 
             // Cerramos el diálogo de carga manualmente para que el código siga
             dialogProcesando.Hide();
-        }   
-
-
+        }
 
         private void BuscarProductoBox_TextChanged(object sender, TextChangedEventArgs e)
         {
@@ -622,11 +652,11 @@ namespace piaWinUI.Views
 
             ResultadosProductosList.ItemsSource = filtrados;
         }
+
         private async void cargarCatalogo()
         {
 
             todosProductos = await _productoService.GetAllAsync() ?? new List<Producto>();
-
 
             //imprimir en consola para verificar que se cargaron los productos
             foreach (var item in todosProductos)
@@ -650,16 +680,12 @@ namespace piaWinUI.Views
                     return;
                 }
 
-
                 AgregarProductoAlCarrito(seleccionado);
             };
 
             // Asegurarse de que el GridView permita clicks
             ResultadosProductosList.IsItemClickEnabled = true;
         }
-
-
-
 
         private async void HistorialVentas_Click(object sender, RoutedEventArgs e)
         {
@@ -716,8 +742,6 @@ namespace piaWinUI.Views
 
             await ventasDialog.ShowAsync();
         }
-
-
 
         private Expander CrearVentaExpanderUI(Venta venta, List<DetalleVentas> detalles)
         {
@@ -793,6 +817,194 @@ namespace piaWinUI.Views
                 IsExpanded = false,
                 Margin = new Thickness(0, 0, 0, 10)
             };
+        }
+
+        // ✨ NUEVOS MÉTODOS DE LA CAJA IMPLEMENTADOS AL FINAL ✨
+        private void ActualizarUIBotonCaja()
+        {
+            if (CajaState.IsCajaAbierta)
+            {
+                TxtCaja.Text = "Cerrar Caja";
+                BtnCaja.Background = new SolidColorBrush(Microsoft.UI.Colors.OrangeRed);
+                BtnCaja.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
+                IconoCaja.Glyph = "\uE10A"; // Icono de X o Cancelar
+            }
+            else
+            {
+                TxtCaja.Text = "Abrir Caja";
+                BtnCaja.Background = new SolidColorBrush(Microsoft.UI.Colors.SeaGreen);
+                BtnCaja.Foreground = new SolidColorBrush(Microsoft.UI.Colors.White);
+                IconoCaja.Glyph = "\uE8C7"; // Icono de Caja
+            }
+        }
+
+        private async void BtnCaja_Click(object sender, RoutedEventArgs e)
+        {
+            if (!CajaState.IsCajaAbierta)
+            {
+                // ✨ ABRIR CAJA (NUEVO CONTROL ESTRICTO DE 5 CARACTERES Y SOLO NÚMEROS) ✨
+                var inputBox = new TextBox
+                {
+                    Header = "¿Con cuánto efectivo inicias la caja?",
+                    PlaceholderText = "Fondo de caja (Ej. 500)",
+                    MaxLength = 5, // Bloquea todo lo que exceda 5 dígitos
+                    InputScope = new InputScope { Names = { new InputScopeName { NameValue = InputScopeNameValue.Number } } }
+                };
+
+                // Bloqueamos cualquier tecla que no sea un número (letras, puntos, signos, etc.)
+                inputBox.BeforeTextChanging += (s, args) =>
+                {
+                    args.Cancel = args.NewText.Any(c => !char.IsDigit(c));
+                };
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Abrir Caja",
+                    Content = inputBox,
+                    PrimaryButtonText = "Abrir",
+                    CloseButtonText = "Cancelar",
+                    XamlRoot = this.Content.XamlRoot
+                };
+
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    decimal fondoInicial = 0;
+                    decimal.TryParse(inputBox.Text, out fondoInicial);
+
+                    CajaState.IsCajaAbierta = true;
+                    CajaState.HoraApertura = DateTime.Now;
+                    CajaState.FondoInicial = fondoInicial;
+                    CajaState.Movimientos.Clear(); // Limpiar movimientos anteriores al abrir
+                    ActualizarUIBotonCaja();
+                    await ShowDialogAsync("Éxito", $"Caja abierta exitosamente a las {CajaState.HoraApertura:HH:mm}.");
+                }
+            }
+            else
+            {
+                // CERRAR CAJA Y MOSTRAR RESUMEN
+                var todasLasVentas = await _ventaService.GetAllAsync() ?? new List<Venta>();
+
+                // Ventas SOLO desde que se abrió la caja
+                var ventasCaja = todasLasVentas.Where(v => v.Fecha >= CajaState.HoraApertura).ToList();
+
+                decimal totalEfectivo = ventasCaja.Where(v => v.MetodoPago == "Efectivo").Sum(v => v.Total);
+                decimal totalTarjeta = ventasCaja.Where(v => v.MetodoPago == "Tarjeta").Sum(v => v.Total);
+                decimal totalVendido = totalEfectivo + totalTarjeta;
+
+                // ✨ CALCULAR EGRESOS
+                decimal totalEgresos = CajaState.Movimientos.Where(m => m.Tipo == "Egreso").Sum(m => m.Monto);
+
+                // ✨ RESTAR EGRESOS DEL EFECTIVO ESPERADO
+                decimal totalEnCajaEfectivo = (CajaState.FondoInicial + totalEfectivo) - totalEgresos;
+
+                // ✨ CONSTRUIR LISTA DE MOVIMIENTOS PARA LA PANTALLA
+                var detallesMovimientos = new StringBuilder();
+                if (CajaState.Movimientos.Any())
+                {
+                    detallesMovimientos.AppendLine("\n\n--- DETALLE DE MOVIMIENTOS ---");
+                    // Ordenamos cronológicamente
+                    foreach (var mov in CajaState.Movimientos.OrderBy(m => m.Fecha))
+                    {
+                        string signo = mov.Tipo == "Ingreso" ? "+" : "-";
+                        detallesMovimientos.AppendLine($"• {mov.Fecha:HH:mm} | {mov.Concepto} | {signo}${mov.Monto}");
+                    }
+                }
+
+                var resumenTexto = $"Hora Apertura: {CajaState.HoraApertura:HH:mm}\n" +
+                                   $"Hora Cierre: {DateTime.Now:HH:mm}\n\n" +
+                                   $"Fondo Inicial: ${CajaState.FondoInicial}\n" +
+                                   $"Ventas Efectivo: ${totalEfectivo}\n" +
+                                   $"Ventas Tarjeta: ${totalTarjeta}\n" +
+                                   $"Total Vendido: ${totalVendido}\n" +
+                                   $"Egresos (Pedidos): -${totalEgresos}\n" +
+                                   $"-----------------------------\n" +
+                                   $"EFECTIVO ESPERADO EN CAJA: ${totalEnCajaEfectivo}" +
+                                   detallesMovimientos.ToString();
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Resumen de Cierre de Caja",
+                    Content = new ScrollViewer
+                    {
+                        Content = new TextBlock { Text = resumenTexto, FontWeight = FontWeights.SemiBold },
+                        MaxHeight = 400
+                    },
+                    PrimaryButtonText = "Cerrar Caja y Guardar",
+                    SecondaryButtonText = "Exportar a Excel (CSV)",
+                    CloseButtonText = "Cancelar",
+                    XamlRoot = this.Content.XamlRoot
+                };
+
+                var resultado = await dialog.ShowAsync();
+
+                if (resultado == ContentDialogResult.Primary || resultado == ContentDialogResult.Secondary)
+                {
+                    if (resultado == ContentDialogResult.Secondary)
+                    {
+                        await ExportarVentasAExcel(ventasCaja, totalEfectivo, totalTarjeta, totalVendido, totalEgresos, totalEnCajaEfectivo);
+                    }
+
+                    // Reiniciar estado
+                    CajaState.IsCajaAbierta = false;
+                    CajaState.HoraApertura = null;
+                    CajaState.FondoInicial = 0;
+                    CajaState.Movimientos.Clear();
+                    ActualizarUIBotonCaja();
+                    await ShowDialogAsync("Caja Cerrada", "La caja se ha cerrado correctamente.");
+                }
+            }
+        }
+
+        private async Task ExportarVentasAExcel(List<Venta> ventas, decimal totalEf, decimal totalTarj, decimal totalVen, decimal totalEgresos, decimal efectivoEsperado)
+        {
+            try
+            {
+                var csv = new StringBuilder();
+                csv.AppendLine("REPORTE DE CAJA");
+                csv.AppendLine($"Fecha Apertura:,{CajaState.HoraApertura}");
+                csv.AppendLine($"Fecha Cierre:,{DateTime.Now}");
+                csv.AppendLine($"Fondo Inicial:,${CajaState.FondoInicial}");
+                csv.AppendLine($"Ventas Efectivo:,${totalEf}");
+                csv.AppendLine($"Ventas Tarjeta:,${totalTarj}");
+                csv.AppendLine($"Total Vendido:,${totalVen}");
+                csv.AppendLine($"Egresos (Pedidos):,-${totalEgresos}");
+                csv.AppendLine($"EFECTIVO ESPERADO EN CAJA:,${efectivoEsperado}");
+                csv.AppendLine();
+
+                // ✨ IMPRIMIR CADA MOVIMIENTO / EGRESO EN EL EXCEL
+                if (CajaState.Movimientos.Any())
+                {
+                    csv.AppendLine("MOVIMIENTOS DE CAJA (INGRESOS Y EGRESOS)");
+                    csv.AppendLine("Fecha,Tipo,Concepto,Monto");
+                    foreach (var mov in CajaState.Movimientos.OrderBy(m => m.Fecha))
+                    {
+                        string signo = mov.Tipo == "Ingreso" ? "" : "-";
+                        // Se encierra el concepto entre comillas para que el Excel no se rompa si hay comas en los artículos
+                        csv.AppendLine($"{mov.Fecha:yyyy-MM-dd HH:mm:ss},{mov.Tipo},\"{mov.Concepto}\",{signo}${mov.Monto}");
+                    }
+                    csv.AppendLine();
+                }
+
+                csv.AppendLine("VENTAS REALIZADAS");
+                csv.AppendLine("Folio,Fecha,Cajero,Metodo de Pago,Total");
+                foreach (var v in ventas)
+                {
+                    csv.AppendLine($"{v.Id},{v.Fecha:yyyy-MM-dd HH:mm:ss},{v.UserName},{v.MetodoPago},${v.Total}");
+                }
+
+                // Guardar en la carpeta Documentos del usuario
+                string docsPath = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                string fileName = $"CorteDeCaja_{DateTime.Now:yyyyMMdd_HHmmss}.csv";
+                string fullPath = Path.Combine(docsPath, fileName);
+
+                await File.WriteAllTextAsync(fullPath, csv.ToString(), Encoding.UTF8);
+
+                await ShowDialogAsync("Exportado", $"Resumen guardado exitosamente en tus Documentos como:\n{fileName}");
+            }
+            catch (Exception ex)
+            {
+                await ShowDialogAsync("Error al Exportar", ex.Message);
+            }
         }
     }
 }

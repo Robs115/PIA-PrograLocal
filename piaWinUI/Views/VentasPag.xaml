@@ -6,12 +6,9 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:converters="using:piaWinUI.Converters">
 
-
     <Page.Resources>
-
         <converters:InverseBoolToVisibilityConverter
             x:Key="InverseBoolToVisibilityConverter"/>
-
     </Page.Resources>
 
     <Grid Padding="24"
@@ -23,7 +20,6 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <!-- HEADER -->
         <RelativePanel Grid.Row="0">
 
             <StackPanel x:Name="TitleGroup"
@@ -33,13 +29,10 @@
                         RelativePanel.AlignVerticalCenterWithPanel="True">
 
                 <Image x:Name="ImagenProducto"
-Source="https://static.vecteezy.com/system/resources/previews/015/664/900/non_2x/marketing-sales-icon-outline-style-vector.jpg"
-
-Stretch="Uniform"
-MaxWidth="50"
-MaxHeight="50"/>
-
-
+                       Source="https://static.vecteezy.com/system/resources/previews/015/664/900/non_2x/marketing-sales-icon-outline-style-vector.jpg"
+                       Stretch="Uniform"
+                       MaxWidth="50"
+                       MaxHeight="50"/>
 
                 <TextBlock Text="Ventas"
                            FontSize="32"
@@ -48,25 +41,31 @@ MaxHeight="50"/>
 
             </StackPanel>
 
-            <Button x:Name="BtnVentasRecientes"
-                    RelativePanel.AlignRightWithPanel="True"
-                    RelativePanel.AlignVerticalCenterWith="TitleGroup"
-                    Click="HistorialVentas_Click">
+            <StackPanel Orientation="Horizontal" 
+                        Spacing="10" 
+                        RelativePanel.AlignRightWithPanel="True" 
+                        RelativePanel.AlignVerticalCenterWith="TitleGroup">
 
-                <StackPanel Orientation="Horizontal"
-                            Spacing="8">
+                <Button x:Name="BtnCaja" Click="BtnCaja_Click" Background="#E0E0E0">
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <FontIcon x:Name="IconoCaja" Glyph="&#xE8C7;"/>
+                        <TextBlock x:Name="TxtCaja" Text="Abrir Caja" FontWeight="Bold"/>
+                    </StackPanel>
+                </Button>
 
-                    <FontIcon Glyph="&#xE81C;" />
+                <Button x:Name="BtnVentasRecientes"
+                        Click="HistorialVentas_Click">
+                    <StackPanel Orientation="Horizontal"
+                                Spacing="8">
+                        <FontIcon Glyph="&#xE81C;"/>
+                        <TextBlock Text="Ventas Recientes"/>
+                    </StackPanel>
+                </Button>
 
-                    <TextBlock Text="Ventas Recientes"/>
-
-                </StackPanel>
-
-            </Button>
+            </StackPanel>
 
         </RelativePanel>
 
-        <!-- CONTENIDO -->
         <Grid Grid.Row="1"
               ColumnSpacing="20">
 
@@ -75,10 +74,8 @@ MaxHeight="50"/>
                 <ColumnDefinition Width="600"/>
             </Grid.ColumnDefinitions>
 
-            <!-- CATÁLOGO -->
             <StackPanel Spacing="15">
 
-                <!-- BUSCADORES -->
                 <Grid ColumnSpacing="10">
 
                     <Grid.ColumnDefinitions>
@@ -120,7 +117,6 @@ MaxHeight="50"/>
 
                 </Grid>
 
-                <!-- PRODUCTOS -->
                 <GridView x:Name="ResultadosProductosList"
                           SelectionMode="None"
                           Height="400"
@@ -149,7 +145,6 @@ MaxHeight="50"/>
                                             HorizontalAlignment="Center"
                                             Spacing="8">
 
-                                    <!-- IMAGEN -->
                                     <Border Width="95"
                                             Height="95"
                                             CornerRadius="10"
@@ -159,26 +154,15 @@ MaxHeight="50"/>
 
                                         <Grid>
 
-                                            <!-- IMAGEN -->
                                             <Image Source="{Binding ImagenCompleta, TargetNullValue=''}"
                                                Stretch="UniformToFill"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"/>
 
-
-                                            <!-- ICONO 
-
-                                            <SymbolIcon Symbol="Shop"
-                                                Foreground="Gray"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Visibility="{Binding TieneImagen, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                -->
                                         </Grid>
 
                                     </Border>
 
-                                    <!-- NOMBRE -->
                                     <TextBlock Text="{Binding Nombre}"
                                                FontWeight="SemiBold"
                                                FontSize="14"
@@ -187,7 +171,6 @@ MaxHeight="50"/>
                                                TextWrapping="Wrap"
                                                MaxLines="2"/>
 
-                                    <!-- PRECIO -->
                                     <Border Background="{ThemeResource SystemAccentColorLight3}"
                                             CornerRadius="8"
                                             Padding="8,4">
@@ -215,7 +198,6 @@ MaxHeight="50"/>
 
             </StackPanel>
 
-            <!-- PANEL DERECHO -->
             <Border Grid.Column="1"
                     Background="{ThemeResource LayerFillColorDefaultBrush}"
                     BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
@@ -231,7 +213,6 @@ MaxHeight="50"/>
                         <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- TABLA -->
                     <controls:DataGrid Grid.Row="0"
                                        x:Name="ProductosList"
                                        AutoGenerateColumns="False"
@@ -246,7 +227,6 @@ MaxHeight="50"/>
 
                         <controls:DataGrid.Columns>
 
-                            <!-- PRODUCTO -->
                             <controls:DataGridTemplateColumn Header="Producto"
                                                              Width="2*">
 
@@ -264,7 +244,6 @@ MaxHeight="50"/>
 
                             </controls:DataGridTemplateColumn>
 
-                            <!-- CANTIDAD -->
                             <controls:DataGridTemplateColumn Header="Cantidad"
                                                              Width="2*">
 
@@ -285,7 +264,6 @@ MaxHeight="50"/>
                                                    ValidationMode="InvalidInputOverwritten">
 
                                         </NumberBox>
-                                                   
 
                                     </DataTemplate>
 
@@ -293,7 +271,6 @@ MaxHeight="50"/>
 
                             </controls:DataGridTemplateColumn>
 
-                            <!-- PRECIO -->
                             <controls:DataGridTemplateColumn Header="Costo Unitario"
                                                              Width="3*">
 
@@ -316,7 +293,6 @@ MaxHeight="50"/>
 
                             </controls:DataGridTemplateColumn>
 
-                            <!-- SUBTOTAL -->
                             <controls:DataGridTemplateColumn Header="Subtotal"
                                                              Width="2*">
 
@@ -339,7 +315,6 @@ MaxHeight="50"/>
 
                             </controls:DataGridTemplateColumn>
 
-                            <!-- ELIMINAR -->
                             <controls:DataGridTemplateColumn Header="Acción"
                                                              Width="2*">
 
@@ -364,7 +339,6 @@ MaxHeight="50"/>
 
                     </controls:DataGrid>
 
-                    <!-- TOTAL -->
                     <StackPanel Grid.Row="1"
                                 HorizontalAlignment="Right"
                                 Margin="0,0,0,20">
@@ -386,7 +360,6 @@ MaxHeight="50"/>
 
                     </StackPanel>
 
-                    <!-- BOTONES -->
                     <Grid Grid.Row="2"
                           ColumnSpacing="10">
 
@@ -395,7 +368,6 @@ MaxHeight="50"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- EFECTIVO -->
                         <Button Grid.Column="0"
                                 Height="90"
                                 HorizontalAlignment="Stretch"
@@ -418,13 +390,11 @@ MaxHeight="50"/>
 
                         </Button>
 
-                        <!-- TARJETA -->
                         <Button Grid.Column="1"
                                 Height="90"
                                 HorizontalAlignment="Stretch"
-                            
-                            Click="BotonTarjeta_Click"
-                             Background="{ThemeResource SystemAccentColor}"
+                                Click="BotonTarjeta_Click"
+                                Background="{ThemeResource SystemAccentColor}"
                                 Foreground="White">
                             <StackPanel Spacing="8">
 
@@ -449,7 +419,6 @@ MaxHeight="50"/>
 
         </Grid>
 
-        <!-- FOOTER -->
         <TextBlock Grid.Row="2"
                    x:Name="CajeroHoraTextBlock"
                    Foreground="Gray"

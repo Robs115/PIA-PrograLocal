@@ -473,6 +473,41 @@ namespace piaWinUI.Views
                     return;
                 }
 
+                // ✨ LÓGICA DE CAJA (AÑADIDA) ✨
+                if (!CajaState.IsCajaAbierta)
+                {
+                    await MostrarDialogo("Caja Cerrada",
+                        "Debes abrir la caja (en Ventas) para poder registrar un pago a proveedor.");
+                    return;
+                }
+
+                // ✨ CALCULAR EL COSTO AUTOMÁTICAMENTE ✨
+                // Multiplicamos la cantidad solicitada por el precio.
+                // NOTA: Si en tu modelo 'Producto' tienes una propiedad llamada 'PrecioCompra' o 'Costo',
+                // puedes cambiar 'producto.PrecioVenta' por esa propiedad para mayor exactitud.
+                decimal costoCalculado = cantidad * producto.PrecioVenta;
+
+                var dialogMonto = new ContentDialog
+                {
+                    Title = "Registrar Egreso de Caja",
+                    Content = $"Se descontarán automáticamente ${costoCalculado} de la caja por el pedido de {cantidad}x {producto.Nombre}.\n\n¿Deseas continuar?",
+                    PrimaryButtonText = "Registrar",
+                    CloseButtonText = "Cancelar",
+                    XamlRoot = this.Content.XamlRoot
+                };
+
+                if (await dialogMonto.ShowAsync() != ContentDialogResult.Primary)
+                    return;
+
+                decimal montoEgreso = costoCalculado;
+
+                if (montoEgreso <= 0)
+                {
+                    await MostrarDialogo("Monto inválido", "El egreso debe ser mayor a 0.");
+                    return;
+                }
+                // ✨ FIN LÓGICA DE CAJA ✨
+
                 var pedidosModel =
                     await _pedidoService.GetAllAsync();
 
@@ -500,6 +535,15 @@ namespace piaWinUI.Views
 
                 await _productService.SaveAllAsync(_productos);
 
+                // ✨ REGISTRAR EL MOVIMIENTO EN LA CAJA ✨
+                CajaState.Movimientos.Add(new MovimientoCaja
+                {
+                    Fecha = DateTime.Now,
+                    Tipo = "Egreso",
+                    Concepto = $"Pedido: {cantidad}x {producto.Nombre} a {proveedor.Nombre}",
+                    Monto = montoEgreso
+                });
+
                 // 🔥 RECARGAR
                 await CargarPedidos();
 
@@ -507,7 +551,7 @@ namespace piaWinUI.Views
                 LimpiarFormulario();
 
                 await MostrarDialogo("Pedido registrado",
-                    "El pedido fue registrado correctamente.");
+                    "El pedido y el egreso se registraron correctamente.");
             }
             catch (Exception ex)
             {
