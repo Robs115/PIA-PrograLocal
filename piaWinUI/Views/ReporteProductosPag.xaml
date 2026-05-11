@@ -11,6 +11,10 @@
 
             <TextBlock Text="Reporte de Productos" FontSize="28"/>
 
+            <Button Content="Exportar a PDF"
+                    Click="ExportarPDF_Click"
+                    Margin="10,0,0,0"/>
+
             <!-- CATEGORIAS -->
             <Border Background="#2C2C2C" Padding="15" CornerRadius="12">
                 <StackPanel>
