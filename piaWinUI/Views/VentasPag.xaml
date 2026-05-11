@@ -9,6 +9,8 @@
     <Page.Resources>
         <converters:InverseBoolToVisibilityConverter
             x:Key="InverseBoolToVisibilityConverter"/>
+        
+        
     </Page.Resources>
 
     <Grid Padding="24"
@@ -119,7 +121,7 @@
 
                 <GridView x:Name="ResultadosProductosList"
                           SelectionMode="None"
-                          Height="400"
+                          Height="800"
                           IsItemClickEnabled="True">
 
                     <GridView.ItemsPanel>

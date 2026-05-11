@@ -467,11 +467,9 @@ namespace piaWinUI.Views
 
             ventas.Add(venta);
             await _ventaService.SaveAllAsync(ventas);
-
             var detalles = await _detalleVentasService.GetAllAsync() ?? new List<DetalleVentas>();
             detalles.AddRange(carrito);
             await _detalleVentasService.SaveAllAsync(detalles);
-
             var productos = await _productoService.GetAllAsync() ?? new List<Producto>();
             foreach (var item in carrito)
             {
