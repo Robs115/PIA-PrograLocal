@@ -295,7 +295,7 @@ MaxHeight="50"/>
 
                             <!-- PRECIO -->
                             <controls:DataGridTemplateColumn Header="Costo Unitario"
-                                                             Width="2*">
+                                                             Width="3*">
 
                                 <controls:DataGridTemplateColumn.CellTemplate>
 
