@@ -26,6 +26,8 @@ namespace piaWinUI.Views
 
         public string Nombre => Model.Nombre;
         public string Descripcion => Model.Descripcion;
+
+        public string CodigoBarras => Model.CodigoBarras;
         public decimal PrecioCompra => Model.PrecioCompra;
         public decimal PrecioVenta => Model.PrecioVenta;
         public int IdProveedor => Model.IdProveedor;
@@ -99,9 +101,9 @@ namespace piaWinUI.Views
         {
             var productos = await _service.GetAllAsync();
             var proveedores = await _proveedorService.GetAllAsync();
-
+            
             _proveedores = proveedores.ToDictionary(p => p.Id, p => p.Nombre);
-
+           
             _productosFuente = productos.Select(p => new ProductoView(p)
             {
                 ProveedorNombre = _proveedores.TryGetValue(p.IdProveedor, out var nombre) ? nombre : "Desconocido"
@@ -166,7 +168,53 @@ namespace piaWinUI.Views
         // FILTROS
         // =========================
 
-        private void OnFilterChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args) => AplicarFiltros();
+        // Añade estas variables a nivel de tu clase (arriba de tus métodos)
+        private bool _modificandoTexto = false;
+        private readonly int MaxCaracteres = 50; // Cambia este número al límite que necesites
+
+        private void OnFilterChanged(AutoSuggestBox sender, AutoSuggestBoxTextChangedEventArgs args)
+        {
+            // Solo validamos si el cambio lo hizo el usuario (tecleando o pegando texto)
+            if (args.Reason == AutoSuggestionBoxTextChangeReason.UserInput)
+            {
+                // Evitar un ciclo infinito cuando cambiamos el texto por código
+                if (_modificandoTexto) return;
+
+                string textoOriginal = sender.Text;
+                string textoLimpio = textoOriginal;
+
+                // 1. Limitar el número de caracteres
+                if (textoLimpio.Length > MaxCaracteres)
+                {
+                    textoLimpio = textoLimpio.Substring(0, MaxCaracteres);
+                }
+
+                // 2. Solo permitir letras, números y espacios
+                // El Regex remueve todo lo que NO (^) sea letra, número, espacio, acento o la 'ñ'
+                textoLimpio = System.Text.RegularExpressions.Regex.Replace(textoLimpio, @"[^a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]", "");
+
+                // 3. Reemplazar dos o más espacios consecutivos por un solo espacio
+                textoLimpio = System.Text.RegularExpressions.Regex.Replace(textoLimpio, @" {2,}", " ");
+
+                // Si el usuario introdujo algo inválido y tuvimos que limpiar el texto
+                if (textoOriginal != textoLimpio)
+                {
+                    _modificandoTexto = true; // Bloqueamos temporalmente
+
+                    sender.Text = textoLimpio; // Actualizamos el control con el texto limpio
+
+                    _modificandoTexto = false; // Desbloqueamos
+
+                    // Retornamos aquí. Al cambiar "sender.Text", este evento se volverá a 
+                    // disparar automáticamente, pero esta vez con el texto limpio, 
+                    // cayendo directamente al "AplicarFiltros()" de abajo.
+                    return;
+                }
+            }
+
+            // Si el texto es válido o el cambio vino por código, aplicamos los filtros
+            AplicarFiltros();
+        }
 
         private void OnFilterChanged(object sender, SelectionChangedEventArgs e)
         {

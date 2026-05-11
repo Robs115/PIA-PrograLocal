@@ -255,8 +255,10 @@ MaxHeight="50"/>
                                     <DataTemplate>
 
                                         <TextBlock Text="{Binding NombreProducto}"
-                                                   VerticalAlignment="Center"
-                                                   HorizontalAlignment="Center"/>
+           VerticalAlignment="Center"
+           HorizontalAlignment="Center" 
+           TextTrimming="CharacterEllipsis"
+           ToolTipService.ToolTip="{Binding NombreProducto}"/>
 
                                     </DataTemplate>
 
@@ -348,7 +350,9 @@ MaxHeight="50"/>
                                     <DataTemplate>
 
                                         <Button Click="EliminarProducto_Click"
-                                                Tag="{Binding}">
+                                                Tag="{Binding}"
+                                                VerticalAlignment="Center"
+                                                HorizontalAlignment="Center">
 
                                             <SymbolIcon Symbol="Delete"/>
 

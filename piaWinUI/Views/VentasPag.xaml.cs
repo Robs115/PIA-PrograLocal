@@ -174,7 +174,7 @@ namespace piaWinUI.Views
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
 
-            var regex = @"^(?!.* )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+            var regex = @"^(?!.* )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
@@ -479,9 +479,10 @@ namespace piaWinUI.Views
             {
                 ColumnDefinitions =
         {
-            new ColumnDefinition { Width = new GridLength(2, GridUnitType.Star) }, // Producto
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Producto
             new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }, // Cantidad
-            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }  // Subtotal
+            new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) },  // Subtotal
+          // Columna oculta para evitar que el texto se estire demasiado
         },
                 RowSpacing = 4,
                 Margin = new Thickness(0, 10, 0, 10)
@@ -492,6 +493,7 @@ namespace piaWinUI.Views
             var headerProducto = new TextBlock { Text = "Producto", FontWeight = FontWeights.Bold };
             var headerCant = new TextBlock { Text = "Cant.", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
             var headerSubtotal = new TextBlock { Text = "Subtotal", FontWeight = FontWeights.Bold, HorizontalAlignment = HorizontalAlignment.Right };
+            
 
             Grid.SetRow(headerProducto, 0); Grid.SetColumn(headerProducto, 0);
             Grid.SetRow(headerCant, 0); Grid.SetColumn(headerCant, 1);
@@ -526,7 +528,7 @@ namespace piaWinUI.Views
             gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
             var txtTotal = new TextBlock
             {
-                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}",
+                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}" ,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 10, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Right
@@ -703,7 +705,7 @@ namespace piaWinUI.Views
             {
                 Title = "Ventas de Hoy",
                 CloseButtonText = "Cerrar",
-                PrimaryButtonText = "Imprimir Copia",
+                
                 Content = new ScrollViewer
                 {
                     Content = stackVentas,
