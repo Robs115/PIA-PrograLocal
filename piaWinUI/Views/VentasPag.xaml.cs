@@ -606,7 +606,7 @@ namespace piaWinUI.Views
 
             // Cerramos el diálogo de carga manualmente para que el código siga
             dialogProcesando.Hide();
-        }
+        }   
 
 
 
