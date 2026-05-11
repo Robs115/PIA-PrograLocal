@@ -361,7 +361,7 @@ namespace piaWinUI.Views
         private async void GuardarVenta_Click(string metododepago)
         {
             var ventas = await _ventaService.GetAllAsync() ?? new List<Venta>();
-
+            decimal cambio = 0;
             if (carrito.Count == 0)
             {
                 await ShowDialogAsync("Error", "No hay productos en la venta");
@@ -433,7 +433,7 @@ namespace piaWinUI.Views
                 }
 
                 // Si necesitas hacer algo con el cambio, la variable está aquí
-                decimal cambio = efectivoEntregado - total;
+                 cambio = efectivoEntregado - total;
             }
 
             // --- 2. GUARDAR LA VENTA EN LA BASE DE DATOS (Aplica para ambos pagos) ---
@@ -526,13 +526,24 @@ namespace piaWinUI.Views
 
             // Fila del total en el ticket
             gridTicket.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            // 1. Creamos el control con sus propiedades base
             var txtTotal = new TextBlock
             {
-                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}" ,
                 FontWeight = FontWeights.Bold,
                 Margin = new Thickness(0, 10, 0, 0),
-                HorizontalAlignment = HorizontalAlignment.Right
+                HorizontalAlignment = HorizontalAlignment.Right,
+                Text = $"Total: ${venta.Total} | Pago: {venta.MetodoPago}"
             };
+
+            // 2. Si necesitas lógica específica por método en el futuro, 
+            // puedes modificar solo la propiedad necesaria aquí:
+            if (metododepago == "Efectivo")
+            {
+                
+                txtTotal.Text += $" | Cambio: {cambio}";
+            }
+
+            // 3. Configuración del Grid
             Grid.SetRow(txtTotal, row);
             Grid.SetColumnSpan(txtTotal, 3);
             gridTicket.Children.Add(txtTotal);
