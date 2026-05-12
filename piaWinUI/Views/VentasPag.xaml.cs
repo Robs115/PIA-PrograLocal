@@ -156,6 +156,7 @@ namespace piaWinUI.Views
             }
         }
 
+
         // Método auxiliar obligatorio para buscar elementos ocultos en la interfaz
         private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
         {

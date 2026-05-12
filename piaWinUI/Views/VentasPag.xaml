@@ -266,7 +266,8 @@
                                                    PlaceholderText="0"
                                                    PreviewKeyDown="NumberBoxCantidad_PreviewKeyDown"
                                                    Loaded="NumberBoxCantidad_Loaded"
-                                                   ValidationMode="InvalidInputOverwritten">
+                                                   ValidationMode="InvalidInputOverwritten"
+                                                   LostFocus="NumberBoxCantidad_Loaded">
 
                                         </NumberBox>
 
