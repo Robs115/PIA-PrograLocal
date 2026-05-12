@@ -274,102 +274,114 @@ namespace piaWinUI.Views
         // Editar proveedor
         private async void EditarProveedor_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button button)
-                
-                return;
-
-            // Intentar convertir el Tag a Proveedor
-            var proveedorSeleccionado = button.Tag as Proveedor;
-            if (proveedorSeleccionado == null)
-                
-            return;
-
-            // Dialogo de edición
-            var nombreDialog = new TextBox { Text = proveedorSeleccionado.Nombre };
-            nombreDialog.BeforeTextChanging += (s, args) =>
+            try
             {
-                var regex = @"^(?!.*  )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
-                args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
-            };
-            var telefonoDialog = new TextBox { Text = proveedorSeleccionado.Telefono };
-            telefonoDialog.BeforeTextChanging += (s, args) =>
-            {
-                args.Cancel = !args.NewText.All(char.IsDigit);
-            };
+                if (sender is not Button button || button.Tag is not Proveedor proveedorSeleccionado)
+                    return;
 
-            var emailDialog = new TextBox { Text = proveedorSeleccionado.Email };
+                // Cargamos la lista una sola vez para validaciones y guardado (Optimiza PC de bajos recursos)
+                var proveedoresExistentes = await _service.GetAllAsync();
 
-            var dialogPanel = new StackPanel
-            {
-                Children = { new TextBlock { Text = "Nombre" }, nombreDialog, 
-                             new TextBlock { Text = "Teléfono" }, telefonoDialog,  
-                             new TextBlock { Text = "Email" }, emailDialog }
-            };
+                // --- CONFIGURACIÓN DE CONTROLES ---
+                var nombreDialog = new TextBox { Header = "Nombre", Text = proveedorSeleccionado.Nombre, MaxLength = 50 };
+                nombreDialog.BeforeTextChanging += (s, args) => {
+                    var regex = @"^(?!.* )[a-zA-ZáéíóúÁÉÍÓÚñÑ\s'-]*$";
+                    args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
+                };
 
-            var dialog = new ContentDialog
-            {
-                Title = "Editar Proveedor",
-                Content = dialogPanel,
-                PrimaryButtonText = "Guardar",
-                CloseButtonText = "Cancelar",
-                XamlRoot = this.Content.XamlRoot
-            };
+                var telefonoDialog = new TextBox { Header = "Teléfono", Text = proveedorSeleccionado.Telefono, MaxLength = 10 };
+                telefonoDialog.BeforeTextChanging += (s, args) => {
+                    args.Cancel = !args.NewText.All(char.IsDigit);
+                };
 
-            var result = await dialog.ShowAsync();
-            if (result != ContentDialogResult.Primary) return;
+                var emailDialog = new TextBox { Header = "Email", Text = proveedorSeleccionado.Email, MaxLength = 50 };
 
-            string error;
-            if (!ValidationHelper.ValidarNombre(nombreDialog.Text.Trim(), out error) ||
-                !ValidationHelper.ValidarTelefono(telefonoDialog.Text.Trim(), out error) ||
-                !ValidationHelper.ValidarEmail(emailDialog.Text.Trim(), out error))
-            {
-                await MostrarDialog("Error", error);
-                return;
+                var mensajeError = new TextBlock
+                {
+                    Foreground = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 255, 0, 0)),
+                    Visibility = Microsoft.UI.Xaml.Visibility.Collapsed,
+                    Margin = new Thickness(0, 10, 0, 0),
+                    FontSize = 12,
+                    TextWrapping = TextWrapping.Wrap
+                };
+
+                var dialogPanel = new StackPanel
+                {
+                    Spacing = 12,
+                    Width = 420,
+                    MinHeight = 320,
+                    Children = { nombreDialog, telefonoDialog, emailDialog, mensajeError }
+                };
+
+                var dialog = new ContentDialog
+                {
+                    Title = "Editar Proveedor",
+                    Content = new ScrollViewer { Content = dialogPanel, MaxHeight = 500 },
+                    PrimaryButtonText = "Guardar",
+                    CloseButtonText = "Cancelar",
+                    XamlRoot = this.Content.XamlRoot
+                };
+
+                // --- LÓGICA DE VALIDACIÓN (No cierra si hay error) ---
+                dialog.Closing += (s, args) =>
+                {
+                    if (args.Result == ContentDialogResult.Primary)
+                    {
+                        args.Cancel = true;
+                        string error = "";
+
+                        string nT = nombreDialog.Text.Trim();
+                        string tT = telefonoDialog.Text.Trim();
+                        string eT = emailDialog.Text.Trim();
+
+                        if (string.IsNullOrWhiteSpace(nT)) error = "Falta el nombre.";
+                        else if (string.IsNullOrWhiteSpace(tT)) error = "Falta el teléfono.";
+                        else if (string.IsNullOrWhiteSpace(eT)) error = "Falta el email.";
+                        else
+                        {
+                            // Validar duplicados usando la lista que ya cargamos
+                            if (proveedoresExistentes.Any(p => p.Nombre.Equals(nT, StringComparison.OrdinalIgnoreCase) && p.Id != proveedorSeleccionado.Id))
+                                error = "Ese nombre ya existe.";
+                            else if (proveedoresExistentes.Any(p => p.Telefono == tT && p.Id != proveedorSeleccionado.Id))
+                                error = "Ese teléfono ya existe.";
+                            else if (proveedoresExistentes.Any(p => p.Email.Equals(eT, StringComparison.OrdinalIgnoreCase) && p.Id != proveedorSeleccionado.Id))
+                                error = "Ese email ya existe.";
+                        }
+
+                        if (!string.IsNullOrEmpty(error))
+                        {
+                            mensajeError.Text = error;
+                            mensajeError.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
+                        }
+                        else
+                        {
+                            args.Cancel = false; // Permitir cerrar
+                        }
+                    }
+                };
+
+                // --- GUARDADO Y CONFIRMACIÓN ---
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+                {
+                    var index = proveedoresExistentes.FindIndex(p => p.Id == proveedorSeleccionado.Id);
+                    if (index != -1)
+                    {
+                        proveedoresExistentes[index].Nombre = nombreDialog.Text.Trim();
+                        proveedoresExistentes[index].Telefono = telefonoDialog.Text.Trim();
+                        proveedoresExistentes[index].Email = emailDialog.Text.Trim();
+
+                        await _service.SaveAllAsync(proveedoresExistentes);
+                        await CargarProveedores(); // Refrescar la tabla
+
+                        // IMPORTANTE: El mensaje de éxito para que el usuario sepa que funcionó
+                        await MostrarDialog("Éxito", "Proveedor actualizado correctamente.");
+                    }
+                }
             }
-
-
-            
-            var proveedoresExistentes = await _service.GetAllAsync();
-
-            //chekear nombre 
-            if (proveedoresExistentes.Any(p => p.Nombre.ToUpper() == nombreDialog.Text.ToUpper() && p.Id != proveedorSeleccionado.Id))
+            catch (Exception ex)
             {
-                await MostrarDialog("Error", "El nombre ya está registrado.");
-                return;
+                System.Diagnostics.Debug.WriteLine($"Error: {ex.Message}");
             }
-
-
-
-
-            if (proveedoresExistentes.Any(p => p.Telefono == telefonoDialog.Text.Trim() && p.Id != proveedorSeleccionado.Id))
-            {
-                await MostrarDialog("Error", "El teléfono ya está registrado.");
-                return;
-            }
-
-            if (proveedoresExistentes.Any(p => p.Email.ToUpper() == emailDialog.Text.Trim().ToUpper() && p.Id != proveedorSeleccionado.Id))
-            {
-                await MostrarDialog("Error", "El email ya está registrado.");
-                return;
-            }
-            // Revisar duplicado
-            var index = proveedoresExistentes.FindIndex(p => p.Id == proveedorSeleccionado.Id);
-            if (index == -1)
-            {
-                await MostrarDialog("Error", "No se encontró el proveedor para actualizar.");
-                return;
-            }
-
-            // Reemplazar los datos en la lista
-            proveedoresExistentes[index].Nombre = nombreDialog.Text.Trim();
-            proveedoresExistentes[index].Telefono = telefonoDialog.Text.Trim();
-            proveedoresExistentes[index].Email = emailDialog.Text.Trim();
-
-            await _service.SaveAllAsync(proveedoresExistentes);
-
-            await CargarProveedores();
-
-            await MostrarDialog("Éxito", "Proveedor actualizado correctamente.");
         }
 
         // Eliminar proveedor
