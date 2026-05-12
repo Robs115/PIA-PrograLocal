@@ -168,41 +168,65 @@ namespace piaWinUI.Views
 
         private async void OpenAddDialog(object sender, RoutedEventArgs e)
         {
+            // 1. Preparar datos iniciales
             var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
             if (!listaCategorias.Any()) listaCategorias.Add("General");
 
-            var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20 };
-            nombre.TextChanging += (s, args) =>
+            // 2. Crear el InfoBar (Aviso visual estable)
+            var avisoError = new InfoBar
             {
-                string textoLimpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
-                if (nombre.Text != textoLimpio)
-                {
-                    int cursor = nombre.SelectionStart;
-                    nombre.Text = textoLimpio;
-                    nombre.SelectionStart = Math.Max(0, cursor - 1);
-                }
+                Severity = InfoBarSeverity.Error,
+                Title = "Validación",
+                IsOpen = false,
+                Margin = new Thickness(0, 0, 0, 10)
             };
+
+            // 3. Definición de controles de entrada
+            var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20 };
             var descripcion = new TextBox
             {
                 Header = "Descripción",
-                PlaceholderText = "Escribe una breve descripción...",
-                AcceptsReturn = true, // Permite saltos de línea
-                Height = 70,          // Altura fija para no desbordar el diálogo
+                PlaceholderText = "Breve detalle...",
+                AcceptsReturn = true,
+                Height = 70,
                 TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-                MaxLength = 50       // Límite de texto para ahorrar espacio en el JSON
+                MaxLength = 50
             };
 
-            //  Crear el control de Código de Barras
-            var codigoBarras = new TextBox
+            var codigoBarras = new TextBox { Header = "Código de Barras", PlaceholderText = "Solo números", MaxLength = 9 };
+
+            var categoriaCombo = new ComboBox
             {
-                Header = "Código de Barras",
-                PlaceholderText = "Solo números (máx. 9)",
-                MaxLength = 9
+                Header = "Categoría",
+                ItemsSource = listaCategorias,
+                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
             };
 
-            // Validación en tiempo real: Solo números
-            codigoBarras.TextChanging += (s, args) =>
+            var proveedorCombo = new ComboBox
             {
+                Header = "Proveedor",
+                ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
+                PlaceholderText = "Selecciona un proveedor",
+                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
+            };
+
+            // Nota: Se mantiene MaxLength según tu snippet original
+            var compra = new TextBox { Header = "Precio Compra", MaxLength = 3, PlaceholderText = "0" };
+            var venta = new TextBox { Header = "Precio Venta", MaxLength = 3, PlaceholderText = "0" };
+            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, PlaceholderText = "0" };
+
+            // --- VALIDACIONES EN TIEMPO REAL ---
+            nombre.TextChanging += (s, args) => {
+                string limpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+                if (nombre.Text != limpio)
+                {
+                    int cursor = nombre.SelectionStart;
+                    nombre.Text = limpio;
+                    nombre.SelectionStart = Math.Max(0, cursor - 1);
+                }
+            };
+
+            codigoBarras.TextChanging += (s, args) => {
                 string limpio = new string(codigoBarras.Text.Where(char.IsDigit).ToArray());
                 if (codigoBarras.Text != limpio)
                 {
@@ -212,15 +236,7 @@ namespace piaWinUI.Views
                 }
             };
 
-            var categoriaCombo = new ComboBox { Header = "Categoría", ItemsSource = listaCategorias, HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
-            var proveedorCombo = new ComboBox { Header = "Proveedor", ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(), PlaceholderText = "Selecciona un proveedor", HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
-
-            var compra = new TextBox { Header = "Precio Compra", MaxLength = 6, PlaceholderText = "0" };
-            var venta = new TextBox { Header = "Precio Venta", MaxLength = 6, PlaceholderText = "0" };
-            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, PlaceholderText = "0" };
-
-            stock.TextChanging += (s, args) =>
-            {
+            stock.TextChanging += (s, args) => {
                 string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
                 if (stock.Text != limpio)
                 {
@@ -229,9 +245,11 @@ namespace piaWinUI.Views
                     stock.SelectionStart = Math.Max(0, cursor - 1);
                 }
             };
+
             compra.TextChanging += ValidarDecimal;
             venta.TextChanging += ValidarDecimal;
 
+            // --- GESTIÓN DE IMAGEN ---
             string rutaImagenSeleccionada = "";
             var txtImagen = new TextBlock { Text = "Sin imagen seleccionada", TextWrapping = TextWrapping.Wrap, FontSize = 12, Opacity = 0.6 };
             var btnImagen = new Button { Content = "Seleccionar Imagen", Margin = new Thickness(0, 5, 0, 0) };
@@ -246,75 +264,121 @@ namespace piaWinUI.Views
                 if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
             };
 
+            // 4. Organización del Layout
             var panel = new StackPanel
             {
                 Spacing = 12,
+                Width = 440,
+                MinHeight = 520,
                 Children = {
-        nombre, descripcion, codigoBarras, categoriaCombo, proveedorCombo,
-        new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
-        new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
-    }
+            avisoError,
+            nombre, descripcion, codigoBarras, categoriaCombo, proveedorCombo,
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
+            new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
+        }
             };
 
-            var dialog = new ContentDialog { Title = "Nuevo Producto", PrimaryButtonText = "Guardar", CloseButtonText = "Cancelar", Content = panel, XamlRoot = this.XamlRoot };
+            var scroll = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxHeight = 600 };
 
-            // LLAMADA ÚNICA AL DIÁLOGO
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
-
-            // --- VALIDACIÓN DE CAMPOS VACÍOS O EN CERO ---
-            if (string.IsNullOrWhiteSpace(nombre.Text) || string.IsNullOrWhiteSpace(descripcion.Text) ||
-                string.IsNullOrWhiteSpace(codigoBarras.Text) || categoriaCombo.SelectedItem == null ||
-                proveedorCombo.SelectedItem == null)
+            var dialog = new ContentDialog
             {
-                await MostrarAvisoError("Campos incompletos", "Todos los campos son obligatorios (excepto la imagen).");
-                return;
-            }
-
-           decimal.TryParse(compra.Text, out decimal pc);
-            decimal.TryParse(venta.Text, out decimal pv);
-            int.TryParse(stock.Text, out int st); 
-
-            if (pc <= 0 || pv <= 0 || st <= 0)
-            {
-                await MostrarAvisoError("Valores en cero", "Los precios y el stock deben ser números mayores a 0.");
-                return;
-            }
-
-
-
-            string cbTexto = codigoBarras.Text.Trim();
-
-            // --- VALIDACIÓN DE DUPLICADOS (AGREGAR) ---
-            string nombreLimpio = nombre.Text.Trim();
-            bool duplicado = _productos.Any(p => nombreLimpio.Equals(p.Nombre.Trim(), StringComparison.OrdinalIgnoreCase) ||(!string.IsNullOrEmpty(p.CodigoBarras) && p.CodigoBarras == cbTexto));
-
-            if (duplicado)
-            {
-                await MostrarAvisoError("Datos Duplicados", "El nombre o el código de barras ya existen en otro producto.");
-                return;
-            }
-
-            var provSel = proveedorCombo.SelectedItem?.ToString();
-            var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
-
-            var nuevoProducto = new Producto
-            {
-                Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
-                Nombre = nombreLimpio,
-                Descripcion = descripcion.Text.Trim(),
-                CodigoBarras = cbTexto,
-                Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría",
-                IdProveedor = provObj?.Id ?? 0,
-                PrecioCompra = pc,
-                PrecioVenta = pv,
-                Stock = st,
-                ImagenPath = rutaImagenSeleccionada
+                Title = "Nuevo Producto",
+                PrimaryButtonText = "Guardar",
+                CloseButtonText = "Cancelar",
+                Content = scroll,
+                XamlRoot = this.XamlRoot
             };
 
-            _productos.Add(nuevoProducto);
-            ActualizarVista();
-            await _service.SaveAllAsync(_productos);
-            CargarCategorias();
+            // 5. Lógica de Validación Final ESPECÍFICA
+            dialog.Closing += (s, args) =>
+            {
+                if (args.Result == ContentDialogResult.Primary)
+                {
+                    args.Cancel = true; // Detenemos el cierre para validar
+                    string error = "";
+
+                    bool nV = string.IsNullOrWhiteSpace(nombre.Text);
+                    bool dV = string.IsNullOrWhiteSpace(descripcion.Text);
+                    bool cV = string.IsNullOrWhiteSpace(codigoBarras.Text);
+                    bool catV = categoriaCombo.SelectedItem == null;
+                    bool provV = proveedorCombo.SelectedItem == null;
+                    bool coV = string.IsNullOrWhiteSpace(compra.Text);
+                    bool veV = string.IsNullOrWhiteSpace(venta.Text);
+                    bool stV = string.IsNullOrWhiteSpace(stock.Text);
+
+                    if (nV && dV && cV && catV && provV && coV && veV && stV)
+                        error = "Por favor, completa todos los campos del formulario.";
+                    else if (nV) error = "Falta el nombre del producto.";
+                    else if (dV) error = "Falta la descripción del producto.";
+                    else if (cV) error = "Falta el código de barras.";
+                    else if (catV) error = "Debes seleccionar una categoría.";
+                    else if (provV) error = "Debes seleccionar un proveedor.";
+                    else if (coV) error = "Falta el precio de compra.";
+                    else if (veV) error = "Falta el precio de venta.";
+                    else if (stV) error = "Falta el stock inicial.";
+                    else
+                    {
+                        decimal.TryParse(compra.Text, out decimal pc);
+                        decimal.TryParse(venta.Text, out decimal pv);
+                        int.TryParse(stock.Text, out int st);
+
+                        if (pc <= 0) error = "El precio de compra debe ser mayor a 0.";
+                        else if (pv <= 0) error = "El precio de venta debe ser mayor a 0.";
+                        // --- NUEVA REGLA: PRECIO VENTA > PRECIO COMPRA ---
+                        else if (pv <= pc) error = "El precio de venta debe ser mayor al precio de compra.";
+                        else if (st <= 0) error = "El stock inicial debe ser mayor a 0.";
+                        else
+                        {
+                            string nbLimpio = nombre.Text.Trim();
+                            string cbTexto = codigoBarras.Text.Trim();
+                            bool existe = _productos.Any(p => nbLimpio.Equals(p.Nombre.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                          (!string.IsNullOrEmpty(p.CodigoBarras) && p.CodigoBarras == cbTexto));
+
+                            if (existe)
+                                error = "El nombre o código de barras ya están registrados.";
+                        }
+                    }
+
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        avisoError.Message = error;
+                        avisoError.IsOpen = true;
+                    }
+                    else
+                    {
+                        args.Cancel = false;
+                    }
+                }
+            };
+
+            // 6. Ejecución y Persistencia
+            if (await dialog.ShowAsync() == ContentDialogResult.Primary)
+            {
+                decimal.TryParse(compra.Text, out decimal pcFinal);
+                decimal.TryParse(venta.Text, out decimal pvFinal);
+                int.TryParse(stock.Text, out int stFinal);
+
+                var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == proveedorCombo.SelectedItem.ToString());
+
+                var nuevo = new Producto
+                {
+                    Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
+                    Nombre = nombre.Text.Trim(),
+                    Descripcion = descripcion.Text.Trim(),
+                    CodigoBarras = codigoBarras.Text.Trim(),
+                    Categoria = categoriaCombo.SelectedItem.ToString(),
+                    IdProveedor = provObj?.Id ?? 0,
+                    PrecioCompra = pcFinal,
+                    PrecioVenta = pvFinal,
+                    Stock = stFinal,
+                    ImagenPath = rutaImagenSeleccionada
+                };
+
+                _productos.Add(nuevo);
+                ActualizarVista();
+                await _service.SaveAllAsync(_productos);
+                CargarCategorias();
+            }
         }
 
         void ValidarDecimal(TextBox sender, TextBoxTextChangingEventArgs args)
@@ -593,6 +657,7 @@ namespace piaWinUI.Views
                 }
 
                 // 6. Procesar y guardar cambios
+
                 var provSel = proveedorCombo.SelectedItem?.ToString();
                 var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
 
