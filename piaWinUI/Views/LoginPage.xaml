@@ -8,69 +8,112 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid>
+        <Grid.Background>
+            <ImageBrush
+            ImageSource="ms-appx:///Assets/abarrotes.png"
+            Stretch="UniformToFill"
+            Opacity="0.35"/>
+        </Grid.Background>
 
         <!-- EXIT BUTTON (top-right corner) -->
         <Button Content="✕"
-                Width="36"
-                Height="36"
+                Width="40"
+                Height="40"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="12"
                 Click="Exit_Click"
-                ToolTipService.ToolTip="Salir"/>
+                ToolTipService.ToolTip="Salir"
+                Background="#CC202020"
+                Foreground="White"
+                BorderBrush="#404040"
+                BorderThickness="1"
+                CornerRadius="10"
+                FontSize="16"
+                FontWeight="SemiBold"/>
 
         <!-- CENTER LOGIN CARD -->
-        <Border Background="{ThemeResource LayerFillColorDefaultBrush}" 
-                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" 
-                BorderThickness="1" 
-                CornerRadius="8" 
-                Width="400" 
-                HorizontalAlignment="Center"  
-                VerticalAlignment="Center" 
-                Padding="32">
+        <Border Width="420"
+            Padding="36"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            CornerRadius="24"
+            BorderThickness="1"
+            BorderBrush="#33FFFFFF"
+            Background="#CC202020">
 
-            <StackPanel Spacing="16">
+            <Border.Shadow>
+                <ThemeShadow/>
+            </Border.Shadow>
 
-                <StackPanel HorizontalAlignment="Center" Margin="0,0,0,12" Spacing="8">
-                    <SymbolIcon Symbol="Contact" />
-                    <TextBlock Text="Bienvenido"  
-                               Style="{StaticResource TitleTextBlockStyle}"  
-                               HorizontalAlignment="Center" />
-                    <TextBlock Text="Introduce tus credenciales"  
-                               Style="{StaticResource CaptionTextBlockStyle}"  
-                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" 
-                               HorizontalAlignment="Center" />
+            <StackPanel Spacing="18">
+
+                <!-- ICON -->
+                <Border Width="72"
+                Height="72"
+                CornerRadius="36"
+                Background="#22FFFFFF"
+                HorizontalAlignment="Center">
+
+                    <Viewbox>
+                        <SymbolIcon Symbol="Shop"/>
+                    </Viewbox>
+                </Border>
+
+                <!-- TITLE -->
+                <StackPanel HorizontalAlignment="Center"
+                    Spacing="6"
+                    Margin="0,0,0,10">
+
+                    <TextBlock Text="Bienvenido"
+                       FontSize="32"
+                       FontWeight="SemiBold"
+                       HorizontalAlignment="Center"/>
+
+                    <TextBlock Text="Introduce tus credenciales"
+                       Opacity="0.7"
+                       FontSize="18"
+                       HorizontalAlignment="Center"/>
                 </StackPanel>
 
-                <TextBox x:Name="UsernameTextBox"  
-                         PlaceholderText="Usuario"  
-                         Header="Nombre de usuario" 
-                         KeyDown="Root_KeyDown"
-                         MaxLength="10"
-                         BeforeTextChanging="Usuario_BeforeTextChanging"/>
+                <!-- USER -->
+                <TextBox x:Name="UsernameTextBox"
+                 PlaceholderText="Usuario"
+                 Header="Nombre de usuario"
+                 KeyDown="Root_KeyDown"
+                 MaxLength="10"
+                 BeforeTextChanging="Usuario_BeforeTextChanging"
+                 Padding="12"
+                         FontSize="16"/>
 
-                <PasswordBox x:Name="PasswordBox"  
-                             PlaceholderText="Contraseña"  
-                             Header="Contraseña"
-                             KeyDown="Root_KeyDown"
-                             MaxLength="15"
-                             PasswordChanging="Contrasena_BeforeTextChanging"/>
+                <!-- PASSWORD -->
+                <PasswordBox x:Name="PasswordBox"
+                     PlaceholderText="Contraseña"
+                     Header="Contraseña"
+                     KeyDown="Root_KeyDown"
+                     MaxLength="15"
+                     PasswordChanging="Contrasena_BeforeTextChanging"
+                     Padding="12"
+                             FontSize="16"/>
 
-                <TextBlock x:Name="StatusTextBlock"  
-                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"  
-                           FontSize="12" 
-                           TextWrapping="Wrap"  
-                           HorizontalAlignment="Center"/>
+                <!-- ERROR -->
+                <TextBlock x:Name="StatusTextBlock"
+                   Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                   FontSize="16"
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"/>
 
-                <StackPanel Spacing="12" Margin="0,8,0,0">
-                    <Button x:Name="LoginButton"  
-                            Content="Iniciar Sesión"  
-                            Click="Login_Click"  
-                            Style="{StaticResource AccentButtonStyle}"  
-                            HorizontalAlignment="Stretch" />
-                </StackPanel>
-
+                <!-- BUTTON -->
+                <Button x:Name="LoginButton"
+                    Content="Iniciar Sesión"
+                    Click="Login_Click"
+                    Height="46"
+                    Width="200"
+                    HorizontalAlignment="Center"
+                    FontWeight="SemiBold"
+                    Margin="0,10,0,0"
+                        FontSize="16"/>
             </StackPanel>
         </Border>
 
