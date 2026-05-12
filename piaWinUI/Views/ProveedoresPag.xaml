@@ -17,54 +17,68 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        
+
         <Border Grid.Column="0"
-            Background="#1E1E1E"
-            CornerRadius="12"
-            Padding="20">
+     Background="#111827"
+     CornerRadius="12"
+     Padding="20"
+     BorderBrush="#334155"
+     BorderThickness="1">
 
             <StackPanel Spacing="15">
 
-                <SymbolIcon Symbol ="AddFriend" />
+                <SymbolIcon Symbol ="AddFriend"
+                    Foreground="#60A5FA"/>
+
                 <TextBlock Text ="Crear proveedor"  
-                        Style ="{StaticResource TitleTextBlockStyle }" 
-                        HorizontalAlignment ="Center" />
-                                        <TextBlock Text ="Introduce los datos"  
-                        Style ="{StaticResource CaptionTextBlockStyle }"  
-                        Foreground ="{ThemeResource TextFillColorSecondaryBrush }" 
-                        HorizontalAlignment ="Center" />
+                Style ="{StaticResource TitleTextBlockStyle }" 
+                HorizontalAlignment ="Center"
+                Foreground="#E2E8F0"/>
+
+                <TextBlock Text ="Introduce los datos"  
+                Style ="{StaticResource CaptionTextBlockStyle }"  
+                Foreground ="#94A3B8"
+                HorizontalAlignment ="Center" />
 
 
-                                <TextBox x:Name="Nombre" 
-                     Header ="Nombre del proveedor *" 
-                     PlaceholderText ="Ej. Nelson Orlando Rodriguez"
-                         MaxLength="50"
-                                         BeforeTextChanging="Nombre_BeforeTextChanging"/>
+                <TextBox x:Name="Nombre" 
+             Header ="Nombre del proveedor *" 
+             PlaceholderText ="Ej. Nelson Orlando Rodriguez"
+             MaxLength="50"
+             BeforeTextChanging="Nombre_BeforeTextChanging"
+             Background="#0F172A"
+             Foreground="#F8FAFC"
+             BorderBrush="#334155"/>
 
-                                <TextBox x:Name="Telefono" 
-                       Header ="Teléfono *" 
-                       PlaceholderText ="Ej. 81 1234 5678" 
-                         MaxLength="10"
-                                          BeforeTextChanging="Telefono_BeforeTextChanging"
-                       />
+                <TextBox x:Name="Telefono" 
+               Header ="Teléfono *" 
+               PlaceholderText ="Ej. 81 1234 5678" 
+               MaxLength="10"
+               BeforeTextChanging="Telefono_BeforeTextChanging"
+               Background="#0F172A"
+               Foreground="#F8FAFC"
+               BorderBrush="#334155"/>
 
 
-                                <TextBox x:Name="Email"
-                     Header ="Introduzca el correo electrónico*"
-                     PlaceholderText ="emilio@gmail.com"
-                         MaxLength="50"
-                                         BeforeTextChanging="Email_BeforeTextChanging"/>
+                <TextBox x:Name="Email"
+             Header ="Introduzca el correo electrónico*"
+             PlaceholderText ="emilio@gmail.com"
+             MaxLength="50"
+             BeforeTextChanging="Email_BeforeTextChanging"
+             Background="#0F172A"
+             Foreground="#F8FAFC"
+             BorderBrush="#334155"/>
 
-                <TextBlock x:Name="toast"/>
+                <TextBlock x:Name="toast"
+                   Foreground="#E2E8F0"/>
+
                 <Button x:Name="Submit"  
-             Content ="Registrar datos"  
-            Click="Guardar_Click"
-             Style ="{ StaticResource AccentButtonStyle }"  
-             HorizontalAlignment ="Stretch"
-                      />
-
-
-
+                Content ="Registrar datos"  
+                Click="Guardar_Click"
+                Style ="{ StaticResource AccentButtonStyle }"  
+                HorizontalAlignment ="Stretch"
+                Background="#2563EB"
+                Foreground="White"/>
 
             </StackPanel>
         </Border>

@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace piaWinUI.Views
@@ -104,6 +105,29 @@ namespace piaWinUI.Views
             }
         }
 
+
+        private void SearchBox_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
+        {
+            string nuevoTexto = args.NewText;
+
+   
+            if (nuevoTexto.Length > 50)
+            {
+                args.Cancel = true;
+                return;
+            }
+
+  
+            bool valido = Regex.IsMatch(
+                nuevoTexto,
+                @"^(?!.* {3,})[a-zA-ZáéíóúÁÉÍÓÚñÑ0-9 ]*$"
+            );
+
+            if (!valido)
+            {
+                args.Cancel = true;
+            }
+        }
         private void SearchBox_TextChanged(
             object sender,
             TextChangedEventArgs e)
@@ -172,8 +196,8 @@ namespace piaWinUI.Views
             var codigoBarras = new TextBox
             {
                 Header = "Código de Barras",
-                PlaceholderText = "Solo números (máx. 15)",
-                MaxLength = 15
+                PlaceholderText = "Solo números (máx. 9)",
+                MaxLength = 9
             };
 
             // Validación en tiempo real: Solo números
@@ -411,7 +435,7 @@ namespace piaWinUI.Views
                 {
                     Header = "Código de Barras",
                     Text = producto.CodigoBarras ?? "",
-                    MaxLength = 15
+                    MaxLength = 9
                 };
 
                 var categoriaCombo = new ComboBox

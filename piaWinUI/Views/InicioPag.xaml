@@ -1,3 +1,4 @@
+
 <Page
     x:Class="piaWinUI.Views.InicioPag"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -6,246 +7,260 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    Background="#0F172A">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
 
-        <StackPanel Padding="24"
+            <StackPanel Padding="24"
                     Spacing="24">
 
-            <!-- HEADER -->
+                <!-- HEADER -->
 
-            <StackPanel Spacing="6">
+                <StackPanel Spacing="6">
 
-                <TextBlock Text="Panel principal"
+                    <TextBlock Text="Panel principal"
                            FontSize="34"
-                           FontWeight="SemiBold"/>
+                           FontWeight="SemiBold"
+                           Foreground="#E2E8F0"/>
 
-                <TextBlock Text="Resumen general del negocio e indicadores importantes"
+                    <TextBlock Text="Resumen general del negocio e indicadores importantes"
                            FontSize="15"
-                           Opacity="0.7"/>
+                           Opacity="0.7"
+                           Foreground="#CBD5E1"/>
+
+                </StackPanel>
+
+                <!-- TARJETAS -->
+
+                <Grid ColumnSpacing="16">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- VENTAS -->
+
+                    <Border Grid.Column="0"
+                        CornerRadius="18"
+                        Padding="20"
+                        Background="#2563EB">
+
+                        <StackPanel Spacing="8">
+
+                            <TextBlock Text="Ventas del día"
+                                   Foreground="White"
+                                   FontSize="15"/>
+
+                            <TextBlock x:Name="txtVentasDia"
+                                   Text="$0"
+                                   Foreground="White"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- GANANCIA -->
+
+                    <Border Grid.Column="1"
+                        CornerRadius="18"
+                        Padding="20"
+                        Background="#0F766E">
+
+                        <StackPanel Spacing="8">
+
+                            <TextBlock Text="Ganancia mensual"
+                                   Foreground="White"
+                                   FontSize="15"/>
+
+                            <TextBlock x:Name="txtGananciaMensual"
+                                   Text="$0"
+                                   Foreground="White"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- STOCK BAJO -->
+
+                    <Border Grid.Column="2"
+                        CornerRadius="18"
+                        Padding="20"
+                        Background="#D97706">
+
+                        <StackPanel Spacing="8">
+
+                            <TextBlock Text="Productos bajos"
+                                   Foreground="White"
+                                   FontSize="15"/>
+
+                            <TextBlock x:Name="txtStockBajo"
+                                   Text="0"
+                                   Foreground="White"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- AGOTADOS -->
+
+                    <Border Grid.Column="3"
+                        CornerRadius="18"
+                        Padding="20"
+                        Background="#DC2626">
+
+                        <StackPanel Spacing="8">
+
+                            <TextBlock Text="Productos agotados"
+                                   Foreground="White"
+                                   FontSize="15"/>
+
+                            <TextBlock x:Name="txtAgotados"
+                                   Text="0"
+                                   Foreground="White"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- PEDIDOS -->
+
+                    <Border Grid.Column="4"
+                        CornerRadius="18"
+                        Padding="20"
+                        Background="#7C3AED">
+
+                        <StackPanel Spacing="8">
+
+                            <TextBlock Text="Pedidos recientes"
+                                   Foreground="White"
+                                   FontSize="15"/>
+
+                            <TextBlock x:Name="txtPedidos"
+                                   Text="0"
+                                   Foreground="White"
+                                   FontSize="28"
+                                   FontWeight="Bold"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+                <!-- GRAFICAS -->
+
+                <Grid ColumnSpacing="20">
+
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="2*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- VENTAS -->
+
+                    <Border Grid.Column="0"
+                        CornerRadius="20"
+                        Padding="20"
+                        Background="#111827"
+                        BorderBrush="#1E293B"
+                        BorderThickness="1">
+
+                        <StackPanel Spacing="16">
+
+                            <TextBlock Text="Ventas mensuales"
+                                   FontSize="22"
+                                   FontWeight="SemiBold"
+                                   Foreground="#E2E8F0"/>
+
+                            <lvc:CartesianChart x:Name="VentasChart"
+                                            Height="350"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                    <!-- PRODUCTOS -->
+
+                    <Border Grid.Column="1"
+                        CornerRadius="20"
+                        Padding="20"
+                        Background="#111827"
+                        BorderBrush="#1E293B"
+                        BorderThickness="1">
+
+                        <StackPanel Spacing="16">
+
+                            <TextBlock Text="Productos más vendidos"
+                                   FontSize="22"
+                                   FontWeight="SemiBold"
+                                   Foreground="#E2E8F0"/>
+
+                            <lvc:PieChart x:Name="ProductosChart"
+                                      Height="350"/>
+
+                        </StackPanel>
+
+                    </Border>
+
+                </Grid>
+
+                <!-- ALERTAS -->
+
+                <Border CornerRadius="20"
+                    Padding="20"
+                    Background="#111827"
+                    BorderBrush="#1E293B"
+                    BorderThickness="1">
+
+                    <StackPanel Spacing="14">
+
+                        <TextBlock Text="Alertas inteligentes"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Foreground="#E2E8F0"/>
+
+                        <StackPanel x:Name="AlertasPanel"
+                                Spacing="10"/>
+
+                    </StackPanel>
+
+                </Border>
+
+                <!-- PEDIDOS RECIENTES -->
+
+                <Border CornerRadius="20"
+                    Padding="20"
+                    Background="#111827"
+                    BorderBrush="#1E293B"
+                    BorderThickness="1">
+
+                    <StackPanel Spacing="18">
+
+                        <TextBlock Text="Últimos pedidos"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Foreground="#E2E8F0"/>
+
+                        <StackPanel x:Name="PedidosPanel"
+                                Spacing="12"/>
+
+                    </StackPanel>
+
+                </Border>
 
             </StackPanel>
 
-            <!-- TARJETAS -->
-
-            <Grid ColumnSpacing="16">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                    <ColumnDefinition/>
-                </Grid.ColumnDefinitions>
-
-                <!-- VENTAS -->
-
-                <Border Grid.Column="0"
-                        CornerRadius="18"
-                        Padding="20"
-                        Background="#1E3A8A">
-
-                    <StackPanel Spacing="8">
-
-                        <TextBlock Text="Ventas del día"
-                                   Foreground="White"
-                                   FontSize="15"/>
-
-                        <TextBlock x:Name="txtVentasDia"
-                                   Text="$0"
-                                   Foreground="White"
-                                   FontSize="28"
-                                   FontWeight="Bold"/>
-
-                    </StackPanel>
-
-                </Border>
-
-                <!-- GANANCIA -->
-
-                <Border Grid.Column="1"
-                        CornerRadius="18"
-                        Padding="20"
-                        Background="#065F46">
-
-                    <StackPanel Spacing="8">
-
-                        <TextBlock Text="Ganancia mensual"
-                                   Foreground="White"
-                                   FontSize="15"/>
-
-                        <TextBlock x:Name="txtGananciaMensual"
-                                   Text="$0"
-                                   Foreground="White"
-                                   FontSize="28"
-                                   FontWeight="Bold"/>
-
-                    </StackPanel>
-
-                </Border>
-
-                <!-- STOCK BAJO -->
-
-                <Border Grid.Column="2"
-                        CornerRadius="18"
-                        Padding="20"
-                        Background="#92400E">
-
-                    <StackPanel Spacing="8">
-
-                        <TextBlock Text="Productos bajos"
-                                   Foreground="White"
-                                   FontSize="15"/>
-
-                        <TextBlock x:Name="txtStockBajo"
-                                   Text="0"
-                                   Foreground="White"
-                                   FontSize="28"
-                                   FontWeight="Bold"/>
-
-                    </StackPanel>
-
-                </Border>
-
-                <!-- AGOTADOS -->
-
-                <Border Grid.Column="3"
-                        CornerRadius="18"
-                        Padding="20"
-                        Background="#991B1B">
-
-                    <StackPanel Spacing="8">
-
-                        <TextBlock Text="Productos agotados"
-                                   Foreground="White"
-                                   FontSize="15"/>
-
-                        <TextBlock x:Name="txtAgotados"
-                                   Text="0"
-                                   Foreground="White"
-                                   FontSize="28"
-                                   FontWeight="Bold"/>
-
-                    </StackPanel>
-
-                </Border>
-
-                <!-- PEDIDOS -->
-
-                <Border Grid.Column="4"
-                        CornerRadius="18"
-                        Padding="20"
-                        Background="#3730A3">
-
-                    <StackPanel Spacing="8">
-
-                        <TextBlock Text="Pedidos recientes"
-                                   Foreground="White"
-                                   FontSize="15"/>
-
-                        <TextBlock x:Name="txtPedidos"
-                                   Text="0"
-                                   Foreground="White"
-                                   FontSize="28"
-                                   FontWeight="Bold"/>
-
-                    </StackPanel>
-
-                </Border>
-
-            </Grid>
-
-            <!-- GRAFICAS -->
-
-            <Grid ColumnSpacing="20">
-
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="2*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <!-- VENTAS -->
-
-                <Border Grid.Column="0"
-                        CornerRadius="20"
-                        Padding="20"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-                    <StackPanel Spacing="16">
-
-                        <TextBlock Text="Ventas mensuales"
-                                   FontSize="22"
-                                   FontWeight="SemiBold"/>
-
-                        <lvc:CartesianChart x:Name="VentasChart"
-                                            Height="350"/>
-
-                    </StackPanel>
-
-                </Border>
-
-                <!-- PRODUCTOS -->
-
-                <Border Grid.Column="1"
-                        CornerRadius="20"
-                        Padding="20"
-                        Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-                    <StackPanel Spacing="16">
-
-                        <TextBlock Text="Productos más vendidos"
-                                   FontSize="22"
-                                   FontWeight="SemiBold"/>
-
-                        <lvc:PieChart x:Name="ProductosChart"
-                                      Height="350"/>
-
-                    </StackPanel>
-
-                </Border>
-
-            </Grid>
-
-            <!-- ALERTAS -->
-
-            <Border CornerRadius="20"
-                    Padding="20"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-                <StackPanel Spacing="14">
-
-                    <TextBlock Text="Alertas inteligentes"
-                               FontSize="24"
-                               FontWeight="SemiBold"/>
-
-                    <StackPanel x:Name="AlertasPanel"
-                                Spacing="10"/>
-
-                </StackPanel>
-
-            </Border>
-
-            <!-- PEDIDOS RECIENTES -->
-
-            <Border CornerRadius="20"
-                    Padding="20"
-                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
-
-                <StackPanel Spacing="18">
-
-                    <TextBlock Text="Últimos pedidos"
-                               FontSize="24"
-                               FontWeight="SemiBold"/>
-
-                    <StackPanel x:Name="PedidosPanel"
-                                Spacing="12"/>
-
-                </StackPanel>
-
-            </Border>
-
-        </StackPanel>
-
-    </ScrollViewer>
-</Page>
+        </ScrollViewer>
+    </Page>

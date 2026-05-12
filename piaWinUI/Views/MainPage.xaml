@@ -7,35 +7,101 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
+    <Page.Resources>
 
-    <Grid >
-        <!-- Para que no se vea feo al cerrar el menú -->
+        <!-- Colores -->
+        <SolidColorBrush x:Key="NavBackground" Color="#111827"/>
+        <SolidColorBrush x:Key="NavItemBackgroundSelected" Color="#2563EB"/>
+        <SolidColorBrush x:Key="NavItemForeground" Color="#E5E7EB"/>
+        <SolidColorBrush x:Key="NavPaneFooter" Color="#0F172A"/>
+
+    </Page.Resources>
+
+    <Grid Background="#0B1120">
+
         <NavigationView x:Name="NavView"
-                PaneDisplayMode="Left"
-                IsBackButtonVisible="Collapsed"
-                IsSettingsVisible="False"
-                IsPaneOpen="True"
-                CompactPaneLength="48"
-                OpenPaneLength="200"
-                ItemInvoked="NavView_ItemInvoked">
+                    PaneDisplayMode="Left"
+                    IsBackButtonVisible="Collapsed"
+                    IsSettingsVisible="False"
+                    IsPaneOpen="True"
+                    CompactPaneLength="56"
+                    OpenPaneLength="230"
+                    SelectionFollowsFocus="Enabled"
+                    Background="{StaticResource NavBackground}"
+                    ItemInvoked="NavView_ItemInvoked">
 
+            <!-- Estilo items -->
+            <NavigationView.Resources>
+
+                <Style TargetType="NavigationViewItem">
+
+                    <Setter Property="Foreground"
+                        Value="{StaticResource NavItemForeground}"/>
+
+                    <Setter Property="Margin"
+                        Value="6"/>
+
+                    <Setter Property="Padding"
+                        Value="12,10"/>
+
+                    <Setter Property="CornerRadius"
+                        Value="10"/>
+
+                </Style>
+
+            </NavigationView.Resources>
+
+            <!-- Menú -->
             <NavigationView.MenuItems>
-                <NavigationViewItem Content="Inicio" Icon="Home" Tag="Inicio"/>
-                <NavigationViewItem Content="Inventario" Icon="Library" Tag="Productos"/>
-                <NavigationViewItem Content="Proveedores" Icon="Contact" Tag="Proveedores"/>
-                <NavigationViewItem Content="Pedidos" Icon="Shop" Tag="Pedidos"/>
-                <NavigationViewItem Content="Ventas" Icon="Paste" Tag="Ventas"/>
-                <NavigationViewItem Content="Reportes" Icon="List" Tag="Reportes"/>
+
+                <NavigationViewItem Content="Inicio"
+                                Icon="Home"
+                                Tag="Inicio"/>
+
+                <NavigationViewItem Content="Inventario"
+                                Icon="Library"
+                                Tag="Productos"/>
+
+                <NavigationViewItem Content="Proveedores"
+                                Icon="Contact"
+                                Tag="Proveedores"/>
+
+                <NavigationViewItem Content="Pedidos"
+                                Icon="Shop"
+                                Tag="Pedidos"/>
+
+                <NavigationViewItem Content="Ventas"
+                                Icon="Paste"
+                                Tag="Ventas"/>
+
+                <NavigationViewItem Content="Reportes"
+                                Icon="List"
+                                Tag="Reportes"/>
+
             </NavigationView.MenuItems>
 
+            <!-- Footer -->
             <NavigationView.FooterMenuItems>
 
-                <NavigationViewItem x:Name="SettingsNavItem" Content="Ajustes" Icon="Setting" Tapped="Settings_Click"/>
-                <NavigationViewItem Content="Cerrar sesion" Icon="Back" Tapped="LogOut_Tapped"/>
-                <NavigationViewItem Content="Salir" Icon="Cancel" Tapped="ExitApp_Tapped"/>
+                <NavigationViewItem x:Name="SettingsNavItem"
+                                Content="Ajustes"
+                                Icon="Setting"
+                                Tapped="Settings_Click"/>
+
+                <NavigationViewItem Content="Cerrar sesión"
+                                Icon="Back"
+                                Tapped="LogOut_Tapped"/>
+
+                <NavigationViewItem Content="Salir"
+                                Icon="Cancel"
+                                Tapped="ExitApp_Tapped"/>
+
             </NavigationView.FooterMenuItems>
 
-            <Frame x:Name="ContentFrame"/>
+            <!-- Contenido -->
+            <Frame x:Name="ContentFrame"
+               Background="#111827"/>
+
         </NavigationView>
 
     </Grid>
