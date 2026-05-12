@@ -74,7 +74,7 @@
 
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="600"/>
+                <ColumnDefinition Width="500"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Spacing="15">
@@ -122,7 +122,7 @@
 
                 <GridView x:Name="ResultadosProductosList"
                           SelectionMode="None"
-                          Height="800"
+                          Height="680"
                           IsItemClickEnabled="True">
 
                     <GridView.ItemsPanel>
