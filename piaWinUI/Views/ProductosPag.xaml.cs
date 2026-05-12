@@ -261,6 +261,27 @@ namespace piaWinUI.Views
             // LLAMADA ÚNICA AL DIÁLOGO
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
+            // --- VALIDACIÓN DE CAMPOS VACÍOS O EN CERO ---
+            if (string.IsNullOrWhiteSpace(nombre.Text) || string.IsNullOrWhiteSpace(descripcion.Text) ||
+                string.IsNullOrWhiteSpace(codigoBarras.Text) || categoriaCombo.SelectedItem == null ||
+                proveedorCombo.SelectedItem == null)
+            {
+                await MostrarAvisoError("Campos incompletos", "Todos los campos son obligatorios (excepto la imagen).");
+                return;
+            }
+
+           decimal.TryParse(compra.Text, out decimal pc);
+            decimal.TryParse(venta.Text, out decimal pv);
+            int.TryParse(stock.Text, out int st); 
+
+            if (pc <= 0 || pv <= 0 || st <= 0)
+            {
+                await MostrarAvisoError("Valores en cero", "Los precios y el stock deben ser números mayores a 0.");
+                return;
+            }
+
+
+
             string cbTexto = codigoBarras.Text.Trim();
 
             // --- VALIDACIÓN DE DUPLICADOS (AGREGAR) ---
@@ -273,9 +294,6 @@ namespace piaWinUI.Views
                 return;
             }
 
-            decimal.TryParse(compra.Text, out decimal pc);
-            decimal.TryParse(venta.Text, out decimal pv);
-            int.TryParse(stock.Text, out int st);
             var provSel = proveedorCombo.SelectedItem?.ToString();
             var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
 
@@ -540,6 +558,25 @@ namespace piaWinUI.Views
 
                 if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
+                // --- VALIDACIÓN DE CAMPOS VACÍOS O EN CERO ---
+                if (string.IsNullOrWhiteSpace(nombre.Text) || string.IsNullOrWhiteSpace(descripcion.Text) ||
+                    string.IsNullOrWhiteSpace(codigoBarras.Text) || categoriaCombo.SelectedItem == null ||
+                    proveedorCombo.SelectedItem == null)
+                {
+                    await MostrarAvisoError("Edición inválida", "No puedes dejar campos vacíos.");
+                    return;
+                }
+
+                decimal.TryParse(compra.Text, out decimal pc);
+                decimal.TryParse(venta.Text, out decimal pv);
+                int.TryParse(stock.Text, out int st);
+
+                if (pc <= 0 || pv <= 0 || st <= 0)
+                {
+                    await MostrarAvisoError("Error de valores", "Los precios y el stock no pueden quedar en 0.");
+                    return;
+                }
+
                 // 5. Validaciones de Duplicados post-diálogo
                 string nombreNuevo = nombre.Text.Trim();
                 string cbNuevo = codigoBarras.Text.Trim();
@@ -556,9 +593,6 @@ namespace piaWinUI.Views
                 }
 
                 // 6. Procesar y guardar cambios
-                decimal.TryParse(compra.Text, out decimal pc);
-                decimal.TryParse(venta.Text, out decimal pv);
-                int.TryParse(stock.Text, out int st);
                 var provSel = proveedorCombo.SelectedItem?.ToString();
                 var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
 
