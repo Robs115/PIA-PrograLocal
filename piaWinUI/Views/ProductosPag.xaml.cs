@@ -496,11 +496,20 @@ namespace piaWinUI.Views
                 if (sender is not Button btn || btn.Tag is not Producto producto)
                     return;
 
-                // 2. Preparar listas de memoria (Rápido para bajos recursos)
+                // 2. Preparar listas de memoria
                 var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
                 if (!listaCategorias.Any()) listaCategorias.Add("General");
 
-                // 3. Inicializar Controles (con protección contra nulos)
+                // 3. Crear el InfoBar (Aviso visual estable)
+                var avisoError = new InfoBar
+                {
+                    Severity = InfoBarSeverity.Error,
+                    Title = "Validación",
+                    IsOpen = false,
+                    Margin = new Thickness(0, 0, 0, 10)
+                };
+
+                // 4. Inicializar Controles con los datos actuales del producto
                 var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20, Text = producto.Nombre ?? "" };
 
                 var descripcion = new TextBox
@@ -510,7 +519,7 @@ namespace piaWinUI.Views
                     AcceptsReturn = true,
                     Height = 70,
                     TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
-                    MaxLength = 100
+                    MaxLength = 50
                 };
 
                 var codigoBarras = new TextBox
@@ -541,9 +550,7 @@ namespace piaWinUI.Views
                 var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = producto.Stock.ToString() };
 
                 // --- VALIDACIONES EN TIEMPO REAL ---
-
-                nombre.TextChanging += (s, args) =>
-                {
+                nombre.TextChanging += (s, args) => {
                     string limpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
                     if (nombre.Text != limpio)
                     {
@@ -553,8 +560,7 @@ namespace piaWinUI.Views
                     }
                 };
 
-                codigoBarras.TextChanging += (s, args) =>
-                {
+                codigoBarras.TextChanging += (s, args) => {
                     string limpio = new string(codigoBarras.Text.Where(char.IsDigit).ToArray());
                     if (codigoBarras.Text != limpio)
                     {
@@ -564,8 +570,7 @@ namespace piaWinUI.Views
                     }
                 };
 
-                stock.TextChanging += (s, args) =>
-                {
+                stock.TextChanging += (s, args) => {
                     string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
                     if (stock.Text != limpio)
                     {
@@ -582,7 +587,6 @@ namespace piaWinUI.Views
                 string rutaImagenSeleccionada = producto.ImagenPath;
                 var txtImagen = new TextBlock
                 {
-                    // Protección contra nulos para evitar crash en GetFileName
                     Text = string.IsNullOrEmpty(producto.ImagenPath) ? "Sin imagen seleccionada" : System.IO.Path.GetFileName(producto.ImagenPath),
                     TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
                     FontSize = 12,
@@ -600,80 +604,121 @@ namespace piaWinUI.Views
                     if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
                 };
 
-                // 4. Panel de Diseño
+                // 5. Organización del Layout (Estable y con Scroll)
                 var panel = new StackPanel
                 {
                     Spacing = 12,
+                    Width = 440,
+                    MinHeight = 520,
                     Children = {
+                avisoError,
                 nombre, descripcion, codigoBarras, categoriaCombo, proveedorCombo,
                 new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
                 new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
             }
                 };
 
+                var scroll = new ScrollViewer { Content = panel, VerticalScrollBarVisibility = ScrollBarVisibility.Auto, MaxHeight = 600 };
+
                 var dialog = new ContentDialog
                 {
                     Title = "Editar Producto",
                     PrimaryButtonText = "Guardar cambios",
                     CloseButtonText = "Cancelar",
-                    Content = panel,
+                    Content = scroll,
                     XamlRoot = this.XamlRoot
                 };
 
-                if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
-
-                // --- VALIDACIÓN DE CAMPOS VACÍOS O EN CERO ---
-                if (string.IsNullOrWhiteSpace(nombre.Text) || string.IsNullOrWhiteSpace(descripcion.Text) ||
-                    string.IsNullOrWhiteSpace(codigoBarras.Text) || categoriaCombo.SelectedItem == null ||
-                    proveedorCombo.SelectedItem == null)
+                // 6. Lógica de Validación Final ESPECÍFICA (No cierra si hay error)
+                dialog.Closing += (s, args) =>
                 {
-                    await MostrarAvisoError("Edición inválida", "No puedes dejar campos vacíos.");
-                    return;
-                }
+                    if (args.Result == ContentDialogResult.Primary)
+                    {
+                        args.Cancel = true; // Detenemos el cierre para validar
+                        string error = "";
 
-                decimal.TryParse(compra.Text, out decimal pc);
-                decimal.TryParse(venta.Text, out decimal pv);
-                int.TryParse(stock.Text, out int st);
+                        // Variables de control
+                        bool nV = string.IsNullOrWhiteSpace(nombre.Text);
+                        bool dV = string.IsNullOrWhiteSpace(descripcion.Text);
+                        bool cV = string.IsNullOrWhiteSpace(codigoBarras.Text);
+                        bool catV = categoriaCombo.SelectedItem == null;
+                        bool provV = proveedorCombo.SelectedItem == null;
+                        bool coV = string.IsNullOrWhiteSpace(compra.Text);
+                        bool veV = string.IsNullOrWhiteSpace(venta.Text);
+                        bool stV = string.IsNullOrWhiteSpace(stock.Text);
 
-                if (pc <= 0 || pv <= 0 || st <= 0)
+                        // Cascada de mensajes específicos
+                        if (nV && dV && cV && catV && provV && coV && veV && stV)
+                            error = "Por favor, completa todos los campos del formulario.";
+                        else if (nV) error = "Falta el nombre del producto.";
+                        else if (dV) error = "Falta la descripción del producto.";
+                        else if (cV) error = "Falta el código de barras.";
+                        else if (catV) error = "Debes seleccionar una categoría.";
+                        else if (provV) error = "Debes seleccionar un proveedor.";
+                        else if (coV) error = "Falta el precio de compra.";
+                        else if (veV) error = "Falta el precio de venta.";
+                        else if (stV) error = "Falta el stock inicial.";
+                        else
+                        {
+                            decimal.TryParse(compra.Text, out decimal pc);
+                            decimal.TryParse(venta.Text, out decimal pv);
+                            int.TryParse(stock.Text, out int st);
+
+                            if (pc <= 0) error = "El precio de compra debe ser mayor a 0.";
+                            else if (pv <= 0) error = "El precio de venta debe ser mayor a 0.";
+                            // REGLA DE MARGEN: Venta > Compra
+                            else if (pv <= pc) error = "El precio de venta debe ser mayor al precio de compra.";
+                            else if (st <= 0) error = "El stock inicial debe ser mayor a 0.";
+                            else
+                            {
+                                // Validación de Duplicados (excluyendo el ID actual)
+                                string nbLimpio = nombre.Text.Trim();
+                                string cbTexto = codigoBarras.Text.Trim();
+                                bool existe = _productos.Any(p => p.Id != producto.Id &&
+                                              (nbLimpio.Equals(p.Nombre.Trim(), StringComparison.OrdinalIgnoreCase) ||
+                                              (!string.IsNullOrEmpty(p.CodigoBarras) && p.CodigoBarras == cbTexto)));
+
+                                if (existe) error = "El nombre o código de barras ya están en uso por otro producto.";
+                            }
+                        }
+
+                        if (!string.IsNullOrEmpty(error))
+                        {
+                            avisoError.Message = error;
+                            avisoError.IsOpen = true;
+                        }
+                        else
+                        {
+                            args.Cancel = false; // Todo correcto, permitir cierre
+                        }
+                    }
+                };
+
+                // 7. Ejecución y Persistencia
+                if (await dialog.ShowAsync() == ContentDialogResult.Primary)
                 {
-                    await MostrarAvisoError("Error de valores", "Los precios y el stock no pueden quedar en 0.");
-                    return;
+                    decimal.TryParse(compra.Text, out decimal pcFinal);
+                    decimal.TryParse(venta.Text, out decimal pvFinal);
+                    int.TryParse(stock.Text, out int stFinal);
+
+                    var provSel = proveedorCombo.SelectedItem?.ToString();
+                    var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
+
+                    // Actualizar el objeto producto original
+                    producto.Nombre = nombre.Text.Trim();
+                    producto.Descripcion = descripcion.Text.Trim();
+                    producto.CodigoBarras = codigoBarras.Text.Trim();
+                    producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
+                    producto.IdProveedor = provObj?.Id ?? 0;
+                    producto.PrecioCompra = pcFinal;
+                    producto.PrecioVenta = pvFinal;
+                    producto.Stock = stFinal;
+                    producto.ImagenPath = rutaImagenSeleccionada;
+
+                    ActualizarVista();
+                    await _service.SaveAllAsync(_productos);
+                    CargarCategorias();
                 }
-
-                // 5. Validaciones de Duplicados post-diálogo
-                string nombreNuevo = nombre.Text.Trim();
-                string cbNuevo = codigoBarras.Text.Trim();
-
-                bool existeEnOtro = _productos.Any(p =>
-                    p.Id != producto.Id &&
-                    (p.Nombre.Trim().Equals(nombreNuevo, StringComparison.OrdinalIgnoreCase) ||
-                     (!string.IsNullOrEmpty(cbNuevo) && p.CodigoBarras == cbNuevo)));
-
-                if (existeEnOtro)
-                {
-                    await MostrarAvisoError("Error de Validación", "El nombre o el código de barras ya están en uso por otro producto.");
-                    return;
-                }
-
-                // 6. Procesar y guardar cambios
-
-                var provSel = proveedorCombo.SelectedItem?.ToString();
-                var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
-
-                producto.Nombre = nombreNuevo;
-                producto.Descripcion = descripcion.Text.Trim();
-                producto.CodigoBarras = cbNuevo;
-                producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
-                producto.IdProveedor = provObj?.Id ?? 0;
-                producto.PrecioCompra = pc;
-                producto.PrecioVenta = pv;
-                producto.Stock = st;
-                producto.ImagenPath = rutaImagenSeleccionada;
-
-                ActualizarVista();
-                await _service.SaveAllAsync(_productos);
-                CargarCategorias();
             }
             catch (Exception ex)
             {
