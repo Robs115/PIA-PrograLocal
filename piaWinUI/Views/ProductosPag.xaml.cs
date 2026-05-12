@@ -302,6 +302,79 @@ namespace piaWinUI.Views
             }
         }
 
+        private async void OpenAddCategoryDialog(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                // 1. Crear el TextBox
+                var nombreCat = new TextBox
+                {
+                    Header = "Nombre de la Nueva Categoría",
+                    PlaceholderText = "Ej: Lácteos",
+                    MaxLength = 20
+                };
+
+                // Validación en tiempo real: Solo letras y espacios
+                nombreCat.TextChanging += (s, args) =>
+                {
+                    string limpio = new string(nombreCat.Text.Where(c => char.IsLetter(c) || char.IsWhiteSpace(c)).ToArray());
+                    if (nombreCat.Text != limpio)
+                    {
+                        int cursor = nombreCat.SelectionStart;
+                        nombreCat.Text = limpio;
+                        nombreCat.SelectionStart = Math.Max(0, cursor - 1);
+                    }
+                };
+
+                // 2. Configurar el Diálogo
+                var dialog = new ContentDialog
+                {
+                    Title = "Nueva Categoría",
+                    PrimaryButtonText = "Guardar",
+                    CloseButtonText = "Cancelar",
+                    DefaultButton = ContentDialogButton.Primary,
+                    Content = nombreCat,
+                    XamlRoot = this.XamlRoot // VITAL: Sin esto WinUI 3 crashea
+                };
+
+                var result = await dialog.ShowAsync();
+
+                if (result == ContentDialogResult.Primary)
+                {
+                    string nuevaCatNombre = nombreCat.Text.Trim();
+
+                    if (string.IsNullOrWhiteSpace(nuevaCatNombre)) return;
+
+                    // Validar duplicados en la lista de memoria
+                    bool existe = _categoriasMemoria.Any(c => c.Nombre.Equals(nuevaCatNombre, StringComparison.OrdinalIgnoreCase));
+
+                    if (existe)
+                    {
+                        // En lugar de otro diálogo (que puede causar crash), podrías usar un aviso visual 
+                        // o simplemente ignorar la acción para mantenerlo simple.
+                        return;
+                    }
+
+                    // 3. Guardar
+                    var nuevaCat = new Categoria { Nombre = nuevaCatNombre };
+
+                    // Guardar en el archivo JSON
+                    await _catService.AddCategoriaAsync(nuevaCat);
+
+                    // Actualizar la lista en RAM
+                    _categoriasMemoria.Add(nuevaCat);
+
+                    // Refrescar los filtros de la página
+                    CargarCategorias();
+                }
+            }
+            catch (Exception ex)
+            {
+                // Si hay un error, lo enviamos a la consola de depuración en lugar de cerrar la app
+                System.Diagnostics.Debug.WriteLine($"Error al agregar categoría: {ex.Message}");
+            }
+        }
+
 
         private async void Edit_Click(object sender, RoutedEventArgs e)
         {
