@@ -81,7 +81,8 @@
 
                                     <Button Content="Ver detalle"
                                             Tag="{Binding}"
-                                            Click="VerDetalle_Click"/>
+                                            Click="VerDetalle_Click"
+                                            Margin="5 0 0 0"/>
 
                                 </DataTemplate>
                             </controls:DataGridTemplateColumn.CellTemplate>

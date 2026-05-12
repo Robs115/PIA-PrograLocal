@@ -45,7 +45,7 @@
                 <controls:DataGridTemplateColumn Header="Acción">
                     <controls:DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <StackPanel Orientation="Horizontal" Spacing="8">
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="5">
 
                                 <Button
                                 Content="Editar"
