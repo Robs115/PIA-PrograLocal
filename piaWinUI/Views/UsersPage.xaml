@@ -9,7 +9,8 @@
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
     xmlns:models="using:piaWinUI.Models"
     mc:Ignorable="d"
-    xmlns:converters="using:piaWinUI.Converters">
+    xmlns:converters="using:piaWinUI.Converters"
+    Background="#0F172A">
 
     <Page.Resources>
         <converters:PasswordMaskConverter x:Key="PasswordMaskConverter"/>

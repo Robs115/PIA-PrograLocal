@@ -21,8 +21,6 @@ Spacing ="30">
                HorizontalAlignment ="Center" />
 
 
-
-
                 </StackPanel >
 
                 <TextBox x:Name="buscador" 

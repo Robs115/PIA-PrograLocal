@@ -4,7 +4,8 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    xmlns:converters="using:piaWinUI.Converters">
+    xmlns:converters="using:piaWinUI.Converters"
+    Background="#0F172A">
 
     <Page.Resources>
         <converters:InverseBoolToVisibilityConverter

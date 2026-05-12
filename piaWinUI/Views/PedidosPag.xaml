@@ -7,7 +7,8 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="#0F172A">
 
     <Grid Padding="20">
 
@@ -18,11 +19,11 @@
 
         <!-- 🔥 PANEL IZQUIERDO -->
         <Border Grid.Column="0"
-        Background="#111827"
-        CornerRadius="12"
-        Padding="20"
-        BorderBrush="#334155"
-        BorderThickness="1">
+            Background="#111827"
+            CornerRadius="12"
+            Padding="20"
+            BorderBrush="#334155"
+            BorderThickness="1">
 
             <StackPanel Spacing="15">
 

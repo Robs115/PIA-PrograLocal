@@ -7,7 +7,13 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:controls="using:CommunityToolkit.WinUI.UI.Controls"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Background="#0F172A">
+
+    <Page.Resources>
+        <!-- This targets the specific corner radius of the content area -->
+        <CornerRadius x:Key="NavigationViewContentGridCornerRadius">0</CornerRadius>
+    </Page.Resources>
 
 
     <Grid Padding="20">
@@ -19,11 +25,11 @@
 
 
         <Border Grid.Column="0"
-     Background="#111827"
-     CornerRadius="12"
-     Padding="20"
-     BorderBrush="#334155"
-     BorderThickness="1">
+             Background="#111827"
+             CornerRadius="12"
+             Padding="20"
+             BorderBrush="#334155"
+             BorderThickness="1">
 
             <StackPanel Spacing="15">
 
