@@ -158,6 +158,35 @@ namespace piaWinUI.Views
                     nombre.SelectionStart = Math.Max(0, cursor - 1);
                 }
             };
+            var descripcion = new TextBox
+            {
+                Header = "Descripción",
+                PlaceholderText = "Escribe una breve descripción...",
+                AcceptsReturn = true, // Permite saltos de línea
+                Height = 70,          // Altura fija para no desbordar el diálogo
+                TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                MaxLength = 50       // Límite de texto para ahorrar espacio en el JSON
+            };
+
+            //  Crear el control de Código de Barras
+            var codigoBarras = new TextBox
+            {
+                Header = "Código de Barras",
+                PlaceholderText = "Solo números (máx. 15)",
+                MaxLength = 15
+            };
+
+            // Validación en tiempo real: Solo números
+            codigoBarras.TextChanging += (s, args) =>
+            {
+                string limpio = new string(codigoBarras.Text.Where(char.IsDigit).ToArray());
+                if (codigoBarras.Text != limpio)
+                {
+                    int cursor = codigoBarras.SelectionStart;
+                    codigoBarras.Text = limpio;
+                    codigoBarras.SelectionStart = Math.Max(0, cursor - 1);
+                }
+            };
 
             var categoriaCombo = new ComboBox { Header = "Categoría", ItemsSource = listaCategorias, HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
             var proveedorCombo = new ComboBox { Header = "Proveedor", ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(), PlaceholderText = "Selecciona un proveedor", HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
@@ -197,7 +226,7 @@ namespace piaWinUI.Views
             {
                 Spacing = 12,
                 Children = {
-        nombre, categoriaCombo, proveedorCombo,
+        nombre, descripcion, codigoBarras, categoriaCombo, proveedorCombo,
         new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
         new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
     }
@@ -208,12 +237,15 @@ namespace piaWinUI.Views
             // LLAMADA ÚNICA AL DIÁLOGO
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
+            string cbTexto = codigoBarras.Text.Trim();
+
             // --- VALIDACIÓN DE DUPLICADOS (AGREGAR) ---
             string nombreLimpio = nombre.Text.Trim();
-            if (_productos.Any(p => p.Nombre.Trim().Equals(nombreLimpio, StringComparison.OrdinalIgnoreCase)))
+            bool duplicado = _productos.Any(p => nombreLimpio.Equals(p.Nombre.Trim(), StringComparison.OrdinalIgnoreCase) ||(!string.IsNullOrEmpty(p.CodigoBarras) && p.CodigoBarras == cbTexto));
+
+            if (duplicado)
             {
-                var error = new ContentDialog { Title = "Duplicado", Content = "Ya existe un producto con este nombre.", CloseButtonText = "Ok", XamlRoot = this.XamlRoot };
-                await error.ShowAsync();
+                await MostrarAvisoError("Datos Duplicados", "El nombre o el código de barras ya existen en otro producto.");
                 return;
             }
 
@@ -227,6 +259,8 @@ namespace piaWinUI.Views
             {
                 Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
                 Nombre = nombreLimpio,
+                Descripcion = descripcion.Text.Trim(),
+                CodigoBarras = cbTexto,
                 Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría",
                 IdProveedor = provObj?.Id ?? 0,
                 PrecioCompra = pc,
@@ -310,7 +344,7 @@ namespace piaWinUI.Views
                     {
                         // En lugar de otro diálogo (que puede causar crash), podrías usar un aviso visual 
                         // o simplemente ignorar la acción para mantenerlo simple.
-                        await MostrarAvisoErrorCategoria("Categoría existente", $"La categoría '{nuevaCatNombre}' ya está registrada.");
+                        await MostrarAvisoError("Categoría existente", $"La categoría '{nuevaCatNombre}' ya está registrada.");
                         return;
                     }
 
@@ -334,7 +368,7 @@ namespace piaWinUI.Views
             }
         }
 
-        private async Task MostrarAvisoErrorCategoria(string titulo, string mensaje)
+        private async Task MostrarAvisoError(string titulo, string mensaje)
         {
             var errorDialog = new ContentDialog
             {
@@ -350,120 +384,178 @@ namespace piaWinUI.Views
 
         private async void Edit_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn || btn.Tag is not Producto producto)
-                return;
-
-            var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
-            if (!listaCategorias.Any()) listaCategorias.Add("General");
-
-            var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20, Text = producto.Nombre ?? "" };
-
-            nombre.TextChanging += (s, args) =>
+            try
             {
-                string textoLimpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
-                if (nombre.Text != textoLimpio)
+                // 1. Validación de entrada
+                if (sender is not Button btn || btn.Tag is not Producto producto)
+                    return;
+
+                // 2. Preparar listas de memoria (Rápido para bajos recursos)
+                var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
+                if (!listaCategorias.Any()) listaCategorias.Add("General");
+
+                // 3. Inicializar Controles (con protección contra nulos)
+                var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20, Text = producto.Nombre ?? "" };
+
+                var descripcion = new TextBox
                 {
-                    int cursor = nombre.SelectionStart;
-                    nombre.Text = textoLimpio;
-                    nombre.SelectionStart = Math.Max(0, cursor - 1);
-                }
-            };
+                    Header = "Descripción",
+                    Text = producto.Descripcion ?? "",
+                    AcceptsReturn = true,
+                    Height = 70,
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                    MaxLength = 100
+                };
 
-            var categoriaCombo = new ComboBox
-            {
-                Header = "Categoría",
-                ItemsSource = listaCategorias,
-                SelectedItem = producto.Categoria,
-                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
-            };
-
-            var proveedorCombo = new ComboBox
-            {
-                Header = "Proveedor",
-                ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
-                SelectedItem = _proveedoresMemoria.FirstOrDefault(p => p.Id == producto.IdProveedor)?.Nombre,
-                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
-            };
-
-            var compra = new TextBox { Header = "Precio Compra", MaxLength = 6, Text = producto.PrecioCompra.ToString() };
-            var venta = new TextBox { Header = "Precio Venta", MaxLength = 6, Text = producto.PrecioVenta.ToString() };
-            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = producto.Stock.ToString() };
-
-            stock.TextChanging += (s, args) =>
-            {
-                string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
-                if (stock.Text != limpio)
+                var codigoBarras = new TextBox
                 {
-                    int cursor = stock.SelectionStart;
-                    stock.Text = limpio;
-                    stock.SelectionStart = Math.Max(0, cursor - 1);
-                }
-            };
-            compra.TextChanging += ValidarDecimal;
-            venta.TextChanging += ValidarDecimal;
+                    Header = "Código de Barras",
+                    Text = producto.CodigoBarras ?? "",
+                    MaxLength = 15
+                };
 
-            string rutaImagenSeleccionada = producto.ImagenPath;
-            var txtImagen = new TextBlock
-            {
-                Text = string.IsNullOrEmpty(producto.ImagenPath) ? "Sin imagen seleccionada" : System.IO.Path.GetFileName(producto.ImagenPath),
-                TextWrapping = TextWrapping.Wrap,
-                FontSize = 12,
-                Opacity = 0.6
-            };
-            var btnImagen = new Button { Content = "Cambiar Imagen", Margin = new Thickness(0, 5, 0, 0) };
+                var categoriaCombo = new ComboBox
+                {
+                    Header = "Categoría",
+                    ItemsSource = listaCategorias,
+                    SelectedItem = producto.Categoria,
+                    HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
+                };
 
-            btnImagen.Click += async (s, args) => {
-                var picker = new Windows.Storage.Pickers.FileOpenPicker();
-                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
-                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-                picker.FileTypeFilter.Add(".jpg");
-                picker.FileTypeFilter.Add(".png");
-                var file = await picker.PickSingleFileAsync();
-                if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
-            };
+                var proveedorCombo = new ComboBox
+                {
+                    Header = "Proveedor",
+                    ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
+                    SelectedItem = _proveedoresMemoria.FirstOrDefault(p => p.Id == producto.IdProveedor)?.Nombre,
+                    HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
+                };
 
-            var panel = new StackPanel
-            {
-                Spacing = 12,
-                Children = {
-        nombre, categoriaCombo, proveedorCombo,
-        new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
-        new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
-    }
-            };
+                var compra = new TextBox { Header = "Precio Compra", MaxLength = 6, Text = producto.PrecioCompra.ToString() };
+                var venta = new TextBox { Header = "Precio Venta", MaxLength = 6, Text = producto.PrecioVenta.ToString() };
+                var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = producto.Stock.ToString() };
 
-            var dialog = new ContentDialog { Title = "Editar Producto", PrimaryButtonText = "Guardar cambios", CloseButtonText = "Cancelar", Content = panel, XamlRoot = this.XamlRoot };
+                // --- VALIDACIONES EN TIEMPO REAL ---
 
-            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+                nombre.TextChanging += (s, args) =>
+                {
+                    string limpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+                    if (nombre.Text != limpio)
+                    {
+                        int cursor = nombre.SelectionStart;
+                        nombre.Text = limpio;
+                        nombre.SelectionStart = Math.Max(0, cursor - 1);
+                    }
+                };
 
-            // --- VALIDACIÓN DE DUPLICADOS (EDITAR) ---
-            string nombreNuevo = nombre.Text.Trim();
-            bool existe = _productos.Any(p => p.Id != producto.Id && p.Nombre.Trim().Equals(nombreNuevo, StringComparison.OrdinalIgnoreCase));
+                codigoBarras.TextChanging += (s, args) =>
+                {
+                    string limpio = new string(codigoBarras.Text.Where(char.IsDigit).ToArray());
+                    if (codigoBarras.Text != limpio)
+                    {
+                        int cursor = codigoBarras.SelectionStart;
+                        codigoBarras.Text = limpio;
+                        codigoBarras.SelectionStart = Math.Max(0, cursor - 1);
+                    }
+                };
 
-            if (existe)
-            {
-                var error = new ContentDialog { Title = "Error", Content = "Ya existe otro producto con ese nombre.", CloseButtonText = "Ok", XamlRoot = this.XamlRoot };
-                await error.ShowAsync();
-                return;
+                stock.TextChanging += (s, args) =>
+                {
+                    string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
+                    if (stock.Text != limpio)
+                    {
+                        int cursor = stock.SelectionStart;
+                        stock.Text = limpio;
+                        stock.SelectionStart = Math.Max(0, cursor - 1);
+                    }
+                };
+
+                compra.TextChanging += ValidarDecimal;
+                venta.TextChanging += ValidarDecimal;
+
+                // --- GESTIÓN DE IMAGEN ---
+                string rutaImagenSeleccionada = producto.ImagenPath;
+                var txtImagen = new TextBlock
+                {
+                    // Protección contra nulos para evitar crash en GetFileName
+                    Text = string.IsNullOrEmpty(producto.ImagenPath) ? "Sin imagen seleccionada" : System.IO.Path.GetFileName(producto.ImagenPath),
+                    TextWrapping = Microsoft.UI.Xaml.TextWrapping.Wrap,
+                    FontSize = 12,
+                    Opacity = 0.6
+                };
+                var btnImagen = new Button { Content = "Cambiar Imagen", Margin = new Thickness(0, 5, 0, 0) };
+
+                btnImagen.Click += async (s, args) => {
+                    var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                    var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+                    WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+                    picker.FileTypeFilter.Add(".jpg");
+                    picker.FileTypeFilter.Add(".png");
+                    var file = await picker.PickSingleFileAsync();
+                    if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
+                };
+
+                // 4. Panel de Diseño
+                var panel = new StackPanel
+                {
+                    Spacing = 12,
+                    Children = {
+                nombre, descripcion, codigoBarras, categoriaCombo, proveedorCombo,
+                new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
+                new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
             }
+                };
 
-            decimal.TryParse(compra.Text, out decimal pc);
-            decimal.TryParse(venta.Text, out decimal pv);
-            int.TryParse(stock.Text, out int st);
-            var provSel = proveedorCombo.SelectedItem?.ToString();
-            var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
+                var dialog = new ContentDialog
+                {
+                    Title = "Editar Producto",
+                    PrimaryButtonText = "Guardar cambios",
+                    CloseButtonText = "Cancelar",
+                    Content = panel,
+                    XamlRoot = this.XamlRoot
+                };
 
-            producto.Nombre = nombreNuevo;
-            producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
-            producto.IdProveedor = provObj?.Id ?? 0;
-            producto.PrecioCompra = pc;
-            producto.PrecioVenta = pv;
-            producto.Stock = st;
-            producto.ImagenPath = rutaImagenSeleccionada;
+                if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
-            ActualizarVista();
-            await _service.SaveAllAsync(_productos);
-            CargarCategorias();
+                // 5. Validaciones de Duplicados post-diálogo
+                string nombreNuevo = nombre.Text.Trim();
+                string cbNuevo = codigoBarras.Text.Trim();
+
+                bool existeEnOtro = _productos.Any(p =>
+                    p.Id != producto.Id &&
+                    (p.Nombre.Trim().Equals(nombreNuevo, StringComparison.OrdinalIgnoreCase) ||
+                     (!string.IsNullOrEmpty(cbNuevo) && p.CodigoBarras == cbNuevo)));
+
+                if (existeEnOtro)
+                {
+                    await MostrarAvisoError("Error de Validación", "El nombre o el código de barras ya están en uso por otro producto.");
+                    return;
+                }
+
+                // 6. Procesar y guardar cambios
+                decimal.TryParse(compra.Text, out decimal pc);
+                decimal.TryParse(venta.Text, out decimal pv);
+                int.TryParse(stock.Text, out int st);
+                var provSel = proveedorCombo.SelectedItem?.ToString();
+                var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
+
+                producto.Nombre = nombreNuevo;
+                producto.Descripcion = descripcion.Text.Trim();
+                producto.CodigoBarras = cbNuevo;
+                producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
+                producto.IdProveedor = provObj?.Id ?? 0;
+                producto.PrecioCompra = pc;
+                producto.PrecioVenta = pv;
+                producto.Stock = st;
+                producto.ImagenPath = rutaImagenSeleccionada;
+
+                ActualizarVista();
+                await _service.SaveAllAsync(_productos);
+                CargarCategorias();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error en Edit_Click: {ex.Message}");
+            }
         }
     }
 }

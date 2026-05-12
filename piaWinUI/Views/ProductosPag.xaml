@@ -91,6 +91,11 @@
                         Width="2*"/>
 
                     <controls:DataGridTextColumn
+                        Header="Código"
+                        Binding="{Binding CodigoBarras}"
+                        Width="120"/>
+
+                    <controls:DataGridTextColumn
                         Header="Categoría"
                         Binding="{Binding Categoria}"
                         Width="*"/>
