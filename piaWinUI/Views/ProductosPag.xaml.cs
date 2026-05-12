@@ -259,12 +259,18 @@ namespace piaWinUI.Views
             decimal.TryParse(venta.Text, out decimal pv);
             int.TryParse(stock.Text, out int st);
 
+
+            var nombreSeleccionado = proveedorCombo.SelectedItem?.ToString();
+            var proveedorEncontrado = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == nombreSeleccionado);
+
+
             // 5. Crear objeto y guardar
             var nuevoProducto = new Producto
             {
                 Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
                 Nombre = nombre.Text,
                 Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría",
+                IdProveedor = proveedorEncontrado?.Id ?? 0,
                 PrecioCompra = pc,
                 PrecioVenta = pv,
                 Stock = st,
