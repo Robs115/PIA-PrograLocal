@@ -381,13 +381,25 @@ namespace piaWinUI.Views
                 await ShowDialogAsync("Error", "No hay productos en la venta");
                 return;
             }
+            var stocksproductos = await _productoService.GetAllAsync() ?? new List<Producto>();
 
+            foreach (var itemCarrito in carrito)
+            {
+                var productoStock = stocksproductos
+                    .FirstOrDefault(p => p.Id == itemCarrito.IdProducto);
+
+                if (productoStock != null && itemCarrito.Cantidad > productoStock.Stock)
+                {
+                    await ShowDialogAsync("Error", "Hay productos con stock insuficiente.");
+                    return;
+                }
+            }
             // Validación final
-            if (carrito.Any(p => p.TieneError))
+            /*if (carrito.Any(p => p.TieneError))
             {
                 await ShowDialogAsync("Error", "Hay productos con cantidades inválidas");
                 return;
-            }
+            }*/
 
             if (string.IsNullOrWhiteSpace(metododepago))
                 return;
