@@ -28,7 +28,7 @@ namespace piaWinUI.Services
             Venta venta,
             List<DetalleVentas> detalles)
         {
-            if (detalles.Count == 0)
+           if (detalles.Count == 0)
                 throw new Exception(
                     "La venta no tiene productos");
 
@@ -45,13 +45,15 @@ namespace piaWinUI.Services
                     throw new Exception(
                         $"Producto no encontrado");
 
-                if (detalle.Cantidad <= 0)
+               if (detalle.Cantidad <= 0)
                     throw new Exception(
-                        "Cantidad inválida");
+                        "Cantidad inválida"); 
 
-                if (detalle.Cantidad > producto.Stock)
+             if (detalle.Cantidad > producto.Stock)
                     throw new Exception(
                         $"Stock insuficiente para {producto.Nombre}");
+
+
 
                 producto.Stock -= detalle.Cantidad;
             }

@@ -81,8 +81,7 @@ namespace piaWinUI.Models
                     // 1. Corregimos internamente regresando al stock máximo que sí es válido
                     cantidad = StockDisponible;
 
-                    // 2. ¡MUY IMPORTANTE! Le avisamos a la interfaz que el valor cambió
-                    // para que limpie el TextBox y no intente re-enviar el error al perder el foco
+                   
                     OnPropertyChanged(nameof(Cantidad));
                     OnPropertyChanged(nameof(Subtotal));
 

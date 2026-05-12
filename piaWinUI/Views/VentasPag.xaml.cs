@@ -202,13 +202,32 @@ namespace piaWinUI.Views
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 
-        private void AgregarProductoAlCarrito(Producto producto)
+        private async Task AgregarProductoAlCarrito(Producto producto)
         {
+            var stocksproductos = await _productoService.GetAllAsync() ?? new List<Producto>();
             var existente = carrito.FirstOrDefault(p => p.IdProducto == producto.Id);
+
+            // buscar stock del producto
+            var stockProducto = stocksproductos.FirstOrDefault(p => p.Id == producto.Id);
+            //ya lo validamos en otro lado luego va a valer
+         /*   if (stockProducto == null)
+            {
+                Console.WriteLine("Error: producto no encontrado en inventario.");
+                return;
+            } */
 
             if (existente != null)
             {
-                existente.Cantidad++;
+                // validar antes de incrementar
+                if (existente.Cantidad + 1 > stockProducto.Stock)
+                {
+                   await ShowDialogAsync("Error", "No hay suficiente stock para agregar más unidades de este producto.");
+                    existente.Cantidad = stockProducto.Stock; // se ajusta al máximo disponible
+                }
+                else
+                {
+                    existente.Cantidad++;
+                }
             }
             else
             {
@@ -224,6 +243,7 @@ namespace piaWinUI.Views
                 nuevo.OnError += async (mensaje) =>
                 {
                     await ShowDialogAsync("Error", mensaje);
+                    
                 };
 
                 nuevo.PropertyChanged += (s, e) =>
@@ -381,25 +401,13 @@ namespace piaWinUI.Views
                 await ShowDialogAsync("Error", "No hay productos en la venta");
                 return;
             }
-            var stocksproductos = await _productoService.GetAllAsync() ?? new List<Producto>();
-
-            foreach (var itemCarrito in carrito)
-            {
-                var productoStock = stocksproductos
-                    .FirstOrDefault(p => p.Id == itemCarrito.IdProducto);
-
-                if (productoStock != null && itemCarrito.Cantidad > productoStock.Stock)
-                {
-                    await ShowDialogAsync("Error", "Hay productos con stock insuficiente.");
-                    return;
-                }
-            }
+            
             // Validación final
-            /*if (carrito.Any(p => p.TieneError))
+            if (carrito.Any(p => p.TieneError))
             {
                 await ShowDialogAsync("Error", "Hay productos con cantidades inválidas");
                 return;
-            }*/
+            }
 
             if (string.IsNullOrWhiteSpace(metododepago))
                 return;
