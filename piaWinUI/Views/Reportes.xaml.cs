@@ -261,7 +261,7 @@ namespace piaWinUI
                                 block.Item()
                                     .Background(Colors.Blue.Darken2)
                                     .Padding(8)
-                                    .Text("VENTAS POR D�A")
+                                    .Text("VENTAS POR DIA")
                                     .FontColor(Colors.White)
                                     .Bold()
                                     .FontSize(12);
