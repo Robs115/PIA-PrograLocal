@@ -303,57 +303,147 @@ namespace piaWinUI.Views
         }
 
 
-
-
-        private async void Edit_Click(
-            object sender,
-            RoutedEventArgs e)
+        private async void Edit_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is not Button btn ||
-                btn.Tag is not Producto producto)
+            // 1. Validar que el objeto seleccionado sea un Producto
+            if (sender is not Button btn || btn.Tag is not Producto producto)
                 return;
 
+            // 2. Preparar datos en memoria (Igual que en Agregar)
+            var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
+            if (!listaCategorias.Any()) listaCategorias.Add("General");
+
+            // 3. Crear Controles y Pre-llenarlos con los datos actuales
             var nombre = new TextBox
             {
-                Header = "Nombre",
-                Text = producto.Nombre
+                Header = "Nombre del Producto",
+                MaxLength = 20,
+                Text = producto.Nombre ?? ""
             };
 
-            var categoria = new TextBox
+            // Validación de nombre (Sin caracteres especiales)
+            nombre.TextChanging += (s, args) =>
+            {
+                string textoLimpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
+                if (nombre.Text != textoLimpio)
+                {
+                    int cursor = nombre.SelectionStart;
+                    nombre.Text = textoLimpio;
+                    nombre.SelectionStart = Math.Max(0, cursor - 1);
+                }
+            };
+
+            var categoriaCombo = new ComboBox
             {
                 Header = "Categoría",
-                Text = producto.Categoria
+                ItemsSource = listaCategorias,
+                SelectedItem = producto.Categoria,
+                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
             };
 
+            var proveedorCombo = new ComboBox
+            {
+                Header = "Proveedor",
+                ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
+                SelectedItem = _proveedoresMemoria.FirstOrDefault(p => p.Id == producto.IdProveedor)?.Nombre,
+                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
+            };
+
+            var compra = new TextBox { Header = "Precio Compra", MaxLength = 3, Text = producto.PrecioCompra.ToString() };
+            var venta = new TextBox { Header = "Precio Venta", MaxLength = 3, Text = producto.PrecioVenta.ToString() };
+            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = producto.Stock.ToString() };
+
+            // Validaciones numéricas
+            stock.TextChanging += (s, args) =>
+            {
+                string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
+                if (stock.Text != limpio)
+                {
+                    int cursor = stock.SelectionStart;
+                    stock.Text = limpio;
+                    stock.SelectionStart = Math.Max(0, cursor - 1);
+                }
+            };
+
+            compra.TextChanging += ValidarDecimal;
+            venta.TextChanging += ValidarDecimal;
+
+            // 4. Selección de Imagen (con la ruta actual)
+            string rutaImagenSeleccionada = producto.ImagenPath;
+            var txtImagen = new TextBlock
+            {
+                Text = string.IsNullOrEmpty(producto.ImagenPath) ? "Sin imagen seleccionada" : System.IO.Path.GetFileName(producto.ImagenPath),
+                TextWrapping = TextWrapping.Wrap,
+                FontSize = 12,
+                Opacity = 0.6
+            };
+
+            var btnImagen = new Button { Content = "Cambiar Imagen", Margin = new Thickness(0, 5, 0, 0) };
+
+            btnImagen.Click += async (s, args) => {
+                var picker = new Windows.Storage.Pickers.FileOpenPicker();
+                var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
+                WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+
+                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
+                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
+                picker.FileTypeFilter.Add(".jpg");
+                picker.FileTypeFilter.Add(".jpeg");
+                picker.FileTypeFilter.Add(".png");
+
+                var file = await picker.PickSingleFileAsync();
+                if (file != null)
+                {
+                    rutaImagenSeleccionada = file.Path;
+                    txtImagen.Text = file.Name;
+                }
+            };
+
+            // 5. Panel de Diseño
             var panel = new StackPanel
             {
-                Spacing = 10,
-                Children =
-                {
-                    nombre,
-                    categoria
-                }
+                Spacing = 12,
+                Children = {
+            nombre,
+            categoriaCombo,
+            proveedorCombo,
+            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
+            new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
+        }
             };
 
             var dialog = new ContentDialog
             {
-                Title = "Editar",
-                PrimaryButtonText = "Guardar",
+                Title = "Editar Producto",
+                PrimaryButtonText = "Guardar cambios",
                 CloseButtonText = "Cancelar",
                 Content = panel,
                 XamlRoot = this.XamlRoot
             };
 
-            if (await dialog.ShowAsync() !=
-                ContentDialogResult.Primary)
-                return;
+            if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
+            // 6. Procesar datos y actualizar el objeto
+            decimal.TryParse(compra.Text, out decimal pc);
+            decimal.TryParse(venta.Text, out decimal pv);
+            int.TryParse(stock.Text, out int st);
+
+            var nombreProv = proveedorCombo.SelectedItem?.ToString();
+            var proveedorEncontrado = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == nombreProv);
+
+            // Actualizamos las propiedades del objeto original (producto)
             producto.Nombre = nombre.Text;
-            producto.Categoria = categoria.Text;
+            producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
+            producto.IdProveedor = proveedorEncontrado?.Id ?? 0;
+            producto.PrecioCompra = pc;
+            producto.PrecioVenta = pv;
+            producto.Stock = st;
+            producto.ImagenPath = rutaImagenSeleccionada;
 
+            // 7. Refrescar interfaz y persistencia
             ActualizarVista();
-
             await _service.SaveAllAsync(_productos);
+            CargarCategorias(); // Por si cambió la categoría del producto
         }
     }
 }
