@@ -144,56 +144,30 @@ namespace piaWinUI.Views
 
         private async void OpenAddDialog(object sender, RoutedEventArgs e)
         {
-            // 1. Usar datos en memoria y convertirlos a Lista (soluciona que no se vean)
             var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
-
-            // Si el JSON está vacío temporalmente, le damos una opción por defecto
             if (!listaCategorias.Any()) listaCategorias.Add("General");
 
-            // 2. Crear Controles
-            var nombre = new TextBox
-            {
-                Header = "Nombre del Producto",
-                MaxLength = 20 // Límite de 20 caracteres
-            };
-
-            // Evento para limpiar caracteres especiales en tiempo real
+            var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20 };
             nombre.TextChanging += (s, args) =>
             {
-                // Filtra el texto permitiendo solo letras, números y espacios
                 string textoLimpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
-
-                // Si el texto original tenía un caracter especial, lo reemplaza por el texto limpio
                 if (nombre.Text != textoLimpio)
                 {
-                    int cursor = nombre.SelectionStart; // Guarda la posición del cursor
+                    int cursor = nombre.SelectionStart;
                     nombre.Text = textoLimpio;
-                    nombre.SelectionStart = Math.Max(0, cursor - 1); // Restaura el cursor
+                    nombre.SelectionStart = Math.Max(0, cursor - 1);
                 }
             };
 
-            var categoriaCombo = new ComboBox
-            {
-                Header = "Categoría",
-                ItemsSource = listaCategorias,
-                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
-            };
+            var categoriaCombo = new ComboBox { Header = "Categoría", ItemsSource = listaCategorias, HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
+            var proveedorCombo = new ComboBox { Header = "Proveedor", ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(), PlaceholderText = "Selecciona un proveedor", HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch };
 
-            var proveedorCombo = new ComboBox
-            {
-                Header = "Proveedor",
-                ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
-                PlaceholderText = "Selecciona un proveedor",
-                HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
-            };
-
-            var compra = new TextBox { Header = "Precio Compra", MaxLength = 3, Text = "", PlaceholderText = "0" };
-            var venta = new TextBox { Header = "Precio Venta", MaxLength = 3, Text = "", PlaceholderText = "0" };
-            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = "", PlaceholderText = "0" };
+            var compra = new TextBox { Header = "Precio Compra", MaxLength = 6, PlaceholderText = "0" };
+            var venta = new TextBox { Header = "Precio Venta", MaxLength = 6, PlaceholderText = "0" };
+            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, PlaceholderText = "0" };
 
             stock.TextChanging += (s, args) =>
             {
-                // Solo permite dígitos (automáticamente bloquea el signo '-' de los negativos)
                 string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
                 if (stock.Text != limpio)
                 {
@@ -202,85 +176,69 @@ namespace piaWinUI.Views
                     stock.SelectionStart = Math.Max(0, cursor - 1);
                 }
             };
-
             compra.TextChanging += ValidarDecimal;
             venta.TextChanging += ValidarDecimal;
 
-            // 3. Selección de Imagen
             string rutaImagenSeleccionada = "";
             var txtImagen = new TextBlock { Text = "Sin imagen seleccionada", TextWrapping = TextWrapping.Wrap, FontSize = 12, Opacity = 0.6 };
             var btnImagen = new Button { Content = "Seleccionar Imagen", Margin = new Thickness(0, 5, 0, 0) };
 
             btnImagen.Click += async (s, args) => {
                 var picker = new Windows.Storage.Pickers.FileOpenPicker();
-                // Obtener el HWND de la ventana actual (necesario en WinUI 3)
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
                 WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-
-                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
                 picker.FileTypeFilter.Add(".jpg");
-                picker.FileTypeFilter.Add(".jpeg");
                 picker.FileTypeFilter.Add(".png");
-
                 var file = await picker.PickSingleFileAsync();
-                if (file != null)
-                {
-                    rutaImagenSeleccionada = file.Path;
-                    txtImagen.Text = file.Name;
-                }
+                if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
             };
 
-            // 4. Panel de Diseño
             var panel = new StackPanel
             {
                 Spacing = 12,
                 Children = {
-            nombre,
-            categoriaCombo,
-            proveedorCombo,
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
-            new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
-        }
+        nombre, categoriaCombo, proveedorCombo,
+        new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
+        new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
+    }
             };
 
-            var dialog = new ContentDialog
-            {
-                Title = "Nuevo Producto",
-                PrimaryButtonText = "Guardar",
-                CloseButtonText = "Cancelar",
-                Content = panel,
-                XamlRoot = this.XamlRoot
-            };
+            var dialog = new ContentDialog { Title = "Nuevo Producto", PrimaryButtonText = "Guardar", CloseButtonText = "Cancelar", Content = panel, XamlRoot = this.XamlRoot };
 
+            // LLAMADA ÚNICA AL DIÁLOGO
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
+
+            // --- VALIDACIÓN DE DUPLICADOS (AGREGAR) ---
+            string nombreLimpio = nombre.Text.Trim();
+            if (_productos.Any(p => p.Nombre.Trim().Equals(nombreLimpio, StringComparison.OrdinalIgnoreCase)))
+            {
+                var error = new ContentDialog { Title = "Duplicado", Content = "Ya existe un producto con este nombre.", CloseButtonText = "Ok", XamlRoot = this.XamlRoot };
+                await error.ShowAsync();
+                return;
+            }
 
             decimal.TryParse(compra.Text, out decimal pc);
             decimal.TryParse(venta.Text, out decimal pv);
             int.TryParse(stock.Text, out int st);
+            var provSel = proveedorCombo.SelectedItem?.ToString();
+            var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
 
-
-            var nombreSeleccionado = proveedorCombo.SelectedItem?.ToString();
-            var proveedorEncontrado = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == nombreSeleccionado);
-
-
-            // 5. Crear objeto y guardar
             var nuevoProducto = new Producto
             {
                 Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
-                Nombre = nombre.Text,
+                Nombre = nombreLimpio,
                 Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría",
-                IdProveedor = proveedorEncontrado?.Id ?? 0,
+                IdProveedor = provObj?.Id ?? 0,
                 PrecioCompra = pc,
                 PrecioVenta = pv,
                 Stock = st,
-                ImagenPath = rutaImagenSeleccionada // Aquí guardas la ruta obtenida
+                ImagenPath = rutaImagenSeleccionada
             };
 
             _productos.Add(nuevoProducto);
             ActualizarVista();
             await _service.SaveAllAsync(_productos);
-            CargarCategorias(); // Actualiza el filtro de la página principal
+            CargarCategorias();
         }
 
         void ValidarDecimal(TextBox sender, TextBoxTextChangingEventArgs args)
@@ -352,6 +310,7 @@ namespace piaWinUI.Views
                     {
                         // En lugar de otro diálogo (que puede causar crash), podrías usar un aviso visual 
                         // o simplemente ignorar la acción para mantenerlo simple.
+                        await MostrarAvisoErrorCategoria("Categoría existente", $"La categoría '{nuevaCatNombre}' ya está registrada.");
                         return;
                     }
 
@@ -375,26 +334,30 @@ namespace piaWinUI.Views
             }
         }
 
+        private async Task MostrarAvisoErrorCategoria(string titulo, string mensaje)
+        {
+            var errorDialog = new ContentDialog
+            {
+                Title = titulo,
+                Content = mensaje,
+                CloseButtonText = "Entendido",
+                XamlRoot = this.XamlRoot
+            };
+
+            await errorDialog.ShowAsync();
+        }
+
 
         private async void Edit_Click(object sender, RoutedEventArgs e)
         {
-            // 1. Validar que el objeto seleccionado sea un Producto
             if (sender is not Button btn || btn.Tag is not Producto producto)
                 return;
 
-            // 2. Preparar datos en memoria (Igual que en Agregar)
             var listaCategorias = _categoriasMemoria.Select(c => c.Nombre).ToList();
             if (!listaCategorias.Any()) listaCategorias.Add("General");
 
-            // 3. Crear Controles y Pre-llenarlos con los datos actuales
-            var nombre = new TextBox
-            {
-                Header = "Nombre del Producto",
-                MaxLength = 20,
-                Text = producto.Nombre ?? ""
-            };
+            var nombre = new TextBox { Header = "Nombre del Producto", MaxLength = 20, Text = producto.Nombre ?? "" };
 
-            // Validación de nombre (Sin caracteres especiales)
             nombre.TextChanging += (s, args) =>
             {
                 string textoLimpio = new string(nombre.Text.Where(c => char.IsLetterOrDigit(c) || char.IsWhiteSpace(c)).ToArray());
@@ -422,11 +385,10 @@ namespace piaWinUI.Views
                 HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
             };
 
-            var compra = new TextBox { Header = "Precio Compra", MaxLength = 3, Text = producto.PrecioCompra.ToString() };
-            var venta = new TextBox { Header = "Precio Venta", MaxLength = 3, Text = producto.PrecioVenta.ToString() };
+            var compra = new TextBox { Header = "Precio Compra", MaxLength = 6, Text = producto.PrecioCompra.ToString() };
+            var venta = new TextBox { Header = "Precio Venta", MaxLength = 6, Text = producto.PrecioVenta.ToString() };
             var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = producto.Stock.ToString() };
 
-            // Validaciones numéricas
             stock.TextChanging += (s, args) =>
             {
                 string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
@@ -437,11 +399,9 @@ namespace piaWinUI.Views
                     stock.SelectionStart = Math.Max(0, cursor - 1);
                 }
             };
-
             compra.TextChanging += ValidarDecimal;
             venta.TextChanging += ValidarDecimal;
 
-            // 4. Selección de Imagen (con la ruta actual)
             string rutaImagenSeleccionada = producto.ImagenPath;
             var txtImagen = new TextBlock
             {
@@ -450,73 +410,60 @@ namespace piaWinUI.Views
                 FontSize = 12,
                 Opacity = 0.6
             };
-
             var btnImagen = new Button { Content = "Cambiar Imagen", Margin = new Thickness(0, 5, 0, 0) };
 
             btnImagen.Click += async (s, args) => {
                 var picker = new Windows.Storage.Pickers.FileOpenPicker();
                 var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(App.MainWindow);
                 WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-
-                picker.ViewMode = Windows.Storage.Pickers.PickerViewMode.Thumbnail;
-                picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.PicturesLibrary;
                 picker.FileTypeFilter.Add(".jpg");
-                picker.FileTypeFilter.Add(".jpeg");
                 picker.FileTypeFilter.Add(".png");
-
                 var file = await picker.PickSingleFileAsync();
-                if (file != null)
-                {
-                    rutaImagenSeleccionada = file.Path;
-                    txtImagen.Text = file.Name;
-                }
+                if (file != null) { rutaImagenSeleccionada = file.Path; txtImagen.Text = file.Name; }
             };
 
-            // 5. Panel de Diseño
             var panel = new StackPanel
             {
                 Spacing = 12,
                 Children = {
-            nombre,
-            categoriaCombo,
-            proveedorCombo,
-            new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
-            new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
-        }
+        nombre, categoriaCombo, proveedorCombo,
+        new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, Children = { compra, venta, stock } },
+        new StackPanel { Children = { new TextBlock { Text = "Imagen", FontWeight = Microsoft.UI.Text.FontWeights.SemiBold }, btnImagen, txtImagen } }
+    }
             };
 
-            var dialog = new ContentDialog
-            {
-                Title = "Editar Producto",
-                PrimaryButtonText = "Guardar cambios",
-                CloseButtonText = "Cancelar",
-                Content = panel,
-                XamlRoot = this.XamlRoot
-            };
+            var dialog = new ContentDialog { Title = "Editar Producto", PrimaryButtonText = "Guardar cambios", CloseButtonText = "Cancelar", Content = panel, XamlRoot = this.XamlRoot };
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
-            // 6. Procesar datos y actualizar el objeto
+            // --- VALIDACIÓN DE DUPLICADOS (EDITAR) ---
+            string nombreNuevo = nombre.Text.Trim();
+            bool existe = _productos.Any(p => p.Id != producto.Id && p.Nombre.Trim().Equals(nombreNuevo, StringComparison.OrdinalIgnoreCase));
+
+            if (existe)
+            {
+                var error = new ContentDialog { Title = "Error", Content = "Ya existe otro producto con ese nombre.", CloseButtonText = "Ok", XamlRoot = this.XamlRoot };
+                await error.ShowAsync();
+                return;
+            }
+
             decimal.TryParse(compra.Text, out decimal pc);
             decimal.TryParse(venta.Text, out decimal pv);
             int.TryParse(stock.Text, out int st);
+            var provSel = proveedorCombo.SelectedItem?.ToString();
+            var provObj = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == provSel);
 
-            var nombreProv = proveedorCombo.SelectedItem?.ToString();
-            var proveedorEncontrado = _proveedoresMemoria.FirstOrDefault(p => p.Nombre == nombreProv);
-
-            // Actualizamos las propiedades del objeto original (producto)
-            producto.Nombre = nombre.Text;
+            producto.Nombre = nombreNuevo;
             producto.Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría";
-            producto.IdProveedor = proveedorEncontrado?.Id ?? 0;
+            producto.IdProveedor = provObj?.Id ?? 0;
             producto.PrecioCompra = pc;
             producto.PrecioVenta = pv;
             producto.Stock = st;
             producto.ImagenPath = rutaImagenSeleccionada;
 
-            // 7. Refrescar interfaz y persistencia
             ActualizarVista();
             await _service.SaveAllAsync(_productos);
-            CargarCategorias(); // Por si cambió la categoría del producto
+            CargarCategorias();
         }
     }
 }
