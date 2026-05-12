@@ -21,6 +21,7 @@ namespace piaWinUI.Views
         private List<Producto> _productos = new();
         private List<Categoria> _categoriasMemoria = new();
         private List<Proveedor> _proveedoresMemoria = new();
+        private readonly ProveedorService _provService = new();
 
         private readonly CategoriaService _catService = new();
         // Asumiendo que tienes un ProveedorService similar al de categorías
@@ -43,7 +44,8 @@ namespace piaWinUI.Views
         private async Task CargarDatos()
         {
             _productos = await _service.GetAllAsync();
-
+            _proveedoresMemoria = await _provService.GetAllAsync();
+            _categoriasMemoria = await _catService.GetAllAsync();
             ProductosGrid.ItemsSource = _productosView;
 
             ActualizarVista();
@@ -180,37 +182,29 @@ namespace piaWinUI.Views
             var proveedorCombo = new ComboBox
             {
                 Header = "Proveedor",
-                // ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
+                ItemsSource = _proveedoresMemoria.Select(p => p.Nombre).ToList(),
                 PlaceholderText = "Selecciona un proveedor",
                 HorizontalAlignment = Microsoft.UI.Xaml.HorizontalAlignment.Stretch
             };
 
-            var compra = new NumberBox
+            var compra = new TextBox { Header = "Precio Compra", MaxLength = 3, Text = "", PlaceholderText = "0" };
+            var venta = new TextBox { Header = "Precio Venta", MaxLength = 3, Text = "", PlaceholderText = "0" };
+            var stock = new TextBox { Header = "Stock Inicial", MaxLength = 3, Text = "", PlaceholderText = "0" };
+
+            stock.TextChanging += (s, args) =>
             {
-                Header = "Precio Compra",
-                Value = 0,
-                Minimum = 0,
-                Maximum = 999,
-                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
+                // Solo permite dígitos (automáticamente bloquea el signo '-' de los negativos)
+                string limpio = new string(stock.Text.Where(char.IsDigit).ToArray());
+                if (stock.Text != limpio)
+                {
+                    int cursor = stock.SelectionStart;
+                    stock.Text = limpio;
+                    stock.SelectionStart = Math.Max(0, cursor - 1);
+                }
             };
 
-            var venta = new NumberBox
-            {
-                Header = "Precio Venta",
-                Value = 0,
-                Minimum = 0,
-                Maximum = 999,
-                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
-            };
-
-            var stock = new NumberBox
-            {
-                Header = "Stock Inicial",
-                Value = 0,
-                Minimum = 0,
-                Maximum = 999,
-                SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Compact
-            };
+            compra.TextChanging += ValidarDecimal;
+            venta.TextChanging += ValidarDecimal;
 
             // 3. Selección de Imagen
             string rutaImagenSeleccionada = "";
@@ -261,15 +255,19 @@ namespace piaWinUI.Views
 
             if (await dialog.ShowAsync() != ContentDialogResult.Primary) return;
 
+            decimal.TryParse(compra.Text, out decimal pc);
+            decimal.TryParse(venta.Text, out decimal pv);
+            int.TryParse(stock.Text, out int st);
+
             // 5. Crear objeto y guardar
             var nuevoProducto = new Producto
             {
                 Id = _productos.Any() ? _productos.Max(x => x.Id) + 1 : 1,
                 Nombre = nombre.Text,
                 Categoria = categoriaCombo.SelectedItem?.ToString() ?? "Sin Categoría",
-                PrecioCompra = (decimal)compra.Value,
-                PrecioVenta = (decimal)venta.Value,
-                Stock = (int)stock.Value,
+                PrecioCompra = pc,
+                PrecioVenta = pv,
+                Stock = st,
                 ImagenPath = rutaImagenSeleccionada // Aquí guardas la ruta obtenida
             };
 
@@ -278,6 +276,28 @@ namespace piaWinUI.Views
             await _service.SaveAllAsync(_productos);
             CargarCategorias(); // Actualiza el filtro de la página principal
         }
+
+        void ValidarDecimal(TextBox sender, TextBoxTextChangingEventArgs args)
+        {
+            // Permite números y el punto decimal
+            string limpio = new string(sender.Text.Where(c => char.IsDigit(c) || c == '.').ToArray());
+
+            // Evita que pongan más de un punto (ej. "9.9.9")
+            if (limpio.Count(c => c == '.') > 1)
+            {
+                limpio = limpio.Remove(limpio.LastIndexOf('.'), 1);
+            }
+
+            if (sender.Text != limpio)
+            {
+                int cursor = sender.SelectionStart;
+                sender.Text = limpio;
+                sender.SelectionStart = Math.Max(0, cursor - 1);
+            }
+        }
+
+
+
 
         private async void Edit_Click(
             object sender,
