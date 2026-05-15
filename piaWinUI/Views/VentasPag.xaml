@@ -385,9 +385,8 @@
 
                             <StackPanel Spacing="8">
 
-                                <FontIcon Glyph="&#xE8C7;"
-                                          FontSize="24"
-                                          HorizontalAlignment="Center"/>
+                                <PathIcon Data="M 1,5 L 23,5 L 23,19 L 1,19 Z M 12,8 A 4,4 0 1 0 12,16 A 4,4 0 1 0 12,8 Z" HorizontalAlignment="Center"/>
+
 
                                 <TextBlock Text="EFECTIVO"
                                            FontSize="16"
@@ -405,10 +404,11 @@
                                 Background="{ThemeResource SystemAccentColor}"
                                 Foreground="White">
                             <StackPanel Spacing="8">
-
-                                <FontIcon Glyph="&#xE7E1;"
+                                
+                                <FontIcon Glyph="&#xE8C7;"
                                           FontSize="24"
                                           HorizontalAlignment="Center"/>
+
 
                                 <TextBlock Text="TARJETA"
                                            FontSize="16"

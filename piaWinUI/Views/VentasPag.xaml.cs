@@ -190,7 +190,7 @@ namespace piaWinUI.Views
         private void BuscadorNombre_BeforeTextChanging(TextBox sender, TextBoxBeforeTextChangingEventArgs args)
         {
 
-            var regex = @"^(?!.* )[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
+            var regex = @"^(?!.* {2})[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s'-]*$";
             args.Cancel = !System.Text.RegularExpressions.Regex.IsMatch(args.NewText, regex);
         }
 

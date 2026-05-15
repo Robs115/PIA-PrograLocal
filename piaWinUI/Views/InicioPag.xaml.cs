@@ -125,28 +125,28 @@ namespace piaWinUI.Views
             {
                 AlertasPanel.Children.Add(
                     CreateAlert(
-                        $"⚠️ {bajos} productos necesitan reabastecimiento"));
+                        $" {bajos} productos necesitan reabastecimiento"));
             }
 
             if (agotados > 0)
             {
                 AlertasPanel.Children.Add(
                     CreateAlert(
-                        $"🛑 {agotados} productos están agotados"));
+                        $" {agotados} productos están agotados"));
             }
 
             if (ventasHoy > 0)
             {
                 AlertasPanel.Children.Add(
                     CreateAlert(
-                        $"📈 Las ventas de hoy generan {ventasHoy:C}"));
+                        $" Las ventas de hoy generan {ventasHoy:C}"));
             }
 
             if (pedidosRecientes > 0)
             {
                 AlertasPanel.Children.Add(
                     CreateAlert(
-                        $"📦 {pedidosRecientes} pedidos recientes registrados"));
+                        $" {pedidosRecientes} pedidos recientes registrados"));
             }
 
             // =========================
